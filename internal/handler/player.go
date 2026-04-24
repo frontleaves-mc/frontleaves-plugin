@@ -1,0 +1,85 @@
+package handler
+
+import (
+	"context"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	xError "github.com/bamboo-services/bamboo-base-go/common/error"
+	xResult "github.com/bamboo-services/bamboo-base-go/major/result"
+	apiPlayer "github.com/frontleaves-mc/frontleaves-plugin/api/player"
+)
+
+type PlayerHandler handler
+
+func NewPlayerHandler(ctx context.Context) *PlayerHandler {
+	return NewHandler[PlayerHandler](ctx, "PlayerHandler")
+}
+
+func (h *PlayerHandler) GetPlayer(ctx *gin.Context) {
+	h.log.Info(ctx, "GetPlayer - 查询玩家信息")
+
+	playerUUID, err := uuid.Parse(ctx.Param("uuid"))
+	if err != nil {
+		_ = ctx.Error(xError.NewError(nil, xError.ParameterError, "无效的玩家 UUID", true, err))
+		return
+	}
+
+	player, xErr := h.service.playerLogic.GetPlayer(ctx, playerUUID)
+	if xErr != nil {
+		_ = ctx.Error(xErr)
+		return
+	}
+
+	xResult.SuccessHasData(ctx, "查询成功", player)
+}
+
+func (h *PlayerHandler) ListPlayers(ctx *gin.Context) {
+	h.log.Info(ctx, "ListPlayers - 查询玩家列表")
+
+	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("page_size", "20"))
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 20
+	}
+
+	players, total, xErr := h.service.playerLogic.ListPlayers(ctx, page, pageSize)
+	if xErr != nil {
+		_ = ctx.Error(xErr)
+		return
+	}
+
+	xResult.SuccessHasData(ctx, "查询成功", gin.H{
+		"list":      players,
+		"total":     total,
+		"page":      page,
+		"page_size": pageSize,
+	})
+}
+
+func (h *PlayerHandler) UpdatePlayerGroup(ctx *gin.Context) {
+	h.log.Info(ctx, "UpdatePlayerGroup - 更新玩家权限组")
+
+	playerUUID, err := uuid.Parse(ctx.Param("uuid"))
+	if err != nil {
+		_ = ctx.Error(xError.NewError(nil, xError.ParameterError, "无效的玩家 UUID", true, err))
+		return
+	}
+
+	var req apiPlayer.UpdatePlayerGroupRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		_ = ctx.Error(xError.NewError(nil, xError.ParameterError, "请求参数错误", true, err))
+		return
+	}
+
+	if xErr := h.service.playerLogic.UpdatePlayerGroup(ctx, playerUUID, "", req.GroupName); xErr != nil {
+		_ = ctx.Error(xErr)
+		return
+	}
+
+	xResult.SuccessHasData(ctx, "更新成功", nil)
+}
