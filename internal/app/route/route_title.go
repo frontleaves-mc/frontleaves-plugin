@@ -2,6 +2,7 @@ package route
 
 import (
 	handler "github.com/frontleaves-mc/frontleaves-plugin/internal/handler"
+	"github.com/frontleaves-mc/frontleaves-plugin/internal/app/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -10,6 +11,8 @@ func (r *route) titleRouter(router gin.IRouter) {
 	titlePlayerHandler := handler.NewTitlePlayerHandler(r.context)
 
 	adminGroup := router.Group("/admin/titles")
+	adminGroup.Use(middleware.LoginAuth(r.context))
+	adminGroup.Use(middleware.Admin(r.context))
 	{
 		adminGroup.POST("", titleAdminHandler.CreateTitle)
 		adminGroup.PUT("/:id", titleAdminHandler.UpdateTitle)
@@ -21,6 +24,8 @@ func (r *route) titleRouter(router gin.IRouter) {
 	}
 
 	playerGroup := router.Group("/players/:uuid/titles")
+	playerGroup.Use(middleware.LoginAuth(r.context))
+	playerGroup.Use(middleware.Player(r.context))
 	{
 		playerGroup.GET("", titlePlayerHandler.GetPlayerTitles)
 		playerGroup.PUT("/equip", titlePlayerHandler.EquipTitle)

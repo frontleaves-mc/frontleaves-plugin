@@ -15,7 +15,6 @@ import (
 )
 
 var migrateTables = []interface{}{
-	&entity.Role{},
 	&entity.User{},
 	&entity.Player{},
 	&entity.Title{},

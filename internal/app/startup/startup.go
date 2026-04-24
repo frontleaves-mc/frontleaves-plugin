@@ -4,6 +4,7 @@ import (
 	"context"
 
 	xCtx "github.com/bamboo-services/bamboo-base-go/defined/context"
+	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
 	xRegNode "github.com/bamboo-services/bamboo-base-go/major/register/node"
 )
 
@@ -20,6 +21,7 @@ func Init() (context.Context, []xRegNode.RegNodeList) {
 	regNode := []xRegNode.RegNodeList{
 		{Key: xCtx.DatabaseKey, Node: businessReg.databaseInit},
 		{Key: xCtx.RedisClientKey, Node: businessReg.nosqlInit},
+		{Key: bConst.CtxAuthClientKey, Node: businessReg.grpcAuthClientInit},
 		{Key: xCtx.Exec, Node: businessReg.businessDataPrepare},
 	}
 
