@@ -20,6 +20,17 @@ func NewAchievementAdminHandler(ctx context.Context) *AchievementAdminHandler {
 	return NewHandler[AchievementAdminHandler](ctx, "AchievementAdminHandler")
 }
 
+// CreateAchievement 创建新成就
+//
+// @Summary     [管理] 创建成就
+// @Description 创建新的成就定义
+// @Tags        管理-成就接口
+// @Accept      json
+// @Produce     json
+// @Param       request  body  apiAchievement.CreateAchievementRequest  true  "创建成就请求"
+// @Success     200  {object}  xBase.BaseResponse{data=apiAchievement.AchievementResponse}  "成功"
+// @Failure     400  {object}  xBase.BaseResponse                                          "请求参数错误"
+// @Router      /admin/achievements [POST]
 func (h *AchievementAdminHandler) CreateAchievement(ctx *gin.Context) {
 	h.log.Info(ctx, "CreateAchievement - 创建成就")
 
@@ -38,6 +49,19 @@ func (h *AchievementAdminHandler) CreateAchievement(ctx *gin.Context) {
 	xResult.SuccessHasData(ctx, "创建成功", ach)
 }
 
+// UpdateAchievement 更新成就信息
+//
+// @Summary     [管理] 更新成就
+// @Description 更新指定成就的信息
+// @Tags        管理-成就接口
+// @Accept      json
+// @Produce     json
+// @Param       id       path  string                                   true  "成就ID"
+// @Param       request  body  apiAchievement.UpdateAchievementRequest  true  "更新成就请求"
+// @Success     200  {object}  xBase.BaseResponse{data=apiAchievement.AchievementResponse}  "成功"
+// @Failure     400  {object}  xBase.BaseResponse                                          "请求参数错误"
+// @Failure     404  {object}  xBase.BaseResponse                                          "成就不存在"
+// @Router      /admin/achievements/:id [PUT]
 func (h *AchievementAdminHandler) UpdateAchievement(ctx *gin.Context) {
 	h.log.Info(ctx, "UpdateAchievement - 更新成就")
 
@@ -62,6 +86,18 @@ func (h *AchievementAdminHandler) UpdateAchievement(ctx *gin.Context) {
 	xResult.SuccessHasData(ctx, "更新成功", ach)
 }
 
+// DeleteAchievement 删除成就
+//
+// @Summary     [管理] 删除成就
+// @Description 删除指定成就
+// @Tags        管理-成就接口
+// @Accept      json
+// @Produce     json
+// @Param       id  path  string  true  "成就ID"
+// @Success     200  {object}  xBase.BaseResponse  "成功"
+// @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
+// @Failure     404  {object}  xBase.BaseResponse  "成就不存在"
+// @Router      /admin/achievements/:id [DELETE]
 func (h *AchievementAdminHandler) DeleteAchievement(ctx *gin.Context) {
 	h.log.Info(ctx, "DeleteAchievement - 删除成就")
 
@@ -79,6 +115,18 @@ func (h *AchievementAdminHandler) DeleteAchievement(ctx *gin.Context) {
 	xResult.SuccessHasData(ctx, "删除成功", nil)
 }
 
+// GetAchievement 查询成就详情
+//
+// @Summary     [管理] 查询成就详情
+// @Description 根据成就 ID 查询成就详情
+// @Tags        管理-成就接口
+// @Accept      json
+// @Produce     json
+// @Param       id  path  string  true  "成就ID"
+// @Success     200  {object}  xBase.BaseResponse{data=apiAchievement.AchievementResponse}  "成功"
+// @Failure     400  {object}  xBase.BaseResponse                                          "请求参数错误"
+// @Failure     404  {object}  xBase.BaseResponse                                          "成就不存在"
+// @Router      /admin/achievements/:id [GET]
 func (h *AchievementAdminHandler) GetAchievement(ctx *gin.Context) {
 	h.log.Info(ctx, "GetAchievement - 查询成就详情")
 
@@ -97,6 +145,19 @@ func (h *AchievementAdminHandler) GetAchievement(ctx *gin.Context) {
 	xResult.SuccessHasData(ctx, "查询成功", ach)
 }
 
+// ListAchievements 查询成就列表
+//
+// @Summary     [管理] 查询成就列表
+// @Description 分页查询成就列表，可按类型筛选
+// @Tags        管理-成就接口
+// @Accept      json
+// @Produce     json
+// @Param       page       query  int  false  "页码"
+// @Param       page_size  query  int  false  "每页数量"
+// @Param       type       query  int  false  "成就类型筛选"
+// @Success     200  {object}  xBase.BaseResponse  "成功"
+// @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
+// @Router      /admin/achievements [GET]
 func (h *AchievementAdminHandler) ListAchievements(ctx *gin.Context) {
 	h.log.Info(ctx, "ListAchievements - 查询成就列表")
 
@@ -130,6 +191,19 @@ func (h *AchievementAdminHandler) ListAchievements(ctx *gin.Context) {
 	})
 }
 
+// GrantAchievement 手动授予成就
+//
+// @Summary     [管理] 手动授予成就
+// @Description 管理员手动将指定成就授予玩家
+// @Tags        管理-成就接口
+// @Accept      json
+// @Produce     json
+// @Param       id       path  string                                  true  "成就ID"
+// @Param       request  body  apiAchievement.GrantAchievementRequest  true  "授予成就请求"
+// @Success     200  {object}  xBase.BaseResponse  "成功"
+// @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
+// @Failure     404  {object}  xBase.BaseResponse  "成就不存在"
+// @Router      /admin/achievements/:id/grant [POST]
 func (h *AchievementAdminHandler) GrantAchievement(ctx *gin.Context) {
 	h.log.Info(ctx, "GrantAchievement - 手动授予成就")
 

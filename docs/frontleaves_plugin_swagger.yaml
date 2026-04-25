@@ -1,0 +1,1050 @@
+definitions:
+  apiAchievement.AchievementClaimResponse:
+    properties:
+      achievement_id:
+        type: string
+      title_claimed:
+        type: boolean
+    type: object
+  apiAchievement.AchievementResponse:
+    properties:
+      condition_key:
+        type: string
+      condition_params:
+        items:
+          type: integer
+        type: array
+      description:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        type: string
+      reward_config:
+        items:
+          type: integer
+        type: array
+      sort_order:
+        type: integer
+      type:
+        type: integer
+    type: object
+  apiAchievement.CreateAchievementRequest:
+    properties:
+      condition_key:
+        type: string
+      condition_params:
+        items:
+          type: integer
+        type: array
+      description:
+        type: string
+      name:
+        type: string
+      reward_config:
+        items:
+          type: integer
+        type: array
+      sort_order:
+        type: integer
+      type:
+        enum:
+        - 1
+        - 2
+        - 3
+        - 4
+        type: integer
+    required:
+    - condition_key
+    - description
+    - name
+    - type
+    type: object
+  apiAchievement.GrantAchievementRequest:
+    properties:
+      player_uuid:
+        type: string
+    required:
+    - player_uuid
+    type: object
+  apiAchievement.PlayerAchievementResponse:
+    properties:
+      completed_at:
+        type: string
+      condition_key:
+        type: string
+      condition_params:
+        items:
+          type: integer
+        type: array
+      description:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        type: string
+      progress:
+        type: integer
+      reward_config:
+        items:
+          type: integer
+        type: array
+      sort_order:
+        type: integer
+      status:
+        type: integer
+      type:
+        type: integer
+    type: object
+  apiAchievement.UpdateAchievementRequest:
+    properties:
+      condition_key:
+        type: string
+      condition_params:
+        items:
+          type: integer
+        type: array
+      description:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        type: string
+      reward_config:
+        items:
+          type: integer
+        type: array
+      sort_order:
+        type: integer
+      type:
+        enum:
+        - 1
+        - 2
+        - 3
+        - 4
+        type: integer
+    required:
+    - condition_key
+    - description
+    - name
+    - type
+    type: object
+  apiPlayer.PlayerResponse:
+    properties:
+      group_name:
+        type: string
+      reported_at:
+        type: string
+      username:
+        type: string
+      uuid:
+        type: string
+    type: object
+  apiPlayer.UpdatePlayerGroupRequest:
+    properties:
+      group_name:
+        type: string
+    required:
+    - group_name
+    type: object
+  apiTitle.AssignTitleRequest:
+    properties:
+      player_uuid:
+        type: string
+    required:
+    - player_uuid
+    type: object
+  apiTitle.CreateTitleRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      permission_group:
+        type: string
+      type:
+        enum:
+        - 1
+        - 2
+        - 3
+        type: integer
+    required:
+    - description
+    - name
+    - type
+    type: object
+  apiTitle.EquipTitleRequest:
+    properties:
+      title_id:
+        type: string
+    required:
+    - title_id
+    type: object
+  apiTitle.EquippedTitleResponse:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      title_id:
+        type: string
+      type:
+        type: integer
+    type: object
+  apiTitle.PlayerTitleResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      granted_at:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      is_equipped:
+        type: boolean
+      name:
+        type: string
+      permission_group:
+        type: string
+      source:
+        type: integer
+      type:
+        type: integer
+    type: object
+  apiTitle.TitleResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        type: string
+      permission_group:
+        type: string
+      type:
+        type: integer
+    type: object
+  apiTitle.UpdateTitleRequest:
+    properties:
+      description:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        type: string
+      permission_group:
+        type: string
+      type:
+        enum:
+        - 1
+        - 2
+        - 3
+        type: integer
+    required:
+    - description
+    - name
+    - type
+    type: object
+  xBase.BaseResponse:
+    properties:
+      code:
+        type: integer
+      context:
+        type: string
+      data: {}
+      error_message:
+        type: string
+      message:
+        type: string
+      output:
+        type: string
+      overhead:
+        type: integer
+    type: object
+info:
+  contact: {}
+paths:
+  /achievements:
+    get:
+      consumes:
+      - application/json
+      description: 查询所有公开可查看的成就列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/apiAchievement.AchievementResponse'
+                  type: array
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: 查询公开成就列表
+      tags:
+      - 成就接口
+  /admin/achievements:
+    get:
+      consumes:
+      - application/json
+      description: 分页查询成就列表，可按类型筛选
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: 成就类型筛选
+        in: query
+        name: type
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 查询成就列表'
+      tags:
+      - 管理-成就接口
+    post:
+      consumes:
+      - application/json
+      description: 创建新的成就定义
+      parameters:
+      - description: 创建成就请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiAchievement.CreateAchievementRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiAchievement.AchievementResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 创建成就'
+      tags:
+      - 管理-成就接口
+  /admin/achievements/:id:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定成就
+      parameters:
+      - description: 成就ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 成就不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 删除成就'
+      tags:
+      - 管理-成就接口
+    get:
+      consumes:
+      - application/json
+      description: 根据成就 ID 查询成就详情
+      parameters:
+      - description: 成就ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiAchievement.AchievementResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 成就不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 查询成就详情'
+      tags:
+      - 管理-成就接口
+    put:
+      consumes:
+      - application/json
+      description: 更新指定成就的信息
+      parameters:
+      - description: 成就ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 更新成就请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiAchievement.UpdateAchievementRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiAchievement.AchievementResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 成就不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 更新成就'
+      tags:
+      - 管理-成就接口
+  /admin/achievements/:id/grant:
+    post:
+      consumes:
+      - application/json
+      description: 管理员手动将指定成就授予玩家
+      parameters:
+      - description: 成就ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 授予成就请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiAchievement.GrantAchievementRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 成就不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 手动授予成就'
+      tags:
+      - 管理-成就接口
+  /admin/titles:
+    get:
+      consumes:
+      - application/json
+      description: 分页查询称号列表，可按类型筛选
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: 称号类型筛选
+        in: query
+        name: type
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 查询称号列表'
+      tags:
+      - 管理-称号接口
+    post:
+      consumes:
+      - application/json
+      description: 创建新的称号定义
+      parameters:
+      - description: 创建称号请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiTitle.CreateTitleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiTitle.TitleResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 创建称号'
+      tags:
+      - 管理-称号接口
+  /admin/titles/:id:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定称号
+      parameters:
+      - description: 称号ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 称号不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 删除称号'
+      tags:
+      - 管理-称号接口
+    get:
+      consumes:
+      - application/json
+      description: 根据称号 ID 查询称号详情
+      parameters:
+      - description: 称号ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiTitle.TitleResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 称号不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 查询称号详情'
+      tags:
+      - 管理-称号接口
+    put:
+      consumes:
+      - application/json
+      description: 更新指定称号的信息
+      parameters:
+      - description: 称号ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 更新称号请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiTitle.UpdateTitleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiTitle.TitleResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 称号不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 更新称号'
+      tags:
+      - 管理-称号接口
+  /admin/titles/:id/assign:
+    delete:
+      consumes:
+      - application/json
+      description: 撤销玩家的指定称号
+      parameters:
+      - description: 称号ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 撤销请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiTitle.AssignTitleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 称号不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 撤销称号'
+      tags:
+      - 管理-称号接口
+    post:
+      consumes:
+      - application/json
+      description: 将指定称号分配给玩家
+      parameters:
+      - description: 称号ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 分配请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiTitle.AssignTitleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 称号不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 分配称号'
+      tags:
+      - 管理-称号接口
+  /health/ping:
+    get:
+      consumes:
+      - application/json
+      description: 检查服务及基础设施运行状态，返回应用信息、数据库和 Redis 连通性
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: 健康检查
+      tags:
+      - 健康检查接口
+  /internal/players/:uuid/group:
+    put:
+      consumes:
+      - application/json
+      description: 更新指定玩家的权限组
+      parameters:
+      - description: 玩家UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      - description: 更新权限组请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiPlayer.UpdatePlayerGroupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[超管] 更新玩家权限组'
+      tags:
+      - 玩家接口
+  /players:
+    get:
+      consumes:
+      - application/json
+      description: 分页查询玩家列表
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[玩家] 查询玩家列表'
+      tags:
+      - 玩家接口
+  /players/:uuid:
+    get:
+      consumes:
+      - application/json
+      description: 根据玩家 UUID 查询玩家详细信息
+      parameters:
+      - description: 玩家UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiPlayer.PlayerResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 玩家不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[玩家] 查询玩家信息'
+      tags:
+      - 玩家接口
+  /players/:uuid/achievements:
+    get:
+      consumes:
+      - application/json
+      description: 根据玩家 UUID 查询该玩家已获得的所有成就
+      parameters:
+      - description: 玩家UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/apiAchievement.PlayerAchievementResponse'
+                  type: array
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 玩家不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[玩家] 查询玩家成就列表'
+      tags:
+      - 玩家-成就接口
+  /players/:uuid/achievements/:achId/claim:
+    post:
+      consumes:
+      - application/json
+      description: 玩家领取指定成就的奖励
+      parameters:
+      - description: 玩家UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      - description: 成就ID
+        in: path
+        name: achId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiAchievement.AchievementClaimResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 成就不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[玩家] 领取成就奖励'
+      tags:
+      - 玩家-成就接口
+  /players/:uuid/titles:
+    get:
+      consumes:
+      - application/json
+      description: 根据玩家 UUID 获取该玩家拥有的所有称号
+      parameters:
+      - description: 玩家UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/apiTitle.PlayerTitleResponse'
+                  type: array
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 玩家不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[玩家] 获取玩家称号列表'
+      tags:
+      - 玩家-称号接口
+  /players/:uuid/titles/equip:
+    delete:
+      consumes:
+      - application/json
+      description: 玩家卸下当前装备的称号
+      parameters:
+      - description: 玩家UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[玩家] 卸下称号'
+      tags:
+      - 玩家-称号接口
+    put:
+      consumes:
+      - application/json
+      description: 玩家装备指定称号
+      parameters:
+      - description: 玩家UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      - description: 装备请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiTitle.EquipTitleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 称号不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[玩家] 装备称号'
+      tags:
+      - 玩家-称号接口
+  /players/:uuid/titles/equipped:
+    get:
+      consumes:
+      - application/json
+      description: 根据玩家 UUID 获取该玩家当前装备的称号
+      parameters:
+      - description: 玩家UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiTitle.EquippedTitleResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 未装备称号
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[玩家] 获取当前装备称号'
+      tags:
+      - 玩家-称号接口
+swagger: "2.0"

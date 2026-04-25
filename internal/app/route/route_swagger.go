@@ -9,13 +9,13 @@ import (
 )
 
 func swaggerRegister(r gin.IRouter) {
-	docs.SwaggerInfo.BasePath = "/api/v1"
-	docs.SwaggerInfo.Title = "Bamboo Base Go Template"
-	docs.SwaggerInfo.Description = "bamboo-base-go-template API 文档"
-	docs.SwaggerInfo.Version = "v1.0.0"
-	docs.SwaggerInfo.Host = xEnv.GetEnvString(xEnv.Host, "localhost") + ":" + xEnv.GetEnvString(xEnv.Port, "8080")
-	docs.SwaggerInfo.Schemes = []string{"http", "https"}
+	docs.SwaggerInfofrontleaves_plugin.BasePath = "/api/v1"
+	docs.SwaggerInfofrontleaves_plugin.Title = "Bamboo Base Go Template"
+	docs.SwaggerInfofrontleaves_plugin.Description = "bamboo-base-go-template API 文档"
+	docs.SwaggerInfofrontleaves_plugin.Version = "v1.0.0"
+	docs.SwaggerInfofrontleaves_plugin.Host = xEnv.GetEnvString(xEnv.Host, "localhost") + ":" + xEnv.GetEnvString(xEnv.Port, "8080")
+	docs.SwaggerInfofrontleaves_plugin.Schemes = []string{"http", "https"}
 
 	swaggerGroup := r.Group("/swagger")
-	swaggerGroup.GET("/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	swaggerGroup.GET("/plugin/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.InstanceName("frontleaves_plugin")))
 }

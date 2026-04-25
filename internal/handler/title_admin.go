@@ -19,15 +19,17 @@ func NewTitleAdminHandler(ctx context.Context) *TitleAdminHandler {
 	return NewHandler[TitleAdminHandler](ctx, "TitleAdminHandler")
 }
 
-// @Summary     创建称号
-// @Description 创建新的称号
-// @Tags        管理员-称号接口
+// CreateTitle 创建新称号
+//
+// @Summary     [管理] 创建称号
+// @Description 创建新的称号定义
+// @Tags        管理-称号接口
 // @Accept      json
 // @Produce     json
-// @Param       request body apiTitle.CreateTitleRequest true "创建称号请求"
-// @Success     200 {object} xBase.BaseResponse{data=apiTitle.TitleResponse}
-// @Failure     400 {object} xBase.BaseResponse
-// @Router      /api/v1/admin/titles [POST]
+// @Param       request  body  apiTitle.CreateTitleRequest  true  "创建称号请求"
+// @Success     200  {object}  xBase.BaseResponse{data=apiTitle.TitleResponse}  "成功"
+// @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
+// @Router      /admin/titles [POST]
 func (h *TitleAdminHandler) CreateTitle(ctx *gin.Context) {
 	h.log.Info(ctx, "CreateTitle - 创建称号")
 
@@ -46,16 +48,19 @@ func (h *TitleAdminHandler) CreateTitle(ctx *gin.Context) {
 	xResult.SuccessHasData(ctx, "创建成功", title)
 }
 
-// @Summary     更新称号
-// @Description 更新指定称号信息
-// @Tags        管理员-称号接口
+// UpdateTitle 更新指定称号信息
+//
+// @Summary     [管理] 更新称号
+// @Description 更新指定称号的信息
+// @Tags        管理-称号接口
 // @Accept      json
 // @Produce     json
-// @Param       id path string true "称号ID"
-// @Param       request body apiTitle.UpdateTitleRequest true "更新称号请求"
-// @Success     200 {object} xBase.BaseResponse{data=apiTitle.TitleResponse}
-// @Failure     400 {object} xBase.BaseResponse
-// @Router      /api/v1/admin/titles/:id [PUT]
+// @Param       id       path  string                       true  "称号ID"
+// @Param       request  body  apiTitle.UpdateTitleRequest  true  "更新称号请求"
+// @Success     200  {object}  xBase.BaseResponse{data=apiTitle.TitleResponse}  "成功"
+// @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
+// @Failure     404  {object}  xBase.BaseResponse  "称号不存在"
+// @Router      /admin/titles/:id [PUT]
 func (h *TitleAdminHandler) UpdateTitle(ctx *gin.Context) {
 	h.log.Info(ctx, "UpdateTitle - 更新称号")
 
@@ -80,15 +85,18 @@ func (h *TitleAdminHandler) UpdateTitle(ctx *gin.Context) {
 	xResult.SuccessHasData(ctx, "更新成功", title)
 }
 
-// @Summary     删除称号
+// DeleteTitle 删除指定称号
+//
+// @Summary     [管理] 删除称号
 // @Description 删除指定称号
-// @Tags        管理员-称号接口
+// @Tags        管理-称号接口
 // @Accept      json
 // @Produce     json
-// @Param       id path string true "称号ID"
-// @Success     200 {object} xBase.BaseResponse
-// @Failure     400 {object} xBase.BaseResponse
-// @Router      /api/v1/admin/titles/:id [DELETE]
+// @Param       id  path  string  true  "称号ID"
+// @Success     200  {object}  xBase.BaseResponse  "成功"
+// @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
+// @Failure     404  {object}  xBase.BaseResponse  "称号不存在"
+// @Router      /admin/titles/:id [DELETE]
 func (h *TitleAdminHandler) DeleteTitle(ctx *gin.Context) {
 	h.log.Info(ctx, "DeleteTitle - 删除称号")
 
@@ -106,15 +114,18 @@ func (h *TitleAdminHandler) DeleteTitle(ctx *gin.Context) {
 	xResult.SuccessHasData(ctx, "删除成功", nil)
 }
 
-// @Summary     称号详情
-// @Description 查询指定称号详情
-// @Tags        管理员-称号接口
+// GetTitle 查询称号详情
+//
+// @Summary     [管理] 查询称号详情
+// @Description 根据称号 ID 查询称号详情
+// @Tags        管理-称号接口
 // @Accept      json
 // @Produce     json
-// @Param       id path string true "称号ID"
-// @Success     200 {object} xBase.BaseResponse{data=apiTitle.TitleResponse}
-// @Failure     400 {object} xBase.BaseResponse
-// @Router      /api/v1/admin/titles/:id [GET]
+// @Param       id  path  string  true  "称号ID"
+// @Success     200  {object}  xBase.BaseResponse{data=apiTitle.TitleResponse}  "成功"
+// @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
+// @Failure     404  {object}  xBase.BaseResponse  "称号不存在"
+// @Router      /admin/titles/:id [GET]
 func (h *TitleAdminHandler) GetTitle(ctx *gin.Context) {
 	h.log.Info(ctx, "GetTitle - 查询称号详情")
 
@@ -133,17 +144,19 @@ func (h *TitleAdminHandler) GetTitle(ctx *gin.Context) {
 	xResult.SuccessHasData(ctx, "查询成功", title)
 }
 
-// @Summary     称号列表
-// @Description 查询称号列表（分页）
-// @Tags        管理员-称号接口
+// ListTitles 查询称号列表
+//
+// @Summary     [管理] 查询称号列表
+// @Description 分页查询称号列表，可按类型筛选
+// @Tags        管理-称号接口
 // @Accept      json
 // @Produce     json
-// @Param       page query int false "页码"
-// @Param       page_size query int false "每页数量"
-// @Param       type query int false "称号类型筛选"
-// @Success     200 {object} xBase.BaseResponse
-// @Failure     400 {object} xBase.BaseResponse
-// @Router      /api/v1/admin/titles [GET]
+// @Param       page       query  int  false  "页码"
+// @Param       page_size  query  int  false  "每页数量"
+// @Param       type       query  int  false  "称号类型筛选"
+// @Success     200  {object}  xBase.BaseResponse  "成功"
+// @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
+// @Router      /admin/titles [GET]
 func (h *TitleAdminHandler) ListTitles(ctx *gin.Context) {
 	h.log.Info(ctx, "ListTitles - 查询称号列表")
 
@@ -177,16 +190,19 @@ func (h *TitleAdminHandler) ListTitles(ctx *gin.Context) {
 	})
 }
 
-// @Summary     分配称号
+// AssignTitle 分配称号给玩家
+//
+// @Summary     [管理] 分配称号
 // @Description 将指定称号分配给玩家
-// @Tags        管理员-称号接口
+// @Tags        管理-称号接口
 // @Accept      json
 // @Produce     json
-// @Param       id path string true "称号ID"
-// @Param       request body apiTitle.AssignTitleRequest true "分配请求"
-// @Success     200 {object} xBase.BaseResponse
-// @Failure     400 {object} xBase.BaseResponse
-// @Router      /api/v1/admin/titles/:id/assign [POST]
+// @Param       id       path  string                       true  "称号ID"
+// @Param       request  body  apiTitle.AssignTitleRequest  true  "分配请求"
+// @Success     200  {object}  xBase.BaseResponse  "成功"
+// @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
+// @Failure     404  {object}  xBase.BaseResponse  "称号不存在"
+// @Router      /admin/titles/:id/assign [POST]
 func (h *TitleAdminHandler) AssignTitle(ctx *gin.Context) {
 	h.log.Info(ctx, "AssignTitle - 分配称号")
 
@@ -216,16 +232,19 @@ func (h *TitleAdminHandler) AssignTitle(ctx *gin.Context) {
 	xResult.SuccessHasData(ctx, "分配成功", nil)
 }
 
-// @Summary     撤销称号
+// RevokeTitle 撤销玩家称号
+//
+// @Summary     [管理] 撤销称号
 // @Description 撤销玩家的指定称号
-// @Tags        管理员-称号接口
+// @Tags        管理-称号接口
 // @Accept      json
 // @Produce     json
-// @Param       id path string true "称号ID"
-// @Param       request body apiTitle.AssignTitleRequest true "撤销请求"
-// @Success     200 {object} xBase.BaseResponse
-// @Failure     400 {object} xBase.BaseResponse
-// @Router      /api/v1/admin/titles/:id/assign [DELETE]
+// @Param       id       path  string                       true  "称号ID"
+// @Param       request  body  apiTitle.AssignTitleRequest  true  "撤销请求"
+// @Success     200  {object}  xBase.BaseResponse  "成功"
+// @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
+// @Failure     404  {object}  xBase.BaseResponse  "称号不存在"
+// @Router      /admin/titles/:id/assign [DELETE]
 func (h *TitleAdminHandler) RevokeTitle(ctx *gin.Context) {
 	h.log.Info(ctx, "RevokeTitle - 撤销称号")
 

@@ -18,15 +18,18 @@ func NewTitlePlayerHandler(ctx context.Context) *TitlePlayerHandler {
 	return NewHandler[TitlePlayerHandler](ctx, "TitlePlayerHandler")
 }
 
-// @Summary     获取玩家称号列表
-// @Description 获取玩家拥有的所有称号
+// GetPlayerTitles 获取玩家拥有的所有称号
+//
+// @Summary     [玩家] 获取玩家称号列表
+// @Description 根据玩家 UUID 获取该玩家拥有的所有称号
 // @Tags        玩家-称号接口
 // @Accept      json
 // @Produce     json
-// @Param       uuid path string true "玩家UUID"
-// @Success     200 {object} xBase.BaseResponse{data=[]apiTitle.PlayerTitleResponse}
-// @Failure     400 {object} xBase.BaseResponse
-// @Router      /api/v1/players/:uuid/titles [GET]
+// @Param       uuid  path  string  true  "玩家UUID"
+// @Success     200  {object}  xBase.BaseResponse{data=[]apiTitle.PlayerTitleResponse}  "成功"
+// @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
+// @Failure     404  {object}  xBase.BaseResponse  "玩家不存在"
+// @Router      /players/:uuid/titles [GET]
 func (h *TitlePlayerHandler) GetPlayerTitles(ctx *gin.Context) {
 	h.log.Info(ctx, "GetPlayerTitles - 获取玩家称号列表")
 
@@ -45,16 +48,19 @@ func (h *TitlePlayerHandler) GetPlayerTitles(ctx *gin.Context) {
 	xResult.SuccessHasData(ctx, "查询成功", titles)
 }
 
-// @Summary     装备称号
+// EquipTitle 装备指定称号
+//
+// @Summary     [玩家] 装备称号
 // @Description 玩家装备指定称号
 // @Tags        玩家-称号接口
 // @Accept      json
 // @Produce     json
-// @Param       uuid path string true "玩家UUID"
-// @Param       request body apiTitle.EquipTitleRequest true "装备请求"
-// @Success     200 {object} xBase.BaseResponse
-// @Failure     400 {object} xBase.BaseResponse
-// @Router      /api/v1/players/:uuid/titles/equip [PUT]
+// @Param       uuid      path  string                      true  "玩家UUID"
+// @Param       request   body  apiTitle.EquipTitleRequest  true  "装备请求"
+// @Success     200  {object}  xBase.BaseResponse  "成功"
+// @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
+// @Failure     404  {object}  xBase.BaseResponse  "称号不存在"
+// @Router      /players/:uuid/titles/equip [PUT]
 func (h *TitlePlayerHandler) EquipTitle(ctx *gin.Context) {
 	h.log.Info(ctx, "EquipTitle - 装备称号")
 
@@ -84,15 +90,17 @@ func (h *TitlePlayerHandler) EquipTitle(ctx *gin.Context) {
 	xResult.SuccessHasData(ctx, "装备成功", nil)
 }
 
-// @Summary     卸下称号
+// UnequipTitle 卸下当前装备的称号
+//
+// @Summary     [玩家] 卸下称号
 // @Description 玩家卸下当前装备的称号
 // @Tags        玩家-称号接口
 // @Accept      json
 // @Produce     json
-// @Param       uuid path string true "玩家UUID"
-// @Success     200 {object} xBase.BaseResponse
-// @Failure     400 {object} xBase.BaseResponse
-// @Router      /api/v1/players/:uuid/titles/equip [DELETE]
+// @Param       uuid  path  string  true  "玩家UUID"
+// @Success     200  {object}  xBase.BaseResponse  "成功"
+// @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
+// @Router      /players/:uuid/titles/equip [DELETE]
 func (h *TitlePlayerHandler) UnequipTitle(ctx *gin.Context) {
 	h.log.Info(ctx, "UnequipTitle - 卸下称号")
 
@@ -110,15 +118,18 @@ func (h *TitlePlayerHandler) UnequipTitle(ctx *gin.Context) {
 	xResult.SuccessHasData(ctx, "卸下成功", nil)
 }
 
-// @Summary     获取当前装备称号
-// @Description 获取玩家当前装备的称号
+// GetEquippedTitle 获取当前装备的称号
+//
+// @Summary     [玩家] 获取当前装备称号
+// @Description 根据玩家 UUID 获取该玩家当前装备的称号
 // @Tags        玩家-称号接口
 // @Accept      json
 // @Produce     json
-// @Param       uuid path string true "玩家UUID"
-// @Success     200 {object} xBase.BaseResponse{data=apiTitle.EquippedTitleResponse}
-// @Failure     400 {object} xBase.BaseResponse
-// @Router      /api/v1/players/:uuid/titles/equipped [GET]
+// @Param       uuid  path  string  true  "玩家UUID"
+// @Success     200  {object}  xBase.BaseResponse{data=apiTitle.EquippedTitleResponse}  "成功"
+// @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
+// @Failure     404  {object}  xBase.BaseResponse  "未装备称号"
+// @Router      /players/:uuid/titles/equipped [GET]
 func (h *TitlePlayerHandler) GetEquippedTitle(ctx *gin.Context) {
 	h.log.Info(ctx, "GetEquippedTitle - 获取当前装备称号")
 
