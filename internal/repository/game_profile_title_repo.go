@@ -8,20 +8,17 @@ import (
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
-	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
 type GameProfileTitleRepo struct {
 	db  *gorm.DB
-	rdb *redis.Client
 	log *xLog.LogNamedLogger
 }
 
-func NewGameProfileTitleRepo(db *gorm.DB, rdb *redis.Client) *GameProfileTitleRepo {
+func NewGameProfileTitleRepo(db *gorm.DB) *GameProfileTitleRepo {
 	return &GameProfileTitleRepo{
 		db:  db,
-		rdb: rdb,
 		log: xLog.WithName(xLog.NamedREPO, "GameProfileTitleRepo"),
 	}
 }

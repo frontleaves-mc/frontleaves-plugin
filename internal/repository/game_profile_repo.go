@@ -7,20 +7,17 @@ import (
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
-	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
 type GameProfileRepo struct {
 	db  *gorm.DB
-	rdb *redis.Client
 	log *xLog.LogNamedLogger
 }
 
-func NewGameProfileRepo(db *gorm.DB, rdb *redis.Client) *GameProfileRepo {
+func NewGameProfileRepo(db *gorm.DB) *GameProfileRepo {
 	return &GameProfileRepo{
 		db:  db,
-		rdb: rdb,
 		log: xLog.WithName(xLog.NamedREPO, "GameProfileRepo"),
 	}
 }

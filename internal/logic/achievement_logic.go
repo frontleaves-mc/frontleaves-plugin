@@ -40,10 +40,10 @@ func NewAchievementLogic(ctx context.Context) *AchievementLogic {
 			log: xLog.WithName(xLog.NamedLOGC, "AchievementLogic"),
 		},
 		repo: achievementRepo{
-			achievement: repository.NewAchievementRepo(db, rdb),
-			gameProfileAch:   repository.NewGameProfileAchievementRepo(db, rdb),
-			claim:       repository.NewGameProfileAchievementClaimRepo(db, rdb),
-			gameProfileTitle: repository.NewGameProfileTitleRepo(db, rdb),
+			achievement: repository.NewAchievementRepo(db),
+			gameProfileAch:   repository.NewGameProfileAchievementRepo(db),
+			claim:       repository.NewGameProfileAchievementClaimRepo(db),
+			gameProfileTitle: repository.NewGameProfileTitleRepo(db),
 		},
 	}
 }
@@ -302,7 +302,6 @@ func (l *AchievementLogic) ClaimReward(ctx *gin.Context, playerUUID uuid.UUID, a
 					TitleID:    xSnowflake.SnowflakeID(titleID),
 					Source:     entity.TitleSourceAchievement,
 					IsEquipped: false,
-					GrantedAt:  time.Now(),
 				}
 				if xErr := l.repo.gameProfileTitle.Create(ctx.Request.Context(), playerTitle); xErr != nil {
 					return nil, xErr

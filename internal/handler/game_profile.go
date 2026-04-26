@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xResult "github.com/bamboo-services/bamboo-base-go/major/result"
-	apiGameProfile "github.com/frontleaves-mc/frontleaves-plugin/api/game_profile"
 )
 
 type GameProfileHandler handler
@@ -83,39 +82,4 @@ func (h *GameProfileHandler) ListGameProfiles(ctx *gin.Context) {
 		"page":      page,
 		"page_size": pageSize,
 	})
-}
-
-// UpdateGameProfileGroup 更新游戏档案权限组
-//
-// @Summary     [超管] 更新游戏档案权限组
-// @Description 更新指定游戏档案的权限组
-// @Tags        游戏档案接口
-// @Accept      json
-// @Produce     json
-// @Param       uuid      path  string                                    true  "档案UUID"
-// @Param       request   body  apiGameProfile.UpdateGameProfileGroupRequest  true  "更新权限组请求"
-// @Success     200  {object}  xBase.BaseResponse  "成功"
-// @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
-// @Router      /internal/game-profiles/:uuid/group [PUT]
-func (h *GameProfileHandler) UpdateGameProfileGroup(ctx *gin.Context) {
-	h.log.Info(ctx, "UpdateGameProfileGroup - 更新游戏档案权限组")
-
-	uuidVal, err := uuid.Parse(ctx.Param("uuid"))
-	if err != nil {
-		_ = ctx.Error(xError.NewError(nil, xError.ParameterError, "无效的 UUID", true, err))
-		return
-	}
-
-	var req apiGameProfile.UpdateGameProfileGroupRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		_ = ctx.Error(xError.NewError(nil, xError.ParameterError, "请求参数错误", true, err))
-		return
-	}
-
-	if xErr := h.service.gameProfileLogic.UpdatePlayerGroup(ctx, uuidVal, "", req.GroupName); xErr != nil {
-		_ = ctx.Error(xErr)
-		return
-	}
-
-	xResult.SuccessHasData(ctx, "更新成功", nil)
 }

@@ -7,20 +7,17 @@ import (
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
-	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
 type TitleRepo struct {
 	db  *gorm.DB
-	rdb *redis.Client
 	log *xLog.LogNamedLogger
 }
 
-func NewTitleRepo(db *gorm.DB, rdb *redis.Client) *TitleRepo {
+func NewTitleRepo(db *gorm.DB) *TitleRepo {
 	return &TitleRepo{
 		db:  db,
-		rdb: rdb,
 		log: xLog.WithName(xLog.NamedREPO, "TitleRepo"),
 	}
 }
@@ -76,7 +73,7 @@ func (r *TitleRepo) List(ctx context.Context, page, pageSize int, titleType *int
 
 	var titles []entity.Title
 	offset := (page - 1) * pageSize
-	if err := query.Offset(offset).Limit(pageSize).Order("sort_order ASC, created_at DESC").Find(&titles).Error; err != nil {
+	if err := query.Offset(offset).Limit(pageSize).Order("created_at DESC").Find(&titles).Error; err != nil {
 		return nil, 0, xError.NewError(nil, xError.DatabaseError, "查询称号列表失败", false, err)
 	}
 	return titles, total, nil

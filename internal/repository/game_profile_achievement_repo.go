@@ -8,20 +8,17 @@ import (
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
-	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
 type GameProfileAchievementRepo struct {
 	db  *gorm.DB
-	rdb *redis.Client
 	log *xLog.LogNamedLogger
 }
 
-func NewGameProfileAchievementRepo(db *gorm.DB, rdb *redis.Client) *GameProfileAchievementRepo {
+func NewGameProfileAchievementRepo(db *gorm.DB) *GameProfileAchievementRepo {
 	return &GameProfileAchievementRepo{
 		db:  db,
-		rdb: rdb,
 		log: xLog.WithName(xLog.NamedREPO, "GameProfileAchievementRepo"),
 	}
 }

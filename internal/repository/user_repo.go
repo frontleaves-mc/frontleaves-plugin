@@ -7,21 +7,18 @@ import (
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
-	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
 type UserRepo struct {
 	db  *gorm.DB
-	rdb *redis.Client
 	log *xLog.LogNamedLogger
 }
 
-func NewUserRepo(db *gorm.DB, rdb *redis.Client) *UserRepo {
+func NewUserRepo(db *gorm.DB) *UserRepo {
 	return &UserRepo{
 		db:  db,
-		rdb: rdb,
 		log: xLog.WithName(xLog.NamedREPO, "UserRepo"),
 	}
 }

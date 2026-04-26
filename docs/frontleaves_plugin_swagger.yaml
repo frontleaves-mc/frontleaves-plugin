@@ -144,13 +144,6 @@ definitions:
       uuid:
         type: string
     type: object
-  apiGameProfile.UpdateGameProfileGroupRequest:
-    properties:
-      group_name:
-        type: string
-    required:
-    - group_name
-    type: object
   apiTitle.AssignTitleRequest:
     properties:
       player_uuid:
@@ -1016,35 +1009,4 @@ paths:
       summary: 健康检查
       tags:
       - 健康检查接口
-  /internal/game-profiles/:uuid/group:
-    put:
-      consumes:
-      - application/json
-      description: 更新指定游戏档案的权限组
-      parameters:
-      - description: 档案UUID
-        in: path
-        name: uuid
-        required: true
-        type: string
-      - description: 更新权限组请求
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/apiGameProfile.UpdateGameProfileGroupRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 成功
-          schema:
-            $ref: '#/definitions/xBase.BaseResponse'
-        "400":
-          description: 请求参数错误
-          schema:
-            $ref: '#/definitions/xBase.BaseResponse'
-      summary: '[超管] 更新游戏档案权限组'
-      tags:
-      - 游戏档案接口
 swagger: "2.0"

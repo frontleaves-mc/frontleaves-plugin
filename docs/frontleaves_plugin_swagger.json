@@ -1178,53 +1178,6 @@
                     }
                 }
             }
-        },
-        "/internal/game-profiles/:uuid/group": {
-            "put": {
-                "description": "更新指定游戏档案的权限组",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "游戏档案接口"
-                ],
-                "summary": "[超管] 更新游戏档案权限组",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "档案UUID",
-                        "name": "uuid",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "更新权限组请求",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/apiGameProfile.UpdateGameProfileGroupRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "成功",
-                        "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "请求参数错误",
-                        "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {
@@ -1439,17 +1392,6 @@
                     "type": "string"
                 },
                 "uuid": {
-                    "type": "string"
-                }
-            }
-        },
-        "apiGameProfile.UpdateGameProfileGroupRequest": {
-            "type": "object",
-            "required": [
-                "group_name"
-            ],
-            "properties": {
-                "group_name": {
                     "type": "string"
                 }
             }

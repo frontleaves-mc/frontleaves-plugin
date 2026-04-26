@@ -2,7 +2,6 @@ package logic
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
@@ -36,8 +35,8 @@ func NewTitleLogic(ctx context.Context) *TitleLogic {
 			log: xLog.WithName(xLog.NamedLOGC, "TitleLogic"),
 		},
 		repo: titleRepo{
-			title:       repository.NewTitleRepo(db, rdb),
-			gameProfileTitle: repository.NewGameProfileTitleRepo(db, rdb),
+			title:            repository.NewTitleRepo(db),
+			gameProfileTitle: repository.NewGameProfileTitleRepo(db),
 		},
 	}
 }
@@ -128,7 +127,6 @@ func (l *TitleLogic) AssignTitleToPlayer(ctx *gin.Context, titleID xSnowflake.Sn
 		TitleID:    titleID,
 		Source:     entity.TitleSourceAdmin,
 		IsEquipped: false,
-		GrantedAt:  time.Now(),
 	}
 
 	return l.repo.gameProfileTitle.Create(ctx.Request.Context(), playerTitle)
@@ -172,7 +170,7 @@ func (l *TitleLogic) GetPlayerTitles(ctx *gin.Context, playerUUID uuid.UUID) ([]
 			TitleResponse: *l.toTitleResponse(pt.Title),
 			Source:        int16(pt.Source),
 			IsEquipped:    pt.IsEquipped,
-			GrantedAt:     pt.GrantedAt,
+			GrantedAt:     pt.CreatedAt,
 		})
 	}
 	return resp, nil
@@ -216,7 +214,6 @@ func (l *TitleLogic) MatchGroupTitle(ctx context.Context, playerUUID uuid.UUID, 
 				TitleID:    title.ID,
 				Source:     entity.TitleSourceGroup,
 				IsEquipped: false,
-				GrantedAt:  time.Now(),
 			}
 			if xErr := l.repo.gameProfileTitle.Create(ctx, playerTitle); xErr != nil {
 				return xErr

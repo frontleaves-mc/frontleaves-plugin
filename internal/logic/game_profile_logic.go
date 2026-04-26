@@ -34,7 +34,7 @@ func NewGameProfileLogic(ctx context.Context) *GameProfileLogic {
 			log: xLog.WithName(xLog.NamedLOGC, "GameProfileLogic"),
 		},
 		repo: gameProfileRepo{
-			gameProfile: repository.NewGameProfileRepo(db, rdb),
+			gameProfile: repository.NewGameProfileRepo(db),
 		},
 	}
 }
@@ -51,20 +51,6 @@ func (l *GameProfileLogic) GetPlayer(ctx *gin.Context, playerUUID uuid.UUID) (*a
 		GroupName:  gp.GroupName,
 		ReportedAt: gp.ReportedAt,
 	}, nil
-}
-
-func (l *GameProfileLogic) UpdatePlayerGroup(ctx *gin.Context, playerUUID uuid.UUID, username, groupName string) *xError.Error {
-	l.log.Info(ctx, "UpdatePlayerGroup - 更新玩家权限组")
-	gp := &entity.GameProfile{
-		UUID:       playerUUID,
-		Username:   username,
-		GroupName:  groupName,
-		ReportedAt: time.Now(),
-	}
-	if xErr := l.repo.gameProfile.CreateOrUpdate(ctx.Request.Context(), gp); xErr != nil {
-		return xErr
-	}
-	return nil
 }
 
 func (l *GameProfileLogic) ListPlayers(ctx *gin.Context, page, pageSize int) ([]apiGameProfile.GameProfileResponse, int64, *xError.Error) {

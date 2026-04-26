@@ -16,11 +16,4 @@ func (r *route) gameProfileRouter(router gin.IRouter) {
 		gameProfileGroup.GET("/:uuid", gameProfileHandler.GetGameProfile)
 		gameProfileGroup.GET("", gameProfileHandler.ListGameProfiles)
 	}
-
-	internalGroup := router.Group("/internal/game-profiles")
-	internalGroup.Use(middleware.LoginAuth(r.context))
-	internalGroup.Use(middleware.SuperAdmin(r.context))
-	{
-		internalGroup.PUT("/:uuid/group", gameProfileHandler.UpdateGameProfileGroup)
-	}
 }

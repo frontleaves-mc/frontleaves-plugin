@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	xCtx "github.com/bamboo-services/bamboo-base-go/defined/context"
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
@@ -77,13 +78,23 @@ func LoginAuth(ctx context.Context) gin.HandlerFunc {
 		injectUser(c, userInfo)
 
 		// 异步同步 User + GameProfile 到本地数据库
-		go syncUserAndGameProfiles(ctx, authClient, userInfo.UserID, log)
+		go syncUserAndGameProfiles(detachContext(ctx), authClient, userInfo.UserID, log)
 
 		c.Next()
 	}
 }
 
-func syncUserAndGameProfiles(startupCtx context.Context, authClient *pluginGrpc.AuthClient, userIDStr string, log *xLog.LogNamedLogger) {
+// detachContext 从父 context 复制基础设施值（DB、Redis、Snowflake）到独立的新 context，
+// 不共享取消通道，确保协程在请求结束后仍可独立运行。
+func detachContext(parent context.Context) context.Context {
+	detached := context.Background()
+	if nodeList := parent.Value(xCtx.RegNodeKey); nodeList != nil {
+		detached = context.WithValue(detached, xCtx.RegNodeKey, nodeList)
+	}
+	return detached
+}
+
+func syncUserAndGameProfiles(detachedCtx context.Context, authClient *pluginGrpc.AuthClient, userIDStr string, log *xLog.LogNamedLogger) {
 	userID, err := xSnowflake.ParseSnowflakeID(userIDStr)
 	if err != nil {
 		log.Warn(context.Background(), "解析 UserID 失败: "+err.Error())
@@ -99,12 +110,12 @@ func syncUserAndGameProfiles(startupCtx context.Context, authClient *pluginGrpc.
 		return
 	}
 
-	userLogic := logic.NewUserLogic(startupCtx)
+	userLogic := logic.NewUserLogic(detachedCtx)
 	if xErr := userLogic.Upsert(nil, userID, resp.GetUsername()); xErr != nil {
 		log.Warn(context.Background(), "同步 User 失败: "+xErr.Error())
 	}
 
-	gpLogic := logic.NewGameProfileLogic(startupCtx)
+	gpLogic := logic.NewGameProfileLogic(detachedCtx)
 	for _, gp := range resp.GetGameProfiles() {
 		gpUUID, parseErr := uuid.Parse(gp.GetUuid())
 		if parseErr != nil {
