@@ -8,6 +8,7 @@ import (
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
 	xEnv "github.com/bamboo-services/bamboo-base-go/defined/env"
 	xGrpcConst "github.com/bamboo-services/bamboo-base-go/plugins/grpc/constant"
+	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
 	authpb "github.com/frontleaves-mc/frontleaves-yggleaf/proto/auth"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -15,20 +16,18 @@ import (
 )
 
 type AuthClient struct {
-	client   authpb.AuthServiceClient
-	conn     *grpc.ClientConn
-	accessID string
+	client    authpb.AuthServiceClient
+	conn      *grpc.ClientConn
 	secretKey string
-	log      *xLog.LogNamedLogger
+	log       *xLog.LogNamedLogger
 }
 
 func NewAuthClient(ctx context.Context) (*AuthClient, error) {
 	log := xLog.WithName(xLog.NamedINIT, "AuthClient")
 
-	host := xEnv.GetEnvString("YGGLEAF_GRPC_HOST", "localhost")
-	port := xEnv.GetEnvString("YGGLEAF_GRPC_PORT", "1119")
-	accessID := xEnv.GetEnvString("PLUGIN_APP_ACCESS_ID", "")
-	secretKey := xEnv.GetEnvString("PLUGIN_APP_SECRET_KEY", "")
+	host := xEnv.GetEnvString(bConst.EnvYggleafGrpcHost, "localhost")
+	port := xEnv.GetEnvString(bConst.EnvYggleafGrpcPort, "1119")
+	secretKey := xEnv.GetEnvString(bConst.EnvGrpcSecretKey, "")
 
 	addr := fmt.Sprintf("%s:%s", host, port)
 
@@ -45,7 +44,6 @@ func NewAuthClient(ctx context.Context) (*AuthClient, error) {
 	return &AuthClient{
 		client:    client,
 		conn:      conn,
-		accessID:  accessID,
 		secretKey: secretKey,
 		log:       log,
 	}, nil
@@ -53,7 +51,6 @@ func NewAuthClient(ctx context.Context) (*AuthClient, error) {
 
 func (c *AuthClient) ValidateToken(ctx context.Context, accessToken string) (*authpb.ValidateTokenResponse, error) {
 	md := metadata.Pairs(
-		xGrpcConst.MetadataAppAccessID.String(), c.accessID,
 		xGrpcConst.MetadataAppSecretKey.String(), c.secretKey,
 	)
 	ctx = metadata.NewOutgoingContext(ctx, md)
@@ -72,7 +69,6 @@ func (c *AuthClient) Close() error {
 
 func (c *AuthClient) GetUserInfo(ctx context.Context, userID string) (*authpb.GetUserInfoResponse, error) {
 	md := metadata.Pairs(
-		xGrpcConst.MetadataAppAccessID.String(), c.accessID,
 		xGrpcConst.MetadataAppSecretKey.String(), c.secretKey,
 	)
 	ctx = metadata.NewOutgoingContext(ctx, md)
