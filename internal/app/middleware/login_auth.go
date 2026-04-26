@@ -3,13 +3,17 @@ package middleware
 import (
 	"context"
 	"strings"
+	"time"
 
+	"github.com/google/uuid"
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
+	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
 	xResult "github.com/bamboo-services/bamboo-base-go/major/result"
 	pluginGrpc "github.com/frontleaves-mc/frontleaves-plugin/internal/app/grpc"
 	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
+	"github.com/frontleaves-mc/frontleaves-plugin/internal/logic"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository/cache"
 	"github.com/gin-gonic/gin"
 )
@@ -71,7 +75,45 @@ func LoginAuth(ctx context.Context) gin.HandlerFunc {
 		}
 
 		injectUser(c, userInfo)
+
+		// 异步同步 User + GameProfile 到本地数据库
+		go syncUserAndGameProfiles(ctx, authClient, userInfo.UserID, log)
+
 		c.Next()
+	}
+}
+
+func syncUserAndGameProfiles(startupCtx context.Context, authClient *pluginGrpc.AuthClient, userIDStr string, log *xLog.LogNamedLogger) {
+	userID, err := xSnowflake.ParseSnowflakeID(userIDStr)
+	if err != nil {
+		log.Warn(context.Background(), "解析 UserID 失败: "+err.Error())
+		return
+	}
+
+	grpcCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	resp, rpcErr := authClient.GetUserInfo(grpcCtx, userIDStr)
+	if rpcErr != nil {
+		log.Warn(context.Background(), "GetUserInfo 调用失败: "+rpcErr.Error())
+		return
+	}
+
+	userLogic := logic.NewUserLogic(startupCtx)
+	if xErr := userLogic.Upsert(nil, userID, resp.GetUsername()); xErr != nil {
+		log.Warn(context.Background(), "同步 User 失败: "+xErr.Error())
+	}
+
+	gpLogic := logic.NewGameProfileLogic(startupCtx)
+	for _, gp := range resp.GetGameProfiles() {
+		gpUUID, parseErr := uuid.Parse(gp.GetUuid())
+		if parseErr != nil {
+			log.Warn(context.Background(), "解析 GameProfile UUID 失败: "+parseErr.Error())
+			continue
+		}
+		if xErr := gpLogic.Upsert(nil, userID, gpUUID, gp.GetUsername()); xErr != nil {
+			log.Warn(context.Background(), "同步 GameProfile 失败: "+xErr.Error())
+		}
 	}
 }
 

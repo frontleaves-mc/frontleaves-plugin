@@ -69,3 +69,15 @@ func (c *AuthClient) Close() error {
 	}
 	return nil
 }
+
+func (c *AuthClient) GetUserInfo(ctx context.Context, userID string) (*authpb.GetUserInfoResponse, error) {
+	md := metadata.Pairs(
+		xGrpcConst.MetadataAppAccessID.String(), c.accessID,
+		xGrpcConst.MetadataAppSecretKey.String(), c.secretKey,
+	)
+	ctx = metadata.NewOutgoingContext(ctx, md)
+
+	return c.client.GetUserInfo(ctx, &authpb.GetUserInfoRequest{
+		UserId: userID,
+	})
+}

@@ -17,7 +17,7 @@ import (
 
 type titleRepo struct {
 	title       *repository.TitleRepo
-	playerTitle *repository.PlayerTitleRepo
+	gameProfileTitle *repository.GameProfileTitleRepo
 }
 
 type TitleLogic struct {
@@ -37,7 +37,7 @@ func NewTitleLogic(ctx context.Context) *TitleLogic {
 		},
 		repo: titleRepo{
 			title:       repository.NewTitleRepo(db, rdb),
-			playerTitle: repository.NewPlayerTitleRepo(db, rdb),
+			gameProfileTitle: repository.NewGameProfileTitleRepo(db, rdb),
 		},
 	}
 }
@@ -115,7 +115,7 @@ func (l *TitleLogic) ListTitles(ctx *gin.Context, page, pageSize int, titleType 
 func (l *TitleLogic) AssignTitleToPlayer(ctx *gin.Context, titleID xSnowflake.SnowflakeID, playerUUID uuid.UUID) *xError.Error {
 	l.log.Info(ctx, "AssignTitleToPlayer - 分配称号给玩家")
 
-	has, xErr := l.repo.playerTitle.HasTitle(ctx.Request.Context(), playerUUID, titleID)
+	has, xErr := l.repo.gameProfileTitle.HasTitle(ctx.Request.Context(), playerUUID, titleID)
 	if xErr != nil {
 		return xErr
 	}
@@ -123,26 +123,26 @@ func (l *TitleLogic) AssignTitleToPlayer(ctx *gin.Context, titleID xSnowflake.Sn
 		return xError.NewError(nil, xError.ParameterError, "玩家已拥有该称号", true, nil)
 	}
 
-	playerTitle := &entity.PlayerTitle{
-		PlayerUUID: playerUUID,
+	playerTitle := &entity.GameProfileTitle{
+		GameProfileUUID: playerUUID,
 		TitleID:    titleID,
 		Source:     entity.TitleSourceAdmin,
 		IsEquipped: false,
 		GrantedAt:  time.Now(),
 	}
 
-	return l.repo.playerTitle.Create(ctx.Request.Context(), playerTitle)
+	return l.repo.gameProfileTitle.Create(ctx.Request.Context(), playerTitle)
 }
 
 func (l *TitleLogic) RevokeTitleFromPlayer(ctx *gin.Context, titleID xSnowflake.SnowflakeID, playerUUID uuid.UUID) *xError.Error {
 	l.log.Info(ctx, "RevokeTitleFromPlayer - 撤销玩家称号")
-	return l.repo.playerTitle.Delete(ctx.Request.Context(), playerUUID, titleID)
+	return l.repo.gameProfileTitle.Delete(ctx.Request.Context(), playerUUID, titleID)
 }
 
 func (l *TitleLogic) EquipTitle(ctx *gin.Context, playerUUID uuid.UUID, titleID xSnowflake.SnowflakeID) *xError.Error {
 	l.log.Info(ctx, "EquipTitle - 装备称号")
 
-	has, xErr := l.repo.playerTitle.HasTitle(ctx.Request.Context(), playerUUID, titleID)
+	has, xErr := l.repo.gameProfileTitle.HasTitle(ctx.Request.Context(), playerUUID, titleID)
 	if xErr != nil {
 		return xErr
 	}
@@ -150,18 +150,18 @@ func (l *TitleLogic) EquipTitle(ctx *gin.Context, playerUUID uuid.UUID, titleID 
 		return xError.NewError(nil, xError.ParameterError, "玩家未拥有该称号", true, nil)
 	}
 
-	return l.repo.playerTitle.EquipTitle(ctx.Request.Context(), l.db, playerUUID, titleID)
+	return l.repo.gameProfileTitle.EquipTitle(ctx.Request.Context(), l.db, playerUUID, titleID)
 }
 
 func (l *TitleLogic) UnequipTitle(ctx *gin.Context, playerUUID uuid.UUID) *xError.Error {
 	l.log.Info(ctx, "UnequipTitle - 卸下称号")
-	return l.repo.playerTitle.UnequipTitle(ctx.Request.Context(), l.db, playerUUID)
+	return l.repo.gameProfileTitle.UnequipTitle(ctx.Request.Context(), l.db, playerUUID)
 }
 
 func (l *TitleLogic) GetPlayerTitles(ctx *gin.Context, playerUUID uuid.UUID) ([]apiTitle.PlayerTitleResponse, *xError.Error) {
 	l.log.Info(ctx, "GetPlayerTitles - 查询玩家拥有的称号")
 
-	playerTitles, xErr := l.repo.playerTitle.GetByPlayerUUID(ctx.Request.Context(), playerUUID)
+	playerTitles, xErr := l.repo.gameProfileTitle.GetByGameProfileUUID(ctx.Request.Context(), playerUUID)
 	if xErr != nil {
 		return nil, xErr
 	}
@@ -181,7 +181,7 @@ func (l *TitleLogic) GetPlayerTitles(ctx *gin.Context, playerUUID uuid.UUID) ([]
 func (l *TitleLogic) GetEquippedTitle(ctx *gin.Context, playerUUID uuid.UUID) (*apiTitle.EquippedTitleResponse, *xError.Error) {
 	l.log.Info(ctx, "GetEquippedTitle - 查询装备的称号")
 
-	playerTitle, xErr := l.repo.playerTitle.GetEquippedByPlayerUUID(ctx.Request.Context(), playerUUID)
+	playerTitle, xErr := l.repo.gameProfileTitle.GetEquippedByGameProfileUUID(ctx.Request.Context(), playerUUID)
 	if xErr != nil {
 		return nil, xErr
 	}
@@ -206,19 +206,19 @@ func (l *TitleLogic) MatchGroupTitle(ctx context.Context, playerUUID uuid.UUID, 
 	}
 
 	for _, title := range titles {
-		has, xErr := l.repo.playerTitle.HasTitle(ctx, playerUUID, title.ID)
+		has, xErr := l.repo.gameProfileTitle.HasTitle(ctx, playerUUID, title.ID)
 		if xErr != nil {
 			return xErr
 		}
 		if !has {
-			playerTitle := &entity.PlayerTitle{
-				PlayerUUID: playerUUID,
+			playerTitle := &entity.GameProfileTitle{
+				GameProfileUUID: playerUUID,
 				TitleID:    title.ID,
 				Source:     entity.TitleSourceGroup,
 				IsEquipped: false,
 				GrantedAt:  time.Now(),
 			}
-			if xErr := l.repo.playerTitle.Create(ctx, playerTitle); xErr != nil {
+			if xErr := l.repo.gameProfileTitle.Create(ctx, playerTitle); xErr != nil {
 				return xErr
 			}
 		}

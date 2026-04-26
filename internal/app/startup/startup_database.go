@@ -15,12 +15,13 @@ import (
 )
 
 var migrateTables = []interface{}{
-	&entity.Player{},
+	&entity.User{},
+	&entity.GameProfile{},
 	&entity.Title{},
 	&entity.Achievement{},
-	&entity.PlayerTitle{},
-	&entity.PlayerAchievement{},
-	&entity.PlayerAchievementClaim{},
+	&entity.GameProfileTitle{},
+	&entity.GameProfileAchievement{},
+	&entity.GameProfileAchievementClaim{},
 }
 
 func (r *reg) databaseInit(ctx context.Context) (any, error) {

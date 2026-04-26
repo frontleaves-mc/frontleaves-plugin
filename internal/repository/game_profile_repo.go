@@ -11,61 +11,58 @@ import (
 	"gorm.io/gorm"
 )
 
-type PlayerRepo struct {
+type GameProfileRepo struct {
 	db  *gorm.DB
 	rdb *redis.Client
 	log *xLog.LogNamedLogger
 }
 
-func NewPlayerRepo(db *gorm.DB, rdb *redis.Client) *PlayerRepo {
-	return &PlayerRepo{
+func NewGameProfileRepo(db *gorm.DB, rdb *redis.Client) *GameProfileRepo {
+	return &GameProfileRepo{
 		db:  db,
 		rdb: rdb,
-		log: xLog.WithName(xLog.NamedREPO, "PlayerRepo"),
+		log: xLog.WithName(xLog.NamedREPO, "GameProfileRepo"),
 	}
 }
 
-func (r *PlayerRepo) GetByUUID(ctx context.Context, playerUUID uuid.UUID) (*entity.Player, *xError.Error) {
+func (r *GameProfileRepo) GetByUUID(ctx context.Context, profileUUID uuid.UUID) (*entity.GameProfile, *xError.Error) {
 	r.log.Info(ctx, "GetByUUID - 查询玩家信息")
-
-	var player entity.Player
-	if err := r.db.WithContext(ctx).Where("uuid = ?", playerUUID).First(&player).Error; err != nil {
+	var gp entity.GameProfile
+	if err := r.db.WithContext(ctx).Where("uuid = ?", profileUUID).First(&gp).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, xError.NewError(nil, xError.NotFound, "玩家不存在", false, err)
 		}
 		return nil, xError.NewError(nil, xError.DatabaseError, "查询玩家失败", false, err)
 	}
-	return &player, nil
+	return &gp, nil
 }
 
-func (r *PlayerRepo) CreateOrUpdate(ctx context.Context, player *entity.Player) *xError.Error {
+func (r *GameProfileRepo) CreateOrUpdate(ctx context.Context, gp *entity.GameProfile) *xError.Error {
 	r.log.Info(ctx, "CreateOrUpdate - 创建或更新玩家")
-
-	result := r.db.WithContext(ctx).Where("uuid = ?", player.UUID).
+	result := r.db.WithContext(ctx).Where("uuid = ?", gp.UUID).
 		Assign(map[string]interface{}{
-			"username":    player.Username,
-			"group_name":  player.GroupName,
-			"reported_at": player.ReportedAt,
+			"user_id":     gp.UserID,
+			"username":    gp.Username,
+			"group_name":  gp.GroupName,
+			"reported_at": gp.ReportedAt,
 		}).
-		FirstOrCreate(player)
+		FirstOrCreate(gp)
 	if result.Error != nil {
 		return xError.NewError(nil, xError.DatabaseError, "创建或更新玩家失败", false, result.Error)
 	}
 	return nil
 }
 
-func (r *PlayerRepo) List(ctx context.Context, page, pageSize int) ([]entity.Player, int64, *xError.Error) {
+func (r *GameProfileRepo) List(ctx context.Context, page, pageSize int) ([]entity.GameProfile, int64, *xError.Error) {
 	r.log.Info(ctx, "List - 查询玩家列表")
-
 	var total int64
-	if err := r.db.WithContext(ctx).Model(&entity.Player{}).Count(&total).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&entity.GameProfile{}).Count(&total).Error; err != nil {
 		return nil, 0, xError.NewError(nil, xError.DatabaseError, "查询玩家总数失败", false, err)
 	}
-
-	var players []entity.Player
+	var gps []entity.GameProfile
 	offset := (page - 1) * pageSize
-	if err := r.db.WithContext(ctx).Offset(offset).Limit(pageSize).Order("created_at DESC").Find(&players).Error; err != nil {
+	if err := r.db.WithContext(ctx).Offset(offset).Limit(pageSize).Order("created_at DESC").Find(&gps).Error; err != nil {
 		return nil, 0, xError.NewError(nil, xError.DatabaseError, "查询玩家列表失败", false, err)
 	}
-	return players, total, nil
+	return gps, total, nil
 }

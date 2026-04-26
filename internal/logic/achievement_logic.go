@@ -19,9 +19,9 @@ import (
 
 type achievementRepo struct {
 	achievement *repository.AchievementRepo
-	playerAch   *repository.PlayerAchievementRepo
-	claim       *repository.PlayerAchievementClaimRepo
-	playerTitle *repository.PlayerTitleRepo
+	gameProfileAch *repository.GameProfileAchievementRepo
+	claim          *repository.GameProfileAchievementClaimRepo
+	gameProfileTitle *repository.GameProfileTitleRepo
 }
 
 type AchievementLogic struct {
@@ -41,9 +41,9 @@ func NewAchievementLogic(ctx context.Context) *AchievementLogic {
 		},
 		repo: achievementRepo{
 			achievement: repository.NewAchievementRepo(db, rdb),
-			playerAch:   repository.NewPlayerAchievementRepo(db, rdb),
-			claim:       repository.NewPlayerAchievementClaimRepo(db, rdb),
-			playerTitle: repository.NewPlayerTitleRepo(db, rdb),
+			gameProfileAch:   repository.NewGameProfileAchievementRepo(db, rdb),
+			claim:       repository.NewGameProfileAchievementClaimRepo(db, rdb),
+			gameProfileTitle: repository.NewGameProfileTitleRepo(db, rdb),
 		},
 	}
 }
@@ -132,7 +132,7 @@ func (l *AchievementLogic) GrantAchievement(ctx *gin.Context, achievementID xSno
 		return xErr
 	}
 
-	existing, xErr := l.repo.playerAch.GetByPlayerAndAchievement(ctx.Request.Context(), playerUUID, achievementID)
+	existing, xErr := l.repo.gameProfileAch.GetByGameProfileAndAchievement(ctx.Request.Context(), playerUUID, achievementID)
 	if xErr != nil {
 		return xErr
 	}
@@ -140,8 +140,8 @@ func (l *AchievementLogic) GrantAchievement(ctx *gin.Context, achievementID xSno
 		return xError.NewError(nil, xError.ParameterError, "玩家已拥有该成就", true, nil)
 	}
 
-	pa := &entity.PlayerAchievement{
-		PlayerUUID:    playerUUID,
+	pa := &entity.GameProfileAchievement{
+		GameProfileUUID:    playerUUID,
 		AchievementID: achievementID,
 		Status:        entity.AchievementStatusCompleted,
 		Progress:      1,
@@ -149,13 +149,13 @@ func (l *AchievementLogic) GrantAchievement(ctx *gin.Context, achievementID xSno
 	now := time.Now()
 	pa.CompletedAt = &now
 
-	if xErr := l.repo.playerAch.Create(ctx.Request.Context(), pa); xErr != nil {
+	if xErr := l.repo.gameProfileAch.Create(ctx.Request.Context(), pa); xErr != nil {
 		return xErr
 	}
 
 	if len(ach.RewardConfig) > 0 {
-		claim := &entity.PlayerAchievementClaim{
-			PlayerUUID:    playerUUID,
+		claim := &entity.GameProfileAchievementClaim{
+			GameProfileUUID:    playerUUID,
 			AchievementID: achievementID,
 			TitleClaimed:  false,
 		}
@@ -163,7 +163,7 @@ func (l *AchievementLogic) GrantAchievement(ctx *gin.Context, achievementID xSno
 			return xErr
 		}
 	} else {
-		if xErr := l.repo.playerAch.UpdateStatus(ctx.Request.Context(), pa.ID, entity.AchievementStatusClaimed); xErr != nil {
+		if xErr := l.repo.gameProfileAch.UpdateStatus(ctx.Request.Context(), pa.ID, entity.AchievementStatusClaimed); xErr != nil {
 			return xErr
 		}
 	}
@@ -184,7 +184,7 @@ func (l *AchievementLogic) EvaluateEvent(ctx context.Context, conditionKey strin
 			continue
 		}
 
-		pa, xErr := l.repo.playerAch.GetByPlayerAndAchievement(ctx, playerUUID, ach.ID)
+		pa, xErr := l.repo.gameProfileAch.GetByGameProfileAndAchievement(ctx, playerUUID, ach.ID)
 		if xErr != nil {
 			return xErr
 		}
@@ -194,13 +194,13 @@ func (l *AchievementLogic) EvaluateEvent(ctx context.Context, conditionKey strin
 		}
 
 		if pa == nil {
-			pa = &entity.PlayerAchievement{
-				PlayerUUID:    playerUUID,
+			pa = &entity.GameProfileAchievement{
+				GameProfileUUID:    playerUUID,
 				AchievementID: ach.ID,
 				Status:        entity.AchievementStatusInProgress,
 				Progress:      0,
 			}
-			if xErr := l.repo.playerAch.Create(ctx, pa); xErr != nil {
+			if xErr := l.repo.gameProfileAch.Create(ctx, pa); xErr != nil {
 				return xErr
 			}
 		}
@@ -209,7 +209,7 @@ func (l *AchievementLogic) EvaluateEvent(ctx context.Context, conditionKey strin
 		switch ach.Type {
 		case entity.AchievementTypeStat:
 			newProgress := pa.Progress + value
-			if xErr := l.repo.playerAch.UpdateProgress(ctx, pa.ID, newProgress); xErr != nil {
+			if xErr := l.repo.gameProfileAch.UpdateProgress(ctx, pa.ID, newProgress); xErr != nil {
 				return xErr
 			}
 			threshold := l.getThreshold(ach.ConditionParams)
@@ -217,14 +217,14 @@ func (l *AchievementLogic) EvaluateEvent(ctx context.Context, conditionKey strin
 				completed = true
 			}
 		case entity.AchievementTypeEvent:
-			if xErr := l.repo.playerAch.UpdateProgress(ctx, pa.ID, 1); xErr != nil {
+			if xErr := l.repo.gameProfileAch.UpdateProgress(ctx, pa.ID, 1); xErr != nil {
 				return xErr
 			}
 			completed = true
 		case entity.AchievementTypeSpecial:
 			threshold := l.getThreshold(ach.ConditionParams)
 			if threshold > 0 && value >= threshold {
-				if xErr := l.repo.playerAch.UpdateProgress(ctx, pa.ID, value); xErr != nil {
+				if xErr := l.repo.gameProfileAch.UpdateProgress(ctx, pa.ID, value); xErr != nil {
 					return xErr
 				}
 				completed = true
@@ -232,13 +232,13 @@ func (l *AchievementLogic) EvaluateEvent(ctx context.Context, conditionKey strin
 		}
 
 		if completed {
-			if xErr := l.repo.playerAch.UpdateStatus(ctx, pa.ID, entity.AchievementStatusCompleted); xErr != nil {
+			if xErr := l.repo.gameProfileAch.UpdateStatus(ctx, pa.ID, entity.AchievementStatusCompleted); xErr != nil {
 				return xErr
 			}
 
 			if len(ach.RewardConfig) > 0 {
-				claim := &entity.PlayerAchievementClaim{
-					PlayerUUID:    playerUUID,
+				claim := &entity.GameProfileAchievementClaim{
+					GameProfileUUID:    playerUUID,
 					AchievementID: ach.ID,
 					TitleClaimed:  false,
 				}
@@ -246,7 +246,7 @@ func (l *AchievementLogic) EvaluateEvent(ctx context.Context, conditionKey strin
 					return xErr
 				}
 			} else {
-				if xErr := l.repo.playerAch.UpdateStatus(ctx, pa.ID, entity.AchievementStatusClaimed); xErr != nil {
+				if xErr := l.repo.gameProfileAch.UpdateStatus(ctx, pa.ID, entity.AchievementStatusClaimed); xErr != nil {
 					return xErr
 				}
 			}
@@ -258,7 +258,7 @@ func (l *AchievementLogic) EvaluateEvent(ctx context.Context, conditionKey strin
 func (l *AchievementLogic) ClaimReward(ctx *gin.Context, playerUUID uuid.UUID, achievementID xSnowflake.SnowflakeID) (*apiAchievement.AchievementClaimResponse, *xError.Error) {
 	l.log.Info(ctx, "ClaimReward - 领取成就奖励")
 
-	pa, xErr := l.repo.playerAch.GetByPlayerAndAchievement(ctx.Request.Context(), playerUUID, achievementID)
+	pa, xErr := l.repo.gameProfileAch.GetByGameProfileAndAchievement(ctx.Request.Context(), playerUUID, achievementID)
 	if xErr != nil {
 		return nil, xErr
 	}
@@ -271,13 +271,13 @@ func (l *AchievementLogic) ClaimReward(ctx *gin.Context, playerUUID uuid.UUID, a
 		return nil, xErr
 	}
 
-	claim, xErr := l.repo.claim.GetByPlayerAndAchievement(ctx.Request.Context(), playerUUID, achievementID)
+	claim, xErr := l.repo.claim.GetByGameProfileAndAchievement(ctx.Request.Context(), playerUUID, achievementID)
 	if xErr != nil {
 		return nil, xErr
 	}
 
 	if claim == nil {
-		if xErr := l.repo.playerAch.UpdateStatus(ctx.Request.Context(), pa.ID, entity.AchievementStatusClaimed); xErr != nil {
+		if xErr := l.repo.gameProfileAch.UpdateStatus(ctx.Request.Context(), pa.ID, entity.AchievementStatusClaimed); xErr != nil {
 			return nil, xErr
 		}
 		return &apiAchievement.AchievementClaimResponse{
@@ -292,19 +292,19 @@ func (l *AchievementLogic) ClaimReward(ctx *gin.Context, playerUUID uuid.UUID, a
 	if err := json.Unmarshal(ach.RewardConfig, &rewardConfig); err == nil && rewardConfig.TitleID != "" {
 		if !claim.TitleClaimed {
 			titleID, _ := strconv.ParseInt(rewardConfig.TitleID, 10, 64)
-			has, xErr := l.repo.playerTitle.HasTitle(ctx.Request.Context(), playerUUID, xSnowflake.SnowflakeID(titleID))
+			has, xErr := l.repo.gameProfileTitle.HasTitle(ctx.Request.Context(), playerUUID, xSnowflake.SnowflakeID(titleID))
 			if xErr != nil {
 				return nil, xErr
 			}
 			if !has {
-				playerTitle := &entity.PlayerTitle{
-					PlayerUUID: playerUUID,
+				playerTitle := &entity.GameProfileTitle{
+					GameProfileUUID: playerUUID,
 					TitleID:    xSnowflake.SnowflakeID(titleID),
 					Source:     entity.TitleSourceAchievement,
 					IsEquipped: false,
 					GrantedAt:  time.Now(),
 				}
-				if xErr := l.repo.playerTitle.Create(ctx.Request.Context(), playerTitle); xErr != nil {
+				if xErr := l.repo.gameProfileTitle.Create(ctx.Request.Context(), playerTitle); xErr != nil {
 					return nil, xErr
 				}
 			}
@@ -314,7 +314,7 @@ func (l *AchievementLogic) ClaimReward(ctx *gin.Context, playerUUID uuid.UUID, a
 		}
 	}
 
-	if xErr := l.repo.playerAch.UpdateStatus(ctx.Request.Context(), pa.ID, entity.AchievementStatusClaimed); xErr != nil {
+	if xErr := l.repo.gameProfileAch.UpdateStatus(ctx.Request.Context(), pa.ID, entity.AchievementStatusClaimed); xErr != nil {
 		return nil, xErr
 	}
 
@@ -327,7 +327,7 @@ func (l *AchievementLogic) ClaimReward(ctx *gin.Context, playerUUID uuid.UUID, a
 func (l *AchievementLogic) GetPlayerAchievements(ctx *gin.Context, playerUUID uuid.UUID) ([]apiAchievement.PlayerAchievementResponse, *xError.Error) {
 	l.log.Info(ctx, "GetPlayerAchievements - 查询玩家成就列表")
 
-	playerAchievements, xErr := l.repo.playerAch.ListByPlayer(ctx.Request.Context(), playerUUID)
+	playerAchievements, xErr := l.repo.gameProfileAch.ListByGameProfile(ctx.Request.Context(), playerUUID)
 	if xErr != nil {
 		return nil, xErr
 	}

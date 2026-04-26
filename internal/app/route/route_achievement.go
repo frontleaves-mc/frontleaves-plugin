@@ -8,7 +8,7 @@ import (
 
 func (r *route) achievementRouter(router gin.IRouter) {
 	achAdminHandler := handler.NewAchievementAdminHandler(r.context)
-	achPlayerHandler := handler.NewAchievementPlayerHandler(r.context)
+	achGameProfileHandler := handler.NewAchievementGameProfileHandler(r.context)
 
 	adminGroup := router.Group("/admin/achievements")
 	adminGroup.Use(middleware.LoginAuth(r.context))
@@ -23,14 +23,14 @@ func (r *route) achievementRouter(router gin.IRouter) {
 	}
 
 	// 公开成就列表
-	router.GET("/achievements", achPlayerHandler.ListPublicAchievements)
+	router.GET("/achievements", achGameProfileHandler.ListPublicAchievements)
 
 	// 玩家成就
-	playerAchGroup := router.Group("/players/:uuid/achievements")
-	playerAchGroup.Use(middleware.LoginAuth(r.context))
-	playerAchGroup.Use(middleware.Player(r.context))
+	gameProfileAchGroup := router.Group("/game-profiles/:uuid/achievements")
+	gameProfileAchGroup.Use(middleware.LoginAuth(r.context))
+	gameProfileAchGroup.Use(middleware.Player(r.context))
 	{
-		playerAchGroup.GET("", achPlayerHandler.GetPlayerAchievements)
-		playerAchGroup.POST("/:achId/claim", achPlayerHandler.ClaimReward)
+		gameProfileAchGroup.GET("", achGameProfileHandler.GetPlayerAchievements)
+		gameProfileAchGroup.POST("/:achId/claim", achGameProfileHandler.ClaimReward)
 	}
 }

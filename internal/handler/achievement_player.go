@@ -11,10 +11,10 @@ import (
 	xResult "github.com/bamboo-services/bamboo-base-go/major/result"
 )
 
-type AchievementPlayerHandler handler
+type AchievementGameProfileHandler handler
 
-func NewAchievementPlayerHandler(ctx context.Context) *AchievementPlayerHandler {
-	return NewHandler[AchievementPlayerHandler](ctx, "AchievementPlayerHandler")
+func NewAchievementGameProfileHandler(ctx context.Context) *AchievementGameProfileHandler {
+	return NewHandler[AchievementGameProfileHandler](ctx, "AchievementGameProfileHandler")
 }
 
 // GetPlayerAchievements 查询玩家成就列表
@@ -28,8 +28,8 @@ func NewAchievementPlayerHandler(ctx context.Context) *AchievementPlayerHandler 
 // @Success     200  {object}  xBase.BaseResponse{data=[]apiAchievement.PlayerAchievementResponse}  "成功"
 // @Failure     400  {object}  xBase.BaseResponse                                                "请求参数错误"
 // @Failure     404  {object}  xBase.BaseResponse                                                "玩家不存在"
-// @Router      /players/:uuid/achievements [GET]
-func (h *AchievementPlayerHandler) GetPlayerAchievements(ctx *gin.Context) {
+// @Router      /game-profiles/:uuid/achievements [GET]
+func (h *AchievementGameProfileHandler) GetPlayerAchievements(ctx *gin.Context) {
 	h.log.Info(ctx, "GetPlayerAchievements - 查询玩家成就列表")
 
 	playerUUID, err := uuid.Parse(ctx.Param("uuid"))
@@ -59,8 +59,8 @@ func (h *AchievementPlayerHandler) GetPlayerAchievements(ctx *gin.Context) {
 // @Success     200  {object}  xBase.BaseResponse{data=apiAchievement.AchievementClaimResponse}  "成功"
 // @Failure     400  {object}  xBase.BaseResponse                                             "请求参数错误"
 // @Failure     404  {object}  xBase.BaseResponse                                             "成就不存在"
-// @Router      /players/:uuid/achievements/:achId/claim [POST]
-func (h *AchievementPlayerHandler) ClaimReward(ctx *gin.Context) {
+// @Router      /game-profiles/:uuid/achievements/:ach_id/claim [POST]
+func (h *AchievementGameProfileHandler) ClaimReward(ctx *gin.Context) {
 	h.log.Info(ctx, "ClaimReward - 领取成就奖励")
 
 	playerUUID, err := uuid.Parse(ctx.Param("uuid"))
@@ -69,7 +69,7 @@ func (h *AchievementPlayerHandler) ClaimReward(ctx *gin.Context) {
 		return
 	}
 
-	achIDStr := ctx.Param("achId")
+	achIDStr := ctx.Param("ach_id")
 	achID, err := strconv.ParseInt(achIDStr, 10, 64)
 	if err != nil {
 		_ = ctx.Error(xError.NewError(nil, xError.ParameterError, "无效的成就 ID", true, err))
@@ -95,7 +95,7 @@ func (h *AchievementPlayerHandler) ClaimReward(ctx *gin.Context) {
 // @Success     200  {object}  xBase.BaseResponse{data=[]apiAchievement.AchievementResponse}  "成功"
 // @Failure     400  {object}  xBase.BaseResponse                                             "请求参数错误"
 // @Router      /achievements [GET]
-func (h *AchievementPlayerHandler) ListPublicAchievements(ctx *gin.Context) {
+func (h *AchievementGameProfileHandler) ListPublicAchievements(ctx *gin.Context) {
 	h.log.Info(ctx, "ListPublicAchievements - 查询公开成就列表")
 
 	achievements, xErr := h.service.achievementLogic.ListPublicAchievements(ctx)

@@ -12,28 +12,28 @@ import (
 	apiTitle "github.com/frontleaves-mc/frontleaves-plugin/api/title"
 )
 
-type TitlePlayerHandler handler
+type TitleGameProfileHandler handler
 
-func NewTitlePlayerHandler(ctx context.Context) *TitlePlayerHandler {
-	return NewHandler[TitlePlayerHandler](ctx, "TitlePlayerHandler")
+func NewTitleGameProfileHandler(ctx context.Context) *TitleGameProfileHandler {
+	return NewHandler[TitleGameProfileHandler](ctx, "TitleGameProfileHandler")
 }
 
 // GetPlayerTitles 获取玩家拥有的所有称号
 //
 // @Summary     [玩家] 获取玩家称号列表
 // @Description 根据玩家 UUID 获取该玩家拥有的所有称号
-// @Tags        玩家-称号接口
+// @Tags        GameProfile-称号接口
 // @Accept      json
 // @Produce     json
 // @Param       uuid  path  string  true  "玩家UUID"
 // @Success     200  {object}  xBase.BaseResponse{data=[]apiTitle.PlayerTitleResponse}  "成功"
 // @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
 // @Failure     404  {object}  xBase.BaseResponse  "玩家不存在"
-// @Router      /players/:uuid/titles [GET]
-func (h *TitlePlayerHandler) GetPlayerTitles(ctx *gin.Context) {
+// @Router      /game-profiles/:uuid/titles [GET]
+func (h *TitleGameProfileHandler) GetPlayerTitles(ctx *gin.Context) {
 	h.log.Info(ctx, "GetPlayerTitles - 获取玩家称号列表")
 
-	playerUUID, xErr := h.parsePlayerUUID(ctx)
+	playerUUID, xErr := h.parseGameProfileUUID(ctx)
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return
@@ -52,7 +52,7 @@ func (h *TitlePlayerHandler) GetPlayerTitles(ctx *gin.Context) {
 //
 // @Summary     [玩家] 装备称号
 // @Description 玩家装备指定称号
-// @Tags        玩家-称号接口
+// @Tags        GameProfile-称号接口
 // @Accept      json
 // @Produce     json
 // @Param       uuid      path  string                      true  "玩家UUID"
@@ -60,11 +60,11 @@ func (h *TitlePlayerHandler) GetPlayerTitles(ctx *gin.Context) {
 // @Success     200  {object}  xBase.BaseResponse  "成功"
 // @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
 // @Failure     404  {object}  xBase.BaseResponse  "称号不存在"
-// @Router      /players/:uuid/titles/equip [PUT]
-func (h *TitlePlayerHandler) EquipTitle(ctx *gin.Context) {
+// @Router      /game-profiles/:uuid/titles/equip [PUT]
+func (h *TitleGameProfileHandler) EquipTitle(ctx *gin.Context) {
 	h.log.Info(ctx, "EquipTitle - 装备称号")
 
-	playerUUID, xErr := h.parsePlayerUUID(ctx)
+	playerUUID, xErr := h.parseGameProfileUUID(ctx)
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return
@@ -94,17 +94,17 @@ func (h *TitlePlayerHandler) EquipTitle(ctx *gin.Context) {
 //
 // @Summary     [玩家] 卸下称号
 // @Description 玩家卸下当前装备的称号
-// @Tags        玩家-称号接口
+// @Tags        GameProfile-称号接口
 // @Accept      json
 // @Produce     json
 // @Param       uuid  path  string  true  "玩家UUID"
 // @Success     200  {object}  xBase.BaseResponse  "成功"
 // @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
-// @Router      /players/:uuid/titles/equip [DELETE]
-func (h *TitlePlayerHandler) UnequipTitle(ctx *gin.Context) {
+// @Router      /game-profiles/:uuid/titles/equip [DELETE]
+func (h *TitleGameProfileHandler) UnequipTitle(ctx *gin.Context) {
 	h.log.Info(ctx, "UnequipTitle - 卸下称号")
 
-	playerUUID, xErr := h.parsePlayerUUID(ctx)
+	playerUUID, xErr := h.parseGameProfileUUID(ctx)
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return
@@ -122,18 +122,18 @@ func (h *TitlePlayerHandler) UnequipTitle(ctx *gin.Context) {
 //
 // @Summary     [玩家] 获取当前装备称号
 // @Description 根据玩家 UUID 获取该玩家当前装备的称号
-// @Tags        玩家-称号接口
+// @Tags        GameProfile-称号接口
 // @Accept      json
 // @Produce     json
 // @Param       uuid  path  string  true  "玩家UUID"
 // @Success     200  {object}  xBase.BaseResponse{data=apiTitle.EquippedTitleResponse}  "成功"
 // @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
 // @Failure     404  {object}  xBase.BaseResponse  "未装备称号"
-// @Router      /players/:uuid/titles/equipped [GET]
-func (h *TitlePlayerHandler) GetEquippedTitle(ctx *gin.Context) {
+// @Router      /game-profiles/:uuid/titles/equipped [GET]
+func (h *TitleGameProfileHandler) GetEquippedTitle(ctx *gin.Context) {
 	h.log.Info(ctx, "GetEquippedTitle - 获取当前装备称号")
 
-	playerUUID, xErr := h.parsePlayerUUID(ctx)
+	playerUUID, xErr := h.parseGameProfileUUID(ctx)
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return
@@ -148,7 +148,7 @@ func (h *TitlePlayerHandler) GetEquippedTitle(ctx *gin.Context) {
 	xResult.SuccessHasData(ctx, "查询成功", title)
 }
 
-func (h *TitlePlayerHandler) parsePlayerUUID(ctx *gin.Context) (uuid.UUID, *xError.Error) {
+func (h *TitleGameProfileHandler) parseGameProfileUUID(ctx *gin.Context) (uuid.UUID, *xError.Error) {
 	playerUUID, err := uuid.Parse(ctx.Param("uuid"))
 	if err != nil {
 		return uuid.Nil, xError.NewError(nil, xError.ParameterError, "无效的玩家 UUID", true, err)

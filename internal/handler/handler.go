@@ -9,7 +9,7 @@ import (
 
 type service struct {
 	healthLogic      *logic.HealthLogic
-	playerLogic      *logic.PlayerLogic
+	gameProfileLogic *logic.GameProfileLogic
 	titleLogic       *logic.TitleLogic
 	achievementLogic *logic.AchievementLogic
 }
@@ -34,7 +34,7 @@ func NewHandler[T IHandler](ctx context.Context, handlerName string) *T {
 		log:  xLog.WithName(xLog.NamedCONT, handlerName),
 		service: &service{
 			healthLogic:      logic.NewHealthLogic(ctx),
-			playerLogic:      logic.NewPlayerLogic(ctx),
+			gameProfileLogic: logic.NewGameProfileLogic(ctx),
 			titleLogic:       logic.NewTitleLogic(ctx),
 			achievementLogic: logic.NewAchievementLogic(ctx),
 		},

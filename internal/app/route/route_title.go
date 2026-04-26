@@ -8,7 +8,7 @@ import (
 
 func (r *route) titleRouter(router gin.IRouter) {
 	titleAdminHandler := handler.NewTitleAdminHandler(r.context)
-	titlePlayerHandler := handler.NewTitlePlayerHandler(r.context)
+	titleGameProfileHandler := handler.NewTitleGameProfileHandler(r.context)
 
 	adminGroup := router.Group("/admin/titles")
 	adminGroup.Use(middleware.LoginAuth(r.context))
@@ -23,13 +23,13 @@ func (r *route) titleRouter(router gin.IRouter) {
 		adminGroup.DELETE("/:id/assign", titleAdminHandler.RevokeTitle)
 	}
 
-	playerGroup := router.Group("/players/:uuid/titles")
-	playerGroup.Use(middleware.LoginAuth(r.context))
-	playerGroup.Use(middleware.Player(r.context))
+	gameProfileGroup := router.Group("/game-profiles/:uuid/titles")
+	gameProfileGroup.Use(middleware.LoginAuth(r.context))
+	gameProfileGroup.Use(middleware.Player(r.context))
 	{
-		playerGroup.GET("", titlePlayerHandler.GetPlayerTitles)
-		playerGroup.PUT("/equip", titlePlayerHandler.EquipTitle)
-		playerGroup.DELETE("/equip", titlePlayerHandler.UnequipTitle)
-		playerGroup.GET("/equipped", titlePlayerHandler.GetEquippedTitle)
+		gameProfileGroup.GET("", titleGameProfileHandler.GetPlayerTitles)
+		gameProfileGroup.PUT("/equip", titleGameProfileHandler.EquipTitle)
+		gameProfileGroup.DELETE("/equip", titleGameProfileHandler.UnequipTitle)
+		gameProfileGroup.GET("/equipped", titleGameProfileHandler.GetEquippedTitle)
 	}
 }

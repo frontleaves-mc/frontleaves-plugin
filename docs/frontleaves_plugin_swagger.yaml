@@ -133,7 +133,7 @@ definitions:
     - name
     - type
     type: object
-  apiPlayer.PlayerResponse:
+  apiGameProfile.GameProfileResponse:
     properties:
       group_name:
         type: string
@@ -144,7 +144,7 @@ definitions:
       uuid:
         type: string
     type: object
-  apiPlayer.UpdatePlayerGroupRequest:
+  apiGameProfile.UpdateGameProfileGroupRequest:
     properties:
       group_name:
         type: string
@@ -731,61 +731,11 @@ paths:
       summary: '[管理] 分配称号'
       tags:
       - 管理-称号接口
-  /health/ping:
+  /game-profiles:
     get:
       consumes:
       - application/json
-      description: 检查服务及基础设施运行状态，返回应用信息、数据库和 Redis 连通性
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 成功
-          schema:
-            $ref: '#/definitions/xBase.BaseResponse'
-        "400":
-          description: 请求参数错误
-          schema:
-            $ref: '#/definitions/xBase.BaseResponse'
-      summary: 健康检查
-      tags:
-      - 健康检查接口
-  /internal/players/:uuid/group:
-    put:
-      consumes:
-      - application/json
-      description: 更新指定玩家的权限组
-      parameters:
-      - description: 玩家UUID
-        in: path
-        name: uuid
-        required: true
-        type: string
-      - description: 更新权限组请求
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/apiPlayer.UpdatePlayerGroupRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 成功
-          schema:
-            $ref: '#/definitions/xBase.BaseResponse'
-        "400":
-          description: 请求参数错误
-          schema:
-            $ref: '#/definitions/xBase.BaseResponse'
-      summary: '[超管] 更新玩家权限组'
-      tags:
-      - 玩家接口
-  /players:
-    get:
-      consumes:
-      - application/json
-      description: 分页查询玩家列表
+      description: 分页查询游戏档案列表
       parameters:
       - description: 页码
         in: query
@@ -806,16 +756,16 @@ paths:
           description: 请求参数错误
           schema:
             $ref: '#/definitions/xBase.BaseResponse'
-      summary: '[玩家] 查询玩家列表'
+      summary: '[玩家] 查询游戏档案列表'
       tags:
-      - 玩家接口
-  /players/:uuid:
+      - 游戏档案接口
+  /game-profiles/:uuid:
     get:
       consumes:
       - application/json
-      description: 根据玩家 UUID 查询玩家详细信息
+      description: 根据 UUID 查询游戏档案详细信息
       parameters:
-      - description: 玩家UUID
+      - description: 档案UUID
         in: path
         name: uuid
         required: true
@@ -830,20 +780,20 @@ paths:
             - $ref: '#/definitions/xBase.BaseResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/apiPlayer.PlayerResponse'
+                  $ref: '#/definitions/apiGameProfile.GameProfileResponse'
               type: object
         "400":
           description: 请求参数错误
           schema:
             $ref: '#/definitions/xBase.BaseResponse'
         "404":
-          description: 玩家不存在
+          description: 游戏档案不存在
           schema:
             $ref: '#/definitions/xBase.BaseResponse'
-      summary: '[玩家] 查询玩家信息'
+      summary: '[玩家] 查询游戏档案信息'
       tags:
-      - 玩家接口
-  /players/:uuid/achievements:
+      - 游戏档案接口
+  /game-profiles/:uuid/achievements:
     get:
       consumes:
       - application/json
@@ -879,7 +829,7 @@ paths:
       summary: '[玩家] 查询玩家成就列表'
       tags:
       - 玩家-成就接口
-  /players/:uuid/achievements/:achId/claim:
+  /game-profiles/:uuid/achievements/:ach_id/claim:
     post:
       consumes:
       - application/json
@@ -918,7 +868,7 @@ paths:
       summary: '[玩家] 领取成就奖励'
       tags:
       - 玩家-成就接口
-  /players/:uuid/titles:
+  /game-profiles/:uuid/titles:
     get:
       consumes:
       - application/json
@@ -953,8 +903,8 @@ paths:
             $ref: '#/definitions/xBase.BaseResponse'
       summary: '[玩家] 获取玩家称号列表'
       tags:
-      - 玩家-称号接口
-  /players/:uuid/titles/equip:
+      - GameProfile-称号接口
+  /game-profiles/:uuid/titles/equip:
     delete:
       consumes:
       - application/json
@@ -978,7 +928,7 @@ paths:
             $ref: '#/definitions/xBase.BaseResponse'
       summary: '[玩家] 卸下称号'
       tags:
-      - 玩家-称号接口
+      - GameProfile-称号接口
     put:
       consumes:
       - application/json
@@ -1012,8 +962,8 @@ paths:
             $ref: '#/definitions/xBase.BaseResponse'
       summary: '[玩家] 装备称号'
       tags:
-      - 玩家-称号接口
-  /players/:uuid/titles/equipped:
+      - GameProfile-称号接口
+  /game-profiles/:uuid/titles/equipped:
     get:
       consumes:
       - application/json
@@ -1046,5 +996,55 @@ paths:
             $ref: '#/definitions/xBase.BaseResponse'
       summary: '[玩家] 获取当前装备称号'
       tags:
-      - 玩家-称号接口
+      - GameProfile-称号接口
+  /health/ping:
+    get:
+      consumes:
+      - application/json
+      description: 检查服务及基础设施运行状态，返回应用信息、数据库和 Redis 连通性
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: 健康检查
+      tags:
+      - 健康检查接口
+  /internal/game-profiles/:uuid/group:
+    put:
+      consumes:
+      - application/json
+      description: 更新指定游戏档案的权限组
+      parameters:
+      - description: 档案UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      - description: 更新权限组请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiGameProfile.UpdateGameProfileGroupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[超管] 更新游戏档案权限组'
+      tags:
+      - 游戏档案接口
 swagger: "2.0"

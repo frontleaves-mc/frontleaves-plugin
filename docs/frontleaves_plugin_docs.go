@@ -736,9 +736,9 @@ const docTemplatefrontleaves_plugin = `{
                 }
             }
         },
-        "/health/ping": {
+        "/game-profiles": {
             "get": {
-                "description": "检查服务及基础设施运行状态，返回应用信息、数据库和 Redis 连通性",
+                "description": "分页查询游戏档案列表",
                 "consumes": [
                     "application/json"
                 ],
@@ -746,85 +746,9 @@ const docTemplatefrontleaves_plugin = `{
                     "application/json"
                 ],
                 "tags": [
-                    "健康检查接口"
+                    "游戏档案接口"
                 ],
-                "summary": "健康检查",
-                "responses": {
-                    "200": {
-                        "description": "成功",
-                        "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "请求参数错误",
-                        "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/internal/players/:uuid/group": {
-            "put": {
-                "description": "更新指定玩家的权限组",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "玩家接口"
-                ],
-                "summary": "[超管] 更新玩家权限组",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "玩家UUID",
-                        "name": "uuid",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "更新权限组请求",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/apiPlayer.UpdatePlayerGroupRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "成功",
-                        "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "请求参数错误",
-                        "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/players": {
-            "get": {
-                "description": "分页查询玩家列表",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "玩家接口"
-                ],
-                "summary": "[玩家] 查询玩家列表",
+                "summary": "[玩家] 查询游戏档案列表",
                 "parameters": [
                     {
                         "type": "integer",
@@ -855,9 +779,9 @@ const docTemplatefrontleaves_plugin = `{
                 }
             }
         },
-        "/players/:uuid": {
+        "/game-profiles/:uuid": {
             "get": {
-                "description": "根据玩家 UUID 查询玩家详细信息",
+                "description": "根据 UUID 查询游戏档案详细信息",
                 "consumes": [
                     "application/json"
                 ],
@@ -865,13 +789,13 @@ const docTemplatefrontleaves_plugin = `{
                     "application/json"
                 ],
                 "tags": [
-                    "玩家接口"
+                    "游戏档案接口"
                 ],
-                "summary": "[玩家] 查询玩家信息",
+                "summary": "[玩家] 查询游戏档案信息",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "玩家UUID",
+                        "description": "档案UUID",
                         "name": "uuid",
                         "in": "path",
                         "required": true
@@ -889,7 +813,7 @@ const docTemplatefrontleaves_plugin = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/apiPlayer.PlayerResponse"
+                                            "$ref": "#/definitions/apiGameProfile.GameProfileResponse"
                                         }
                                     }
                                 }
@@ -903,7 +827,7 @@ const docTemplatefrontleaves_plugin = `{
                         }
                     },
                     "404": {
-                        "description": "玩家不存在",
+                        "description": "游戏档案不存在",
                         "schema": {
                             "$ref": "#/definitions/xBase.BaseResponse"
                         }
@@ -911,7 +835,7 @@ const docTemplatefrontleaves_plugin = `{
                 }
             }
         },
-        "/players/:uuid/achievements": {
+        "/game-profiles/:uuid/achievements": {
             "get": {
                 "description": "根据玩家 UUID 查询该玩家已获得的所有成就",
                 "consumes": [
@@ -970,7 +894,7 @@ const docTemplatefrontleaves_plugin = `{
                 }
             }
         },
-        "/players/:uuid/achievements/:achId/claim": {
+        "/game-profiles/:uuid/achievements/:ach_id/claim": {
             "post": {
                 "description": "玩家领取指定成就的奖励",
                 "consumes": [
@@ -1033,7 +957,7 @@ const docTemplatefrontleaves_plugin = `{
                 }
             }
         },
-        "/players/:uuid/titles": {
+        "/game-profiles/:uuid/titles": {
             "get": {
                 "description": "根据玩家 UUID 获取该玩家拥有的所有称号",
                 "consumes": [
@@ -1043,7 +967,7 @@ const docTemplatefrontleaves_plugin = `{
                     "application/json"
                 ],
                 "tags": [
-                    "玩家-称号接口"
+                    "GameProfile-称号接口"
                 ],
                 "summary": "[玩家] 获取玩家称号列表",
                 "parameters": [
@@ -1092,7 +1016,7 @@ const docTemplatefrontleaves_plugin = `{
                 }
             }
         },
-        "/players/:uuid/titles/equip": {
+        "/game-profiles/:uuid/titles/equip": {
             "put": {
                 "description": "玩家装备指定称号",
                 "consumes": [
@@ -1102,7 +1026,7 @@ const docTemplatefrontleaves_plugin = `{
                     "application/json"
                 ],
                 "tags": [
-                    "玩家-称号接口"
+                    "GameProfile-称号接口"
                 ],
                 "summary": "[玩家] 装备称号",
                 "parameters": [
@@ -1153,7 +1077,7 @@ const docTemplatefrontleaves_plugin = `{
                     "application/json"
                 ],
                 "tags": [
-                    "玩家-称号接口"
+                    "GameProfile-称号接口"
                 ],
                 "summary": "[玩家] 卸下称号",
                 "parameters": [
@@ -1181,7 +1105,7 @@ const docTemplatefrontleaves_plugin = `{
                 }
             }
         },
-        "/players/:uuid/titles/equipped": {
+        "/game-profiles/:uuid/titles/equipped": {
             "get": {
                 "description": "根据玩家 UUID 获取该玩家当前装备的称号",
                 "consumes": [
@@ -1191,7 +1115,7 @@ const docTemplatefrontleaves_plugin = `{
                     "application/json"
                 ],
                 "tags": [
-                    "玩家-称号接口"
+                    "GameProfile-称号接口"
                 ],
                 "summary": "[玩家] 获取当前装备称号",
                 "parameters": [
@@ -1230,6 +1154,82 @@ const docTemplatefrontleaves_plugin = `{
                     },
                     "404": {
                         "description": "未装备称号",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/health/ping": {
+            "get": {
+                "description": "检查服务及基础设施运行状态，返回应用信息、数据库和 Redis 连通性",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "健康检查接口"
+                ],
+                "summary": "健康检查",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/internal/game-profiles/:uuid/group": {
+            "put": {
+                "description": "更新指定游戏档案的权限组",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "游戏档案接口"
+                ],
+                "summary": "[超管] 更新游戏档案权限组",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "档案UUID",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "更新权限组请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apiGameProfile.UpdateGameProfileGroupRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
                         "schema": {
                             "$ref": "#/definitions/xBase.BaseResponse"
                         }
@@ -1437,7 +1437,7 @@ const docTemplatefrontleaves_plugin = `{
                 }
             }
         },
-        "apiPlayer.PlayerResponse": {
+        "apiGameProfile.GameProfileResponse": {
             "type": "object",
             "properties": {
                 "group_name": {
@@ -1454,7 +1454,7 @@ const docTemplatefrontleaves_plugin = `{
                 }
             }
         },
-        "apiPlayer.UpdatePlayerGroupRequest": {
+        "apiGameProfile.UpdateGameProfileGroupRequest": {
             "type": "object",
             "required": [
                 "group_name"

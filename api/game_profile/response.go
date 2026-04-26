@@ -1,8 +1,8 @@
-package apiPlayer
+package apiGameProfile
 
 import "time"
 
-type PlayerResponse struct {
+type GameProfileResponse struct {
 	UUID       string    `json:"uuid"`
 	Username   string    `json:"username"`
 	GroupName  string    `json:"group_name"`

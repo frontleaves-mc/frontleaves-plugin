@@ -3,6 +3,8 @@ package bConst
 import xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 
 const (
+	GeneUser xSnowflake.Gene = 31 // 用户
+
 	Demo xSnowflake.Gene = 32
 
 	// 称号系统 + 成就系统
