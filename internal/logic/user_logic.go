@@ -31,7 +31,7 @@ func NewUserLogic(ctx context.Context) *UserLogic {
 			log: xLog.WithName(xLog.NamedLOGC, "UserLogic"),
 		},
 		repo: userRepo{
-			user: repository.NewUserRepo(db),
+			user: repository.NewUserRepo(db, rdb),
 		},
 	}
 }

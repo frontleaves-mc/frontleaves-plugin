@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	xCtx "github.com/bamboo-services/bamboo-base-go/defined/context"
+	xAsync "github.com/bamboo-services/bamboo-base-go/plugins/async"
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
@@ -15,7 +15,7 @@ import (
 	pluginGrpc "github.com/frontleaves-mc/frontleaves-plugin/internal/app/grpc"
 	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/logic"
-	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository/cache"
+	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository"
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,7 +24,7 @@ func LoginAuth(ctx context.Context) gin.HandlerFunc {
 
 	authClient := xCtxUtil.MustGet[*pluginGrpc.AuthClient](ctx, bConst.CtxAuthClientKey)
 	rdb := xCtxUtil.MustGetRDB(ctx)
-	authUserCache := cache.NewAuthUserCache(rdb)
+	authUserRepo := repository.NewAuthUserRepo(rdb)
 
 	return func(c *gin.Context) {
 		log.Info(c, "验证用户登录状态")
@@ -41,10 +41,10 @@ func LoginAuth(ctx context.Context) gin.HandlerFunc {
 			return
 		}
 
-		// 缓存优先
-		cachedUser, found, err := authUserCache.Get(c, accessToken)
-		if err != nil {
-			log.Warn(c, "读取认证缓存失败: "+err.Error())
+		// 通过 Repository 层读取缓存
+		cachedUser, found, xErr := authUserRepo.GetCachedAuth(c, accessToken)
+		if xErr != nil {
+			log.Warn(c, "读取认证缓存失败: "+xErr.Error())
 		}
 		if found && cachedUser != nil {
 			if cachedUser.HasBan {
@@ -63,35 +63,27 @@ func LoginAuth(ctx context.Context) gin.HandlerFunc {
 			return
 		}
 
-		userInfo := &cache.AuthUserInfo{
+		userInfo := &repository.AuthUserInfo{
 			UserID:   resp.GetUserId(),
 			Username: resp.GetUsername(),
 			RoleName: resp.GetRoleName(),
 			HasBan:   resp.GetHasBan(),
 		}
 
-		// 写入本地缓存
-		if cacheErr := authUserCache.Set(c, accessToken, userInfo); cacheErr != nil {
+		// 通过 Repository 层写入缓存
+		if cacheErr := authUserRepo.SetCachedAuth(c, accessToken, userInfo); cacheErr != nil {
 			log.Warn(c, "写入认证缓存失败: "+cacheErr.Error())
 		}
 
 		injectUser(c, userInfo)
 
 		// 异步同步 User + GameProfile 到本地数据库
-		go syncUserAndGameProfiles(detachContext(ctx), authClient, userInfo.UserID, log)
+		xAsync.Async(ctx, func(asyncCtx context.Context) {
+			syncUserAndGameProfiles(asyncCtx, authClient, userInfo.UserID, log)
+		})
 
 		c.Next()
 	}
-}
-
-// detachContext 从父 context 复制基础设施值（DB、Redis、Snowflake）到独立的新 context，
-// 不共享取消通道，确保协程在请求结束后仍可独立运行。
-func detachContext(parent context.Context) context.Context {
-	detached := context.Background()
-	if nodeList := parent.Value(xCtx.RegNodeKey); nodeList != nil {
-		detached = context.WithValue(detached, xCtx.RegNodeKey, nodeList)
-	}
-	return detached
 }
 
 func syncUserAndGameProfiles(detachedCtx context.Context, authClient *pluginGrpc.AuthClient, userIDStr string, log *xLog.LogNamedLogger) {
@@ -128,7 +120,7 @@ func syncUserAndGameProfiles(detachedCtx context.Context, authClient *pluginGrpc
 	}
 }
 
-func injectUser(c *gin.Context, info *cache.AuthUserInfo) {
+func injectUser(c *gin.Context, info *repository.AuthUserInfo) {
 	newCtx := context.WithValue(c.Request.Context(), bConst.CtxAuthUserKey, info)
 	c.Request = c.Request.WithContext(newCtx)
 }

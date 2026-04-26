@@ -9,7 +9,8 @@ import (
 type RedisKey string
 
 const (
-	CacheAuthUser RedisKey = "auth:user:%s"
+	CacheAuthUser   RedisKey = "auth:user:%s"      // 认证缓存（md5 token）
+	CacheUserEntity RedisKey = "user:entity:%s"    // 用户实体缓存（snowflake ID）
 )
 
 func (k RedisKey) Get(args ...interface{}) RedisKey {

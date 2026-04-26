@@ -6,6 +6,8 @@ github.com/bamboo-services/bamboo-base-go/defined v1.0.0-202603141642 h1:gt3QVVw
 github.com/bamboo-services/bamboo-base-go/defined v1.0.0-202603141642/go.mod h1:HeZrdm3jyUYr9QK0ciS9Qs0aXKanwuxnW40XZi1DS3M=
 github.com/bamboo-services/bamboo-base-go/major v1.0.0-202604011539 h1:hy1GtT5aKbVMz5fR10IQfV9XIUKlXDjy/5YQ4IZiHQg=
 github.com/bamboo-services/bamboo-base-go/major v1.0.0-202604011539/go.mod h1:mYVap0UH3HPjxM1C3JhX3rhPgYOBACJhaonNSG8zQok=
+github.com/bamboo-services/bamboo-base-go/plugins/async v1.0.0-202604262346 h1:xgv/0RJbkysU3sPjjzjMJnKtcWrGk1e1EEnzjHQpZN4=
+github.com/bamboo-services/bamboo-base-go/plugins/async v1.0.0-202604262346/go.mod h1:dAOy6UVGLevNoIqjh/pNng7VWlsDCRGLTirZzS6Tfx8=
 github.com/bamboo-services/bamboo-base-go/plugins/grpc v1.0.0-202604011543 h1:cxVNnyzut8tdPdf0p09d21kffI4RM5zwkhdD5uK5zNI=
 github.com/bamboo-services/bamboo-base-go/plugins/grpc v1.0.0-202604011543/go.mod h1:CdoG2667Igqfrw51xQd4WAQjj97bsKg0ueNoaJNQxx4=
 github.com/bsm/ginkgo/v2 v2.12.0 h1:Ny8MWAHyOepLGlLKYmXG4IEkioBysk6GpaRTLC8zwWs=

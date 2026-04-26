@@ -8,7 +8,7 @@ import (
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
 	xResult "github.com/bamboo-services/bamboo-base-go/major/result"
 	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
-	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository/cache"
+	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,7 +18,7 @@ func RequireRole(ctx context.Context, allowedRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log.Info(c, "检查用户角色权限")
 
-		userInfo, ok := c.Request.Context().Value(bConst.CtxAuthUserKey).(*cache.AuthUserInfo)
+		userInfo, ok := c.Request.Context().Value(bConst.CtxAuthUserKey).(*repository.AuthUserInfo)
 		if !ok || userInfo == nil {
 			xResult.AbortError(c, xError.Unauthorized, "未获取到用户信息", nil)
 			return
