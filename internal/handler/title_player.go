@@ -39,7 +39,7 @@ func (h *TitleGameProfileHandler) GetPlayerTitles(ctx *gin.Context) {
 		return
 	}
 
-	titles, xErr := h.service.titleLogic.GetPlayerTitles(ctx, playerUUID)
+	titles, xErr := h.service.titleLogic.GetPlayerTitles(ctx.Request.Context(), playerUUID)
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return
@@ -82,7 +82,7 @@ func (h *TitleGameProfileHandler) EquipTitle(ctx *gin.Context) {
 		return
 	}
 
-	if xErr := h.service.titleLogic.EquipTitle(ctx, playerUUID, xSnowflake.SnowflakeID(titleID)); xErr != nil {
+	if xErr := h.service.titleLogic.EquipTitle(ctx.Request.Context(), playerUUID, xSnowflake.SnowflakeID(titleID)); xErr != nil {
 		_ = ctx.Error(xErr)
 		return
 	}
@@ -110,7 +110,7 @@ func (h *TitleGameProfileHandler) UnequipTitle(ctx *gin.Context) {
 		return
 	}
 
-	if xErr := h.service.titleLogic.UnequipTitle(ctx, playerUUID); xErr != nil {
+	if xErr := h.service.titleLogic.UnequipTitle(ctx.Request.Context(), playerUUID); xErr != nil {
 		_ = ctx.Error(xErr)
 		return
 	}
@@ -139,7 +139,7 @@ func (h *TitleGameProfileHandler) GetEquippedTitle(ctx *gin.Context) {
 		return
 	}
 
-	title, xErr := h.service.titleLogic.GetEquippedTitle(ctx, playerUUID)
+	title, xErr := h.service.titleLogic.GetEquippedTitle(ctx.Request.Context(), playerUUID)
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return

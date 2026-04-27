@@ -11,7 +11,6 @@ import (
 	apiTitle "github.com/frontleaves-mc/frontleaves-plugin/api/title"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository"
-	"github.com/gin-gonic/gin"
 )
 
 type titleRepo struct {
@@ -41,7 +40,7 @@ func NewTitleLogic(ctx context.Context) *TitleLogic {
 	}
 }
 
-func (l *TitleLogic) CreateTitle(ctx *gin.Context, name, description string, titleType entity.TitleType, permissionGroup *string) (*apiTitle.TitleResponse, *xError.Error) {
+func (l *TitleLogic) CreateTitle(ctx context.Context, name, description string, titleType entity.TitleType, permissionGroup *string) (*apiTitle.TitleResponse, *xError.Error) {
 	l.log.Info(ctx, "CreateTitle - 创建称号")
 
 	title := &entity.Title{
@@ -52,17 +51,17 @@ func (l *TitleLogic) CreateTitle(ctx *gin.Context, name, description string, tit
 		IsActive:        true,
 	}
 
-	if xErr := l.repo.title.Create(ctx.Request.Context(), title); xErr != nil {
+	if xErr := l.repo.title.Create(ctx, title); xErr != nil {
 		return nil, xErr
 	}
 
 	return l.toTitleResponse(title), nil
 }
 
-func (l *TitleLogic) UpdateTitle(ctx *gin.Context, id xSnowflake.SnowflakeID, name, description string, titleType entity.TitleType, permissionGroup *string, isActive *bool) (*apiTitle.TitleResponse, *xError.Error) {
+func (l *TitleLogic) UpdateTitle(ctx context.Context, id xSnowflake.SnowflakeID, name, description string, titleType entity.TitleType, permissionGroup *string, isActive *bool) (*apiTitle.TitleResponse, *xError.Error) {
 	l.log.Info(ctx, "UpdateTitle - 更新称号")
 
-	title, xErr := l.repo.title.GetByID(ctx.Request.Context(), id)
+	title, xErr := l.repo.title.GetByID(ctx, id)
 	if xErr != nil {
 		return nil, xErr
 	}
@@ -75,31 +74,31 @@ func (l *TitleLogic) UpdateTitle(ctx *gin.Context, id xSnowflake.SnowflakeID, na
 		title.IsActive = *isActive
 	}
 
-	if xErr := l.repo.title.Update(ctx.Request.Context(), title); xErr != nil {
+	if xErr := l.repo.title.Update(ctx, title); xErr != nil {
 		return nil, xErr
 	}
 
 	return l.toTitleResponse(title), nil
 }
 
-func (l *TitleLogic) DeleteTitle(ctx *gin.Context, id xSnowflake.SnowflakeID) *xError.Error {
+func (l *TitleLogic) DeleteTitle(ctx context.Context, id xSnowflake.SnowflakeID) *xError.Error {
 	l.log.Info(ctx, "DeleteTitle - 删除称号")
-	return l.repo.title.Delete(ctx.Request.Context(), id)
+	return l.repo.title.Delete(ctx, id)
 }
 
-func (l *TitleLogic) GetTitle(ctx *gin.Context, id xSnowflake.SnowflakeID) (*apiTitle.TitleResponse, *xError.Error) {
+func (l *TitleLogic) GetTitle(ctx context.Context, id xSnowflake.SnowflakeID) (*apiTitle.TitleResponse, *xError.Error) {
 	l.log.Info(ctx, "GetTitle - 查询称号")
-	title, xErr := l.repo.title.GetByID(ctx.Request.Context(), id)
+	title, xErr := l.repo.title.GetByID(ctx, id)
 	if xErr != nil {
 		return nil, xErr
 	}
 	return l.toTitleResponse(title), nil
 }
 
-func (l *TitleLogic) ListTitles(ctx *gin.Context, page, pageSize int, titleType *int16) ([]apiTitle.TitleResponse, int64, *xError.Error) {
+func (l *TitleLogic) ListTitles(ctx context.Context, page, pageSize int, titleType *int16) ([]apiTitle.TitleResponse, int64, *xError.Error) {
 	l.log.Info(ctx, "ListTitles - 查询称号列表")
 
-	titles, total, xErr := l.repo.title.List(ctx.Request.Context(), page, pageSize, titleType)
+	titles, total, xErr := l.repo.title.List(ctx, page, pageSize, titleType)
 	if xErr != nil {
 		return nil, 0, xErr
 	}
@@ -111,10 +110,10 @@ func (l *TitleLogic) ListTitles(ctx *gin.Context, page, pageSize int, titleType 
 	return resp, total, nil
 }
 
-func (l *TitleLogic) AssignTitleToPlayer(ctx *gin.Context, titleID xSnowflake.SnowflakeID, playerUUID uuid.UUID) *xError.Error {
+func (l *TitleLogic) AssignTitleToPlayer(ctx context.Context, titleID xSnowflake.SnowflakeID, playerUUID uuid.UUID) *xError.Error {
 	l.log.Info(ctx, "AssignTitleToPlayer - 分配称号给玩家")
 
-	has, xErr := l.repo.gameProfileTitle.HasTitle(ctx.Request.Context(), playerUUID, titleID)
+	has, xErr := l.repo.gameProfileTitle.HasTitle(ctx, playerUUID, titleID)
 	if xErr != nil {
 		return xErr
 	}
@@ -129,18 +128,18 @@ func (l *TitleLogic) AssignTitleToPlayer(ctx *gin.Context, titleID xSnowflake.Sn
 		IsEquipped: false,
 	}
 
-	return l.repo.gameProfileTitle.Create(ctx.Request.Context(), playerTitle)
+	return l.repo.gameProfileTitle.Create(ctx, playerTitle)
 }
 
-func (l *TitleLogic) RevokeTitleFromPlayer(ctx *gin.Context, titleID xSnowflake.SnowflakeID, playerUUID uuid.UUID) *xError.Error {
+func (l *TitleLogic) RevokeTitleFromPlayer(ctx context.Context, titleID xSnowflake.SnowflakeID, playerUUID uuid.UUID) *xError.Error {
 	l.log.Info(ctx, "RevokeTitleFromPlayer - 撤销玩家称号")
-	return l.repo.gameProfileTitle.Delete(ctx.Request.Context(), playerUUID, titleID)
+	return l.repo.gameProfileTitle.Delete(ctx, playerUUID, titleID)
 }
 
-func (l *TitleLogic) EquipTitle(ctx *gin.Context, playerUUID uuid.UUID, titleID xSnowflake.SnowflakeID) *xError.Error {
+func (l *TitleLogic) EquipTitle(ctx context.Context, playerUUID uuid.UUID, titleID xSnowflake.SnowflakeID) *xError.Error {
 	l.log.Info(ctx, "EquipTitle - 装备称号")
 
-	has, xErr := l.repo.gameProfileTitle.HasTitle(ctx.Request.Context(), playerUUID, titleID)
+	has, xErr := l.repo.gameProfileTitle.HasTitle(ctx, playerUUID, titleID)
 	if xErr != nil {
 		return xErr
 	}
@@ -148,18 +147,18 @@ func (l *TitleLogic) EquipTitle(ctx *gin.Context, playerUUID uuid.UUID, titleID 
 		return xError.NewError(nil, xError.ParameterError, "玩家未拥有该称号", true, nil)
 	}
 
-	return l.repo.gameProfileTitle.EquipTitle(ctx.Request.Context(), l.db, playerUUID, titleID)
+	return l.repo.gameProfileTitle.EquipTitle(ctx, l.db, playerUUID, titleID)
 }
 
-func (l *TitleLogic) UnequipTitle(ctx *gin.Context, playerUUID uuid.UUID) *xError.Error {
+func (l *TitleLogic) UnequipTitle(ctx context.Context, playerUUID uuid.UUID) *xError.Error {
 	l.log.Info(ctx, "UnequipTitle - 卸下称号")
-	return l.repo.gameProfileTitle.UnequipTitle(ctx.Request.Context(), l.db, playerUUID)
+	return l.repo.gameProfileTitle.UnequipTitle(ctx, l.db, playerUUID)
 }
 
-func (l *TitleLogic) GetPlayerTitles(ctx *gin.Context, playerUUID uuid.UUID) ([]apiTitle.PlayerTitleResponse, *xError.Error) {
+func (l *TitleLogic) GetPlayerTitles(ctx context.Context, playerUUID uuid.UUID) ([]apiTitle.PlayerTitleResponse, *xError.Error) {
 	l.log.Info(ctx, "GetPlayerTitles - 查询玩家拥有的称号")
 
-	playerTitles, xErr := l.repo.gameProfileTitle.GetByGameProfileUUID(ctx.Request.Context(), playerUUID)
+	playerTitles, xErr := l.repo.gameProfileTitle.GetByGameProfileUUID(ctx, playerUUID)
 	if xErr != nil {
 		return nil, xErr
 	}
@@ -176,10 +175,10 @@ func (l *TitleLogic) GetPlayerTitles(ctx *gin.Context, playerUUID uuid.UUID) ([]
 	return resp, nil
 }
 
-func (l *TitleLogic) GetEquippedTitle(ctx *gin.Context, playerUUID uuid.UUID) (*apiTitle.EquippedTitleResponse, *xError.Error) {
+func (l *TitleLogic) GetEquippedTitle(ctx context.Context, playerUUID uuid.UUID) (*apiTitle.EquippedTitleResponse, *xError.Error) {
 	l.log.Info(ctx, "GetEquippedTitle - 查询装备的称号")
 
-	playerTitle, xErr := l.repo.gameProfileTitle.GetEquippedByGameProfileUUID(ctx.Request.Context(), playerUUID)
+	playerTitle, xErr := l.repo.gameProfileTitle.GetEquippedByGameProfileUUID(ctx, playerUUID)
 	if xErr != nil {
 		return nil, xErr
 	}

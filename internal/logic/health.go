@@ -10,7 +10,6 @@ import (
 	xEnv "github.com/bamboo-services/bamboo-base-go/defined/env"
 	apiHealth "github.com/frontleaves-mc/frontleaves-plugin/api/health"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository"
-	"github.com/gin-gonic/gin"
 )
 
 type healthRepo struct {
@@ -38,15 +37,15 @@ func NewHealthLogic(ctx context.Context) *HealthLogic {
 	}
 }
 
-func (l *HealthLogic) Ping(ctx *gin.Context) (*apiHealth.PingResponse, *xError.Error) {
+func (l *HealthLogic) Ping(ctx context.Context) (*apiHealth.PingResponse, *xError.Error) {
 	l.log.Info(ctx, "Ping - 执行健康检查")
 
-	databaseReady, xErr := l.repo.health.DatabaseReady(ctx.Request.Context())
+	databaseReady, xErr := l.repo.health.DatabaseReady(ctx)
 	if xErr != nil {
 		return nil, xErr
 	}
 
-	redisReady, xErr := l.repo.health.RedisReady(ctx.Request.Context())
+	redisReady, xErr := l.repo.health.RedisReady(ctx)
 	if xErr != nil {
 		return nil, xErr
 	}

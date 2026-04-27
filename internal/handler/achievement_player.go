@@ -4,11 +4,11 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	xResult "github.com/bamboo-services/bamboo-base-go/major/result"
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type AchievementGameProfileHandler handler
@@ -38,7 +38,7 @@ func (h *AchievementGameProfileHandler) GetPlayerAchievements(ctx *gin.Context) 
 		return
 	}
 
-	achievements, xErr := h.service.achievementLogic.GetPlayerAchievements(ctx, playerUUID)
+	achievements, xErr := h.service.achievementLogic.GetPlayerAchievements(ctx.Request.Context(), playerUUID)
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return
@@ -76,7 +76,7 @@ func (h *AchievementGameProfileHandler) ClaimReward(ctx *gin.Context) {
 		return
 	}
 
-	claim, xErr := h.service.achievementLogic.ClaimReward(ctx, playerUUID, xSnowflake.SnowflakeID(achID))
+	claim, xErr := h.service.achievementLogic.ClaimReward(ctx.Request.Context(), playerUUID, xSnowflake.SnowflakeID(achID))
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return
@@ -87,7 +87,7 @@ func (h *AchievementGameProfileHandler) ClaimReward(ctx *gin.Context) {
 
 // ListPublicAchievements 查询公开成就列表
 //
-// @Summary     查询公开成就列表
+// @Summary     [公共] 查询公开成就列表
 // @Description 查询所有公开可查看的成就列表
 // @Tags        成就接口
 // @Accept      json
@@ -98,7 +98,7 @@ func (h *AchievementGameProfileHandler) ClaimReward(ctx *gin.Context) {
 func (h *AchievementGameProfileHandler) ListPublicAchievements(ctx *gin.Context) {
 	h.log.Info(ctx, "ListPublicAchievements - 查询公开成就列表")
 
-	achievements, xErr := h.service.achievementLogic.ListPublicAchievements(ctx)
+	achievements, xErr := h.service.achievementLogic.ListPublicAchievements(ctx.Request.Context())
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return

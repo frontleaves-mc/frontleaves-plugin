@@ -37,7 +37,7 @@ func (h *GameProfileHandler) GetGameProfile(ctx *gin.Context) {
 		return
 	}
 
-	gp, xErr := h.service.gameProfileLogic.GetPlayer(ctx, uuidVal)
+	gp, xErr := h.service.gameProfileLogic.GetPlayer(ctx.Request.Context(), uuidVal)
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return
@@ -70,7 +70,7 @@ func (h *GameProfileHandler) ListGameProfiles(ctx *gin.Context) {
 		pageSize = 20
 	}
 
-	gps, total, xErr := h.service.gameProfileLogic.ListPlayers(ctx, page, pageSize)
+	gps, total, xErr := h.service.gameProfileLogic.ListPlayers(ctx.Request.Context(), page, pageSize)
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return

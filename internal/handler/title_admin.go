@@ -39,7 +39,7 @@ func (h *TitleAdminHandler) CreateTitle(ctx *gin.Context) {
 		return
 	}
 
-	title, xErr := h.service.titleLogic.CreateTitle(ctx, req.Name, req.Description, entity.TitleType(req.Type), req.PermissionGroup)
+	title, xErr := h.service.titleLogic.CreateTitle(ctx.Request.Context(), req.Name, req.Description, entity.TitleType(req.Type), req.PermissionGroup)
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return
@@ -76,7 +76,7 @@ func (h *TitleAdminHandler) UpdateTitle(ctx *gin.Context) {
 		return
 	}
 
-	title, xErr := h.service.titleLogic.UpdateTitle(ctx, titleID, req.Name, req.Description, entity.TitleType(req.Type), req.PermissionGroup, req.IsActive)
+	title, xErr := h.service.titleLogic.UpdateTitle(ctx.Request.Context(), titleID, req.Name, req.Description, entity.TitleType(req.Type), req.PermissionGroup, req.IsActive)
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return
@@ -106,7 +106,7 @@ func (h *TitleAdminHandler) DeleteTitle(ctx *gin.Context) {
 		return
 	}
 
-	if xErr := h.service.titleLogic.DeleteTitle(ctx, titleID); xErr != nil {
+	if xErr := h.service.titleLogic.DeleteTitle(ctx.Request.Context(), titleID); xErr != nil {
 		_ = ctx.Error(xErr)
 		return
 	}
@@ -135,7 +135,7 @@ func (h *TitleAdminHandler) GetTitle(ctx *gin.Context) {
 		return
 	}
 
-	title, xErr := h.service.titleLogic.GetTitle(ctx, titleID)
+	title, xErr := h.service.titleLogic.GetTitle(ctx.Request.Context(), titleID)
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return
@@ -176,7 +176,7 @@ func (h *TitleAdminHandler) ListTitles(ctx *gin.Context) {
 		titleType = &tv
 	}
 
-	titles, total, xErr := h.service.titleLogic.ListTitles(ctx, page, pageSize, titleType)
+	titles, total, xErr := h.service.titleLogic.ListTitles(ctx.Request.Context(), page, pageSize, titleType)
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return
@@ -224,7 +224,7 @@ func (h *TitleAdminHandler) AssignTitle(ctx *gin.Context) {
 		return
 	}
 
-	if xErr := h.service.titleLogic.AssignTitleToPlayer(ctx, titleID, playerUUID); xErr != nil {
+	if xErr := h.service.titleLogic.AssignTitleToPlayer(ctx.Request.Context(), titleID, playerUUID); xErr != nil {
 		_ = ctx.Error(xErr)
 		return
 	}
@@ -266,7 +266,7 @@ func (h *TitleAdminHandler) RevokeTitle(ctx *gin.Context) {
 		return
 	}
 
-	if xErr := h.service.titleLogic.RevokeTitleFromPlayer(ctx, titleID, playerUUID); xErr != nil {
+	if xErr := h.service.titleLogic.RevokeTitleFromPlayer(ctx.Request.Context(), titleID, playerUUID); xErr != nil {
 		_ = ctx.Error(xErr)
 		return
 	}

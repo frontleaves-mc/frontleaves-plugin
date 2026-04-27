@@ -9,7 +9,6 @@ import (
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository"
-	"github.com/gin-gonic/gin"
 )
 
 type userRepo struct {
@@ -36,13 +35,13 @@ func NewUserLogic(ctx context.Context) *UserLogic {
 	}
 }
 
-func (l *UserLogic) Upsert(ctx *gin.Context, userID xSnowflake.SnowflakeID, username string) error {
+func (l *UserLogic) Upsert(ctx context.Context, userID xSnowflake.SnowflakeID, username string) error {
 	l.log.Info(ctx, "Upsert - 同步用户信息")
 	user := &entity.User{
 		BaseEntity: xModels.BaseEntity{ID: userID},
 		Username:   username,
 	}
-	if xErr := l.repo.user.Upsert(ctx.Request.Context(), user); xErr != nil {
+	if xErr := l.repo.user.Upsert(ctx, user); xErr != nil {
 		l.log.Warn(ctx, "同步用户失败: "+xErr.Error())
 		return xErr
 	}

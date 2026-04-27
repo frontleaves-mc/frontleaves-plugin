@@ -14,7 +14,6 @@ import (
 	apiAchievement "github.com/frontleaves-mc/frontleaves-plugin/api/achievement"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository"
-	"github.com/gin-gonic/gin"
 )
 
 type achievementRepo struct {
@@ -48,7 +47,7 @@ func NewAchievementLogic(ctx context.Context) *AchievementLogic {
 	}
 }
 
-func (l *AchievementLogic) CreateAchievement(ctx *gin.Context, name, description string, achType entity.AchievementType, conditionKey string, conditionParams, rewardConfig json.RawMessage, sortOrder int) (*apiAchievement.AchievementResponse, *xError.Error) {
+func (l *AchievementLogic) CreateAchievement(ctx context.Context, name, description string, achType entity.AchievementType, conditionKey string, conditionParams, rewardConfig json.RawMessage, sortOrder int) (*apiAchievement.AchievementResponse, *xError.Error) {
 	l.log.Info(ctx, "CreateAchievement - 创建成就")
 
 	ach := &entity.Achievement{
@@ -62,17 +61,17 @@ func (l *AchievementLogic) CreateAchievement(ctx *gin.Context, name, description
 		SortOrder:       sortOrder,
 	}
 
-	if xErr := l.repo.achievement.Create(ctx.Request.Context(), ach); xErr != nil {
+	if xErr := l.repo.achievement.Create(ctx, ach); xErr != nil {
 		return nil, xErr
 	}
 
 	return l.toAchievementResponse(ach), nil
 }
 
-func (l *AchievementLogic) UpdateAchievement(ctx *gin.Context, id xSnowflake.SnowflakeID, name, description string, achType entity.AchievementType, conditionKey string, conditionParams, rewardConfig json.RawMessage, sortOrder int, isActive *bool) (*apiAchievement.AchievementResponse, *xError.Error) {
+func (l *AchievementLogic) UpdateAchievement(ctx context.Context, id xSnowflake.SnowflakeID, name, description string, achType entity.AchievementType, conditionKey string, conditionParams, rewardConfig json.RawMessage, sortOrder int, isActive *bool) (*apiAchievement.AchievementResponse, *xError.Error) {
 	l.log.Info(ctx, "UpdateAchievement - 更新成就")
 
-	ach, xErr := l.repo.achievement.GetByID(ctx.Request.Context(), id)
+	ach, xErr := l.repo.achievement.GetByID(ctx, id)
 	if xErr != nil {
 		return nil, xErr
 	}
@@ -88,31 +87,31 @@ func (l *AchievementLogic) UpdateAchievement(ctx *gin.Context, id xSnowflake.Sno
 		ach.IsActive = *isActive
 	}
 
-	if xErr := l.repo.achievement.Update(ctx.Request.Context(), ach); xErr != nil {
+	if xErr := l.repo.achievement.Update(ctx, ach); xErr != nil {
 		return nil, xErr
 	}
 
 	return l.toAchievementResponse(ach), nil
 }
 
-func (l *AchievementLogic) DeleteAchievement(ctx *gin.Context, id xSnowflake.SnowflakeID) *xError.Error {
+func (l *AchievementLogic) DeleteAchievement(ctx context.Context, id xSnowflake.SnowflakeID) *xError.Error {
 	l.log.Info(ctx, "DeleteAchievement - 删除成就")
-	return l.repo.achievement.Delete(ctx.Request.Context(), id)
+	return l.repo.achievement.Delete(ctx, id)
 }
 
-func (l *AchievementLogic) GetAchievement(ctx *gin.Context, id xSnowflake.SnowflakeID) (*apiAchievement.AchievementResponse, *xError.Error) {
+func (l *AchievementLogic) GetAchievement(ctx context.Context, id xSnowflake.SnowflakeID) (*apiAchievement.AchievementResponse, *xError.Error) {
 	l.log.Info(ctx, "GetAchievement - 查询成就")
-	ach, xErr := l.repo.achievement.GetByID(ctx.Request.Context(), id)
+	ach, xErr := l.repo.achievement.GetByID(ctx, id)
 	if xErr != nil {
 		return nil, xErr
 	}
 	return l.toAchievementResponse(ach), nil
 }
 
-func (l *AchievementLogic) ListAchievements(ctx *gin.Context, page, pageSize int, achType *int16) ([]apiAchievement.AchievementResponse, int64, *xError.Error) {
+func (l *AchievementLogic) ListAchievements(ctx context.Context, page, pageSize int, achType *int16) ([]apiAchievement.AchievementResponse, int64, *xError.Error) {
 	l.log.Info(ctx, "ListAchievements - 查询成就列表")
 
-	achievements, total, xErr := l.repo.achievement.List(ctx.Request.Context(), page, pageSize, achType)
+	achievements, total, xErr := l.repo.achievement.List(ctx, page, pageSize, achType)
 	if xErr != nil {
 		return nil, 0, xErr
 	}
@@ -124,15 +123,15 @@ func (l *AchievementLogic) ListAchievements(ctx *gin.Context, page, pageSize int
 	return resp, total, nil
 }
 
-func (l *AchievementLogic) GrantAchievement(ctx *gin.Context, achievementID xSnowflake.SnowflakeID, playerUUID uuid.UUID) *xError.Error {
+func (l *AchievementLogic) GrantAchievement(ctx context.Context, achievementID xSnowflake.SnowflakeID, playerUUID uuid.UUID) *xError.Error {
 	l.log.Info(ctx, "GrantAchievement - 手动授予成就")
 
-	ach, xErr := l.repo.achievement.GetByID(ctx.Request.Context(), achievementID)
+	ach, xErr := l.repo.achievement.GetByID(ctx, achievementID)
 	if xErr != nil {
 		return xErr
 	}
 
-	existing, xErr := l.repo.gameProfileAch.GetByGameProfileAndAchievement(ctx.Request.Context(), playerUUID, achievementID)
+	existing, xErr := l.repo.gameProfileAch.GetByGameProfileAndAchievement(ctx, playerUUID, achievementID)
 	if xErr != nil {
 		return xErr
 	}
@@ -149,7 +148,7 @@ func (l *AchievementLogic) GrantAchievement(ctx *gin.Context, achievementID xSno
 	now := time.Now()
 	pa.CompletedAt = &now
 
-	if xErr := l.repo.gameProfileAch.Create(ctx.Request.Context(), pa); xErr != nil {
+	if xErr := l.repo.gameProfileAch.Create(ctx, pa); xErr != nil {
 		return xErr
 	}
 
@@ -159,11 +158,11 @@ func (l *AchievementLogic) GrantAchievement(ctx *gin.Context, achievementID xSno
 			AchievementID: achievementID,
 			TitleClaimed:  false,
 		}
-		if xErr := l.repo.claim.Create(ctx.Request.Context(), claim); xErr != nil {
+		if xErr := l.repo.claim.Create(ctx, claim); xErr != nil {
 			return xErr
 		}
 	} else {
-		if xErr := l.repo.gameProfileAch.UpdateStatus(ctx.Request.Context(), pa.ID, entity.AchievementStatusClaimed); xErr != nil {
+		if xErr := l.repo.gameProfileAch.UpdateStatus(ctx, pa.ID, entity.AchievementStatusClaimed); xErr != nil {
 			return xErr
 		}
 	}
@@ -255,10 +254,10 @@ func (l *AchievementLogic) EvaluateEvent(ctx context.Context, conditionKey strin
 	return nil
 }
 
-func (l *AchievementLogic) ClaimReward(ctx *gin.Context, playerUUID uuid.UUID, achievementID xSnowflake.SnowflakeID) (*apiAchievement.AchievementClaimResponse, *xError.Error) {
+func (l *AchievementLogic) ClaimReward(ctx context.Context, playerUUID uuid.UUID, achievementID xSnowflake.SnowflakeID) (*apiAchievement.AchievementClaimResponse, *xError.Error) {
 	l.log.Info(ctx, "ClaimReward - 领取成就奖励")
 
-	pa, xErr := l.repo.gameProfileAch.GetByGameProfileAndAchievement(ctx.Request.Context(), playerUUID, achievementID)
+	pa, xErr := l.repo.gameProfileAch.GetByGameProfileAndAchievement(ctx, playerUUID, achievementID)
 	if xErr != nil {
 		return nil, xErr
 	}
@@ -266,18 +265,18 @@ func (l *AchievementLogic) ClaimReward(ctx *gin.Context, playerUUID uuid.UUID, a
 		return nil, xError.NewError(nil, xError.ParameterError, "成就尚未完成", true, nil)
 	}
 
-	ach, xErr := l.repo.achievement.GetByID(ctx.Request.Context(), achievementID)
+	ach, xErr := l.repo.achievement.GetByID(ctx, achievementID)
 	if xErr != nil {
 		return nil, xErr
 	}
 
-	claim, xErr := l.repo.claim.GetByGameProfileAndAchievement(ctx.Request.Context(), playerUUID, achievementID)
+	claim, xErr := l.repo.claim.GetByGameProfileAndAchievement(ctx, playerUUID, achievementID)
 	if xErr != nil {
 		return nil, xErr
 	}
 
 	if claim == nil {
-		if xErr := l.repo.gameProfileAch.UpdateStatus(ctx.Request.Context(), pa.ID, entity.AchievementStatusClaimed); xErr != nil {
+		if xErr := l.repo.gameProfileAch.UpdateStatus(ctx, pa.ID, entity.AchievementStatusClaimed); xErr != nil {
 			return nil, xErr
 		}
 		return &apiAchievement.AchievementClaimResponse{
@@ -292,7 +291,7 @@ func (l *AchievementLogic) ClaimReward(ctx *gin.Context, playerUUID uuid.UUID, a
 	if err := json.Unmarshal(ach.RewardConfig, &rewardConfig); err == nil && rewardConfig.TitleID != "" {
 		if !claim.TitleClaimed {
 			titleID, _ := strconv.ParseInt(rewardConfig.TitleID, 10, 64)
-			has, xErr := l.repo.gameProfileTitle.HasTitle(ctx.Request.Context(), playerUUID, xSnowflake.SnowflakeID(titleID))
+			has, xErr := l.repo.gameProfileTitle.HasTitle(ctx, playerUUID, xSnowflake.SnowflakeID(titleID))
 			if xErr != nil {
 				return nil, xErr
 			}
@@ -303,17 +302,17 @@ func (l *AchievementLogic) ClaimReward(ctx *gin.Context, playerUUID uuid.UUID, a
 					Source:     entity.TitleSourceAchievement,
 					IsEquipped: false,
 				}
-				if xErr := l.repo.gameProfileTitle.Create(ctx.Request.Context(), playerTitle); xErr != nil {
+				if xErr := l.repo.gameProfileTitle.Create(ctx, playerTitle); xErr != nil {
 					return nil, xErr
 				}
 			}
-			if xErr := l.repo.claim.UpdateTitleClaimed(ctx.Request.Context(), claim.ID, true); xErr != nil {
+			if xErr := l.repo.claim.UpdateTitleClaimed(ctx, claim.ID, true); xErr != nil {
 				return nil, xErr
 			}
 		}
 	}
 
-	if xErr := l.repo.gameProfileAch.UpdateStatus(ctx.Request.Context(), pa.ID, entity.AchievementStatusClaimed); xErr != nil {
+	if xErr := l.repo.gameProfileAch.UpdateStatus(ctx, pa.ID, entity.AchievementStatusClaimed); xErr != nil {
 		return nil, xErr
 	}
 
@@ -323,10 +322,10 @@ func (l *AchievementLogic) ClaimReward(ctx *gin.Context, playerUUID uuid.UUID, a
 	}, nil
 }
 
-func (l *AchievementLogic) GetPlayerAchievements(ctx *gin.Context, playerUUID uuid.UUID) ([]apiAchievement.PlayerAchievementResponse, *xError.Error) {
+func (l *AchievementLogic) GetPlayerAchievements(ctx context.Context, playerUUID uuid.UUID) ([]apiAchievement.PlayerAchievementResponse, *xError.Error) {
 	l.log.Info(ctx, "GetPlayerAchievements - 查询玩家成就列表")
 
-	playerAchievements, xErr := l.repo.gameProfileAch.ListByGameProfile(ctx.Request.Context(), playerUUID)
+	playerAchievements, xErr := l.repo.gameProfileAch.ListByGameProfile(ctx, playerUUID)
 	if xErr != nil {
 		return nil, xErr
 	}
@@ -343,10 +342,10 @@ func (l *AchievementLogic) GetPlayerAchievements(ctx *gin.Context, playerUUID uu
 	return resp, nil
 }
 
-func (l *AchievementLogic) ListPublicAchievements(ctx *gin.Context) ([]apiAchievement.AchievementResponse, *xError.Error) {
+func (l *AchievementLogic) ListPublicAchievements(ctx context.Context) ([]apiAchievement.AchievementResponse, *xError.Error) {
 	l.log.Info(ctx, "ListPublicAchievements - 查询公开成就列表")
 
-	achievements, xErr := l.repo.achievement.ListActive(ctx.Request.Context())
+	achievements, xErr := l.repo.achievement.ListActive(ctx)
 	if xErr != nil {
 		return nil, xErr
 	}

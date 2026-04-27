@@ -7,7 +7,7 @@ import (
 
 // Ping 健康检查
 //
-// @Summary     健康检查
+// @Summary     [公共] 健康检查
 // @Description 检查服务及基础设施运行状态，返回应用信息、数据库和 Redis 连通性
 // @Tags        健康检查接口
 // @Accept      json
@@ -18,7 +18,7 @@ import (
 func (h *HealthHandler) Ping(ctx *gin.Context) {
 	h.log.Info(ctx, "Ping - 健康检查")
 
-	status, xErr := h.service.healthLogic.Ping(ctx)
+	status, xErr := h.service.healthLogic.Ping(ctx.Request.Context())
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return

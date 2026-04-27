@@ -40,7 +40,7 @@ func (h *AchievementAdminHandler) CreateAchievement(ctx *gin.Context) {
 		return
 	}
 
-	ach, xErr := h.service.achievementLogic.CreateAchievement(ctx, req.Name, req.Description, entity.AchievementType(req.Type), req.ConditionKey, req.ConditionParams, req.RewardConfig, req.SortOrder)
+	ach, xErr := h.service.achievementLogic.CreateAchievement(ctx.Request.Context(), req.Name, req.Description, entity.AchievementType(req.Type), req.ConditionKey, req.ConditionParams, req.RewardConfig, req.SortOrder)
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return
@@ -77,7 +77,7 @@ func (h *AchievementAdminHandler) UpdateAchievement(ctx *gin.Context) {
 		return
 	}
 
-	ach, xErr := h.service.achievementLogic.UpdateAchievement(ctx, achID, req.Name, req.Description, entity.AchievementType(req.Type), req.ConditionKey, req.ConditionParams, req.RewardConfig, req.SortOrder, req.IsActive)
+	ach, xErr := h.service.achievementLogic.UpdateAchievement(ctx.Request.Context(), achID, req.Name, req.Description, entity.AchievementType(req.Type), req.ConditionKey, req.ConditionParams, req.RewardConfig, req.SortOrder, req.IsActive)
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return
@@ -107,7 +107,7 @@ func (h *AchievementAdminHandler) DeleteAchievement(ctx *gin.Context) {
 		return
 	}
 
-	if xErr := h.service.achievementLogic.DeleteAchievement(ctx, achID); xErr != nil {
+	if xErr := h.service.achievementLogic.DeleteAchievement(ctx.Request.Context(), achID); xErr != nil {
 		_ = ctx.Error(xErr)
 		return
 	}
@@ -136,7 +136,7 @@ func (h *AchievementAdminHandler) GetAchievement(ctx *gin.Context) {
 		return
 	}
 
-	ach, xErr := h.service.achievementLogic.GetAchievement(ctx, achID)
+	ach, xErr := h.service.achievementLogic.GetAchievement(ctx.Request.Context(), achID)
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return
@@ -177,7 +177,7 @@ func (h *AchievementAdminHandler) ListAchievements(ctx *gin.Context) {
 		achType = &tv
 	}
 
-	achievements, total, xErr := h.service.achievementLogic.ListAchievements(ctx, page, pageSize, achType)
+	achievements, total, xErr := h.service.achievementLogic.ListAchievements(ctx.Request.Context(), page, pageSize, achType)
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return
@@ -225,7 +225,7 @@ func (h *AchievementAdminHandler) GrantAchievement(ctx *gin.Context) {
 		return
 	}
 
-	if xErr := h.service.achievementLogic.GrantAchievement(ctx, achID, playerUUID); xErr != nil {
+	if xErr := h.service.achievementLogic.GrantAchievement(ctx.Request.Context(), achID, playerUUID); xErr != nil {
 		_ = ctx.Error(xErr)
 		return
 	}
