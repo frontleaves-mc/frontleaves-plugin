@@ -133,17 +133,6 @@ definitions:
     - name
     - type
     type: object
-  apiGameProfile.GameProfileResponse:
-    properties:
-      group_name:
-        type: string
-      reported_at:
-        type: string
-      username:
-        type: string
-      uuid:
-        type: string
-    type: object
   apiPC.CreatePluginCredentialRequest:
     properties:
       description:
@@ -186,6 +175,32 @@ definitions:
         type: string
     required:
     - description
+    type: object
+  apiServerStatus.PlayerStatusInfo:
+    properties:
+      player_name:
+        type: string
+      player_uuid:
+        type: string
+      world_name:
+        type: string
+    type: object
+  apiServerStatus.ServerStatusResponse:
+    properties:
+      last_heartbeat:
+        type: integer
+      online:
+        type: boolean
+      online_players:
+        type: integer
+      players:
+        items:
+          $ref: '#/definitions/apiServerStatus.PlayerStatusInfo'
+        type: array
+      server_name:
+        type: string
+      tps:
+        type: number
     type: object
   apiTitle.AssignTitleRequest:
     properties:
@@ -965,68 +980,6 @@ paths:
       summary: '[管理] 分配称号'
       tags:
       - 管理-称号接口
-  /game-profiles:
-    get:
-      consumes:
-      - application/json
-      description: 分页查询游戏档案列表
-      parameters:
-      - description: 页码
-        in: query
-        name: page
-        type: integer
-      - description: 每页数量
-        in: query
-        name: page_size
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 成功
-          schema:
-            $ref: '#/definitions/xBase.BaseResponse'
-        "400":
-          description: 请求参数错误
-          schema:
-            $ref: '#/definitions/xBase.BaseResponse'
-      summary: '[玩家] 查询游戏档案列表'
-      tags:
-      - 游戏档案接口
-  /game-profiles/:uuid:
-    get:
-      consumes:
-      - application/json
-      description: 根据 UUID 查询游戏档案详细信息
-      parameters:
-      - description: 档案UUID
-        in: path
-        name: uuid
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 成功
-          schema:
-            allOf:
-            - $ref: '#/definitions/xBase.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/apiGameProfile.GameProfileResponse'
-              type: object
-        "400":
-          description: 请求参数错误
-          schema:
-            $ref: '#/definitions/xBase.BaseResponse'
-        "404":
-          description: 游戏档案不存在
-          schema:
-            $ref: '#/definitions/xBase.BaseResponse'
-      summary: '[玩家] 查询游戏档案信息'
-      tags:
-      - 游戏档案接口
   /game-profiles/:uuid/achievements:
     get:
       consumes:
@@ -1250,4 +1203,60 @@ paths:
       summary: '[公共] 健康检查'
       tags:
       - 健康检查接口
+  /servers/{name}/refresh:
+    post:
+      consumes:
+      - application/json
+      description: 重新获取指定服务器的最新状态信息
+      parameters:
+      - description: 服务器名称
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiServerStatus.ServerStatusResponse'
+              type: object
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[用户] 刷新服务器状态'
+      tags:
+      - 服务器状态接口
+  /servers/status:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有 Minecraft 服务器的在线状态、TPS 和玩家列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/apiServerStatus.ServerStatusResponse'
+                  type: array
+              type: object
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[用户] 获取所有服务器状态'
+      tags:
+      - 服务器状态接口
 swagger: "2.0"

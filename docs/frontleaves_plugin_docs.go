@@ -1058,105 +1058,6 @@ const docTemplatefrontleaves_plugin = `{
                 }
             }
         },
-        "/game-profiles": {
-            "get": {
-                "description": "分页查询游戏档案列表",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "游戏档案接口"
-                ],
-                "summary": "[玩家] 查询游戏档案列表",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "页码",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "每页数量",
-                        "name": "page_size",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "成功",
-                        "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "请求参数错误",
-                        "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/game-profiles/:uuid": {
-            "get": {
-                "description": "根据 UUID 查询游戏档案详细信息",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "游戏档案接口"
-                ],
-                "summary": "[玩家] 查询游戏档案信息",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "档案UUID",
-                        "name": "uuid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "成功",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/xBase.BaseResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/apiGameProfile.GameProfileResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "请求参数错误",
-                        "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "游戏档案不存在",
-                        "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/game-profiles/:uuid/achievements": {
             "get": {
                 "description": "根据玩家 UUID 查询该玩家已获得的所有成就",
@@ -1511,6 +1412,100 @@ const docTemplatefrontleaves_plugin = `{
                     }
                 }
             }
+        },
+        "/servers/status": {
+            "get": {
+                "description": "获取所有 Minecraft 服务器的在线状态、TPS 和玩家列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "服务器状态接口"
+                ],
+                "summary": "[用户] 获取所有服务器状态",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/apiServerStatus.ServerStatusResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/servers/{name}/refresh": {
+            "post": {
+                "description": "重新获取指定服务器的最新状态信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "服务器状态接口"
+                ],
+                "summary": "[用户] 刷新服务器状态",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "服务器名称",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiServerStatus.ServerStatusResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1712,23 +1707,6 @@ const docTemplatefrontleaves_plugin = `{
                 }
             }
         },
-        "apiGameProfile.GameProfileResponse": {
-            "type": "object",
-            "properties": {
-                "group_name": {
-                    "type": "string"
-                },
-                "reported_at": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                },
-                "uuid": {
-                    "type": "string"
-                }
-            }
-        },
         "apiPC.CreatePluginCredentialRequest": {
             "type": "object",
             "required": [
@@ -1792,6 +1770,46 @@ const docTemplatefrontleaves_plugin = `{
             "properties": {
                 "description": {
                     "type": "string"
+                }
+            }
+        },
+        "apiServerStatus.PlayerStatusInfo": {
+            "type": "object",
+            "properties": {
+                "player_name": {
+                    "type": "string"
+                },
+                "player_uuid": {
+                    "type": "string"
+                },
+                "world_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiServerStatus.ServerStatusResponse": {
+            "type": "object",
+            "properties": {
+                "last_heartbeat": {
+                    "type": "integer"
+                },
+                "online": {
+                    "type": "boolean"
+                },
+                "online_players": {
+                    "type": "integer"
+                },
+                "players": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/apiServerStatus.PlayerStatusInfo"
+                    }
+                },
+                "server_name": {
+                    "type": "string"
+                },
+                "tps": {
+                    "type": "number"
                 }
             }
         },
