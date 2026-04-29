@@ -4,12 +4,12 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	xResult "github.com/bamboo-services/bamboo-base-go/major/result"
 	apiTitle "github.com/frontleaves-mc/frontleaves-plugin/api/title"
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type TitleGameProfileHandler handler
@@ -22,7 +22,7 @@ func NewTitleGameProfileHandler(ctx context.Context) *TitleGameProfileHandler {
 //
 // @Summary     [玩家] 获取玩家称号列表
 // @Description 根据玩家 UUID 获取该玩家拥有的所有称号
-// @Tags        GameProfile-称号接口
+// @Tags        玩家-称号接口
 // @Accept      json
 // @Produce     json
 // @Param       uuid  path  string  true  "玩家UUID"
@@ -52,7 +52,7 @@ func (h *TitleGameProfileHandler) GetPlayerTitles(ctx *gin.Context) {
 //
 // @Summary     [玩家] 装备称号
 // @Description 玩家装备指定称号
-// @Tags        GameProfile-称号接口
+// @Tags        玩家-称号接口
 // @Accept      json
 // @Produce     json
 // @Param       uuid      path  string                      true  "玩家UUID"
@@ -94,7 +94,7 @@ func (h *TitleGameProfileHandler) EquipTitle(ctx *gin.Context) {
 //
 // @Summary     [玩家] 卸下称号
 // @Description 玩家卸下当前装备的称号
-// @Tags        GameProfile-称号接口
+// @Tags        玩家-称号接口
 // @Accept      json
 // @Produce     json
 // @Param       uuid  path  string  true  "玩家UUID"
@@ -122,7 +122,7 @@ func (h *TitleGameProfileHandler) UnequipTitle(ctx *gin.Context) {
 //
 // @Summary     [玩家] 获取当前装备称号
 // @Description 根据玩家 UUID 获取该玩家当前装备的称号
-// @Tags        GameProfile-称号接口
+// @Tags        玩家-称号接口
 // @Accept      json
 // @Produce     json
 // @Param       uuid  path  string  true  "玩家UUID"

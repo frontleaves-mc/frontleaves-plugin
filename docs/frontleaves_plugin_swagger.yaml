@@ -144,6 +144,49 @@ definitions:
       uuid:
         type: string
     type: object
+  apiPC.CreatePluginCredentialRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    required:
+    - description
+    - name
+    type: object
+  apiPC.PluginCredentialListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/apiPC.PluginCredentialResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  apiPC.PluginCredentialResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      secret_key:
+        type: string
+    type: object
+  apiPC.UpdatePluginCredentialRequest:
+    properties:
+      description:
+        type: string
+    required:
+    - description
+    type: object
   apiTitle.AssignTitleRequest:
     properties:
       player_uuid:
@@ -492,6 +535,204 @@ paths:
       summary: '[管理] 手动授予成就'
       tags:
       - 管理-成就接口
+  /admin/plugin-credentials:
+    get:
+      consumes:
+      - application/json
+      description: 分页查询插件凭证列表，所有密钥脱敏展示
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiPC.PluginCredentialListResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[超管] 查询插件凭证列表'
+      tags:
+      - 超管-插件密钥接口
+    post:
+      consumes:
+      - application/json
+      description: 创建新的插件凭证，生成唯一密钥，返回完整密钥（仅在创建和重置时可见）
+      parameters:
+      - description: 创建插件凭证请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiPC.CreatePluginCredentialRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiPC.PluginCredentialResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[超管] 创建插件凭证'
+      tags:
+      - 超管-插件密钥接口
+  /admin/plugin-credentials/:id:
+    delete:
+      consumes:
+      - application/json
+      description: 硬删除指定的插件凭证
+      parameters:
+      - description: 插件凭证ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 插件凭证不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[超管] 删除插件凭证'
+      tags:
+      - 超管-插件密钥接口
+    get:
+      consumes:
+      - application/json
+      description: 根据插件凭证 ID 查询详情，密钥脱敏展示
+      parameters:
+      - description: 插件凭证ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiPC.PluginCredentialResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 插件凭证不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[超管] 查询插件凭证详情'
+      tags:
+      - 超管-插件密钥接口
+    put:
+      consumes:
+      - application/json
+      description: 更新指定插件凭证的描述信息
+      parameters:
+      - description: 插件凭证ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 更新插件凭证请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiPC.UpdatePluginCredentialRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiPC.PluginCredentialResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 插件凭证不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[超管] 更新插件凭证描述'
+      tags:
+      - 超管-插件密钥接口
+  /admin/plugin-credentials/:id/reset-key:
+    put:
+      consumes:
+      - application/json
+      description: 重置指定插件凭证的密钥，返回新的完整密钥
+      parameters:
+      - description: 插件凭证ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiPC.PluginCredentialResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 插件凭证不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[超管] 重置插件密钥'
+      tags:
+      - 超管-插件密钥接口
   /admin/titles:
     get:
       consumes:
@@ -896,7 +1137,7 @@ paths:
             $ref: '#/definitions/xBase.BaseResponse'
       summary: '[玩家] 获取玩家称号列表'
       tags:
-      - GameProfile-称号接口
+      - 玩家-称号接口
   /game-profiles/:uuid/titles/equip:
     delete:
       consumes:
@@ -921,7 +1162,7 @@ paths:
             $ref: '#/definitions/xBase.BaseResponse'
       summary: '[玩家] 卸下称号'
       tags:
-      - GameProfile-称号接口
+      - 玩家-称号接口
     put:
       consumes:
       - application/json
@@ -955,7 +1196,7 @@ paths:
             $ref: '#/definitions/xBase.BaseResponse'
       summary: '[玩家] 装备称号'
       tags:
-      - GameProfile-称号接口
+      - 玩家-称号接口
   /game-profiles/:uuid/titles/equipped:
     get:
       consumes:
@@ -989,7 +1230,7 @@ paths:
             $ref: '#/definitions/xBase.BaseResponse'
       summary: '[玩家] 获取当前装备称号'
       tags:
-      - GameProfile-称号接口
+      - 玩家-称号接口
   /health/ping:
     get:
       consumes:

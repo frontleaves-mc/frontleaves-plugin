@@ -8,10 +8,11 @@ import (
 )
 
 type service struct {
-	healthLogic      *logic.HealthLogic
-	gameProfileLogic *logic.GameProfileLogic
-	titleLogic       *logic.TitleLogic
-	achievementLogic *logic.AchievementLogic
+	healthLogic           *logic.HealthLogic
+	gameProfileLogic      *logic.GameProfileLogic
+	titleLogic            *logic.TitleLogic
+	achievementLogic      *logic.AchievementLogic
+	pluginCredentialLogic *logic.PluginCredentialLogic
 }
 
 type handler struct {
@@ -33,10 +34,11 @@ func NewHandler[T IHandler](ctx context.Context, handlerName string) *T {
 		name: handlerName,
 		log:  xLog.WithName(xLog.NamedCONT, handlerName),
 		service: &service{
-			healthLogic:      logic.NewHealthLogic(ctx),
-			gameProfileLogic: logic.NewGameProfileLogic(ctx),
-			titleLogic:       logic.NewTitleLogic(ctx),
-			achievementLogic: logic.NewAchievementLogic(ctx),
+			healthLogic:           logic.NewHealthLogic(ctx),
+			gameProfileLogic:      logic.NewGameProfileLogic(ctx),
+			titleLogic:            logic.NewTitleLogic(ctx),
+			achievementLogic:      logic.NewAchievementLogic(ctx),
+			pluginCredentialLogic: logic.NewPluginCredentialLogic(ctx),
 		},
 	}
 }

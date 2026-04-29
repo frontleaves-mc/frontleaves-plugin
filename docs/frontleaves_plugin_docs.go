@@ -372,6 +372,328 @@ const docTemplatefrontleaves_plugin = `{
                 }
             }
         },
+        "/admin/plugin-credentials": {
+            "get": {
+                "description": "分页查询插件凭证列表，所有密钥脱敏展示",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "超管-插件密钥接口"
+                ],
+                "summary": "[超管] 查询插件凭证列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiPC.PluginCredentialListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "创建新的插件凭证，生成唯一密钥，返回完整密钥（仅在创建和重置时可见）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "超管-插件密钥接口"
+                ],
+                "summary": "[超管] 创建插件凭证",
+                "parameters": [
+                    {
+                        "description": "创建插件凭证请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apiPC.CreatePluginCredentialRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiPC.PluginCredentialResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/plugin-credentials/:id": {
+            "get": {
+                "description": "根据插件凭证 ID 查询详情，密钥脱敏展示",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "超管-插件密钥接口"
+                ],
+                "summary": "[超管] 查询插件凭证详情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "插件凭证ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiPC.PluginCredentialResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "插件凭证不存在",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "更新指定插件凭证的描述信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "超管-插件密钥接口"
+                ],
+                "summary": "[超管] 更新插件凭证描述",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "插件凭证ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "更新插件凭证请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apiPC.UpdatePluginCredentialRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiPC.PluginCredentialResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "插件凭证不存在",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "硬删除指定的插件凭证",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "超管-插件密钥接口"
+                ],
+                "summary": "[超管] 删除插件凭证",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "插件凭证ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "插件凭证不存在",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/plugin-credentials/:id/reset-key": {
+            "put": {
+                "description": "重置指定插件凭证的密钥，返回新的完整密钥",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "超管-插件密钥接口"
+                ],
+                "summary": "[超管] 重置插件密钥",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "插件凭证ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiPC.PluginCredentialResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "插件凭证不存在",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/titles": {
             "get": {
                 "description": "分页查询称号列表，可按类型筛选",
@@ -967,7 +1289,7 @@ const docTemplatefrontleaves_plugin = `{
                     "application/json"
                 ],
                 "tags": [
-                    "GameProfile-称号接口"
+                    "玩家-称号接口"
                 ],
                 "summary": "[玩家] 获取玩家称号列表",
                 "parameters": [
@@ -1026,7 +1348,7 @@ const docTemplatefrontleaves_plugin = `{
                     "application/json"
                 ],
                 "tags": [
-                    "GameProfile-称号接口"
+                    "玩家-称号接口"
                 ],
                 "summary": "[玩家] 装备称号",
                 "parameters": [
@@ -1077,7 +1399,7 @@ const docTemplatefrontleaves_plugin = `{
                     "application/json"
                 ],
                 "tags": [
-                    "GameProfile-称号接口"
+                    "玩家-称号接口"
                 ],
                 "summary": "[玩家] 卸下称号",
                 "parameters": [
@@ -1115,7 +1437,7 @@ const docTemplatefrontleaves_plugin = `{
                     "application/json"
                 ],
                 "tags": [
-                    "GameProfile-称号接口"
+                    "玩家-称号接口"
                 ],
                 "summary": "[玩家] 获取当前装备称号",
                 "parameters": [
@@ -1403,6 +1725,72 @@ const docTemplatefrontleaves_plugin = `{
                     "type": "string"
                 },
                 "uuid": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiPC.CreatePluginCredentialRequest": {
+            "type": "object",
+            "required": [
+                "description",
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiPC.PluginCredentialListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/apiPC.PluginCredentialResponse"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiPC.PluginCredentialResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "secret_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiPC.UpdatePluginCredentialRequest": {
+            "type": "object",
+            "required": [
+                "description"
+            ],
+            "properties": {
+                "description": {
                     "type": "string"
                 }
             }

@@ -11,9 +11,9 @@ import (
 // 用于 gRPC 插件认证，每个插件持有唯一的 name + secret_key 组合。
 type PluginCredential struct {
 	xModels.BaseEntity
-	Name      string `gorm:"not null;type:varchar(64);uniqueIndex:uk_plugin_name;comment:插件名称"`
-	SecretKey string `gorm:"not null;type:varchar(128);comment:插件密钥"`
-	IsActive  bool   `gorm:"not null;default:true;comment:是否启用"`
+	Name        string `gorm:"not null;type:varchar(64);uniqueIndex:uk_plugin_name;comment:插件名称"`
+	SecretKey   string `gorm:"not null;type:varchar(128);comment:插件密钥"`
+	Description string `gorm:"not null;type:varchar(256);comment:插件描述"`
 }
 
 func (_ *PluginCredential) GetGene() xSnowflake.Gene {
