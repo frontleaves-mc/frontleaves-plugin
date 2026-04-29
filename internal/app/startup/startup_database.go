@@ -22,6 +22,7 @@ var migrateTables = []interface{}{
 	&entity.GameProfileTitle{},
 	&entity.GameProfileAchievement{},
 	&entity.GameProfileAchievementClaim{},
+	&entity.PluginCredential{},
 }
 
 func (r *reg) databaseInit(ctx context.Context) (any, error) {

@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package frontleaves.title.v1;
+
+option go_package = "github.com/frontleaves-mc/frontleaves-plugin/internal/grpc/gen/title/v1;titlepb";
+
+import "link/base.proto";
+
+// TitleService 称号服务
+//
+// 提供 MC 插件查询玩家称号和装备/卸下称号的能力。
+service TitleService {
+  // GetPlayerTitles 查询玩家拥有的所有称号
+  rpc GetPlayerTitles(GetPlayerTitlesRequest) returns (GetPlayerTitlesResponse);
+  // GetEquippedTitle 查询玩家当前装备的称号
+  rpc GetEquippedTitle(GetEquippedTitleRequest) returns (GetEquippedTitleResponse);
+  // EquipTitle 装备称号
+  rpc EquipTitle(EquipTitleRequest) returns (EquipTitleResponse);
+  // UnequipTitle 卸下称号
+  rpc UnequipTitle(UnequipTitleRequest) returns (UnequipTitleResponse);
+}
+
+// GetPlayerTitlesRequest 查询玩家称号请求
+message GetPlayerTitlesRequest {
+  // 玩家 UUID
+  string player_uuid = 11;
+}
+
+// PlayerTitle 玩家称号信息
+message PlayerTitle {
+  // 称号 ID（Snowflake ID 字符串）
+  string title_id = 1;
+  // 称号名称
+  string name = 2;
+  // 称号描述
+  string description = 3;
+  // 称号类型
+  int32 type = 4;
+  // 来源
+  int32 source = 5;
+  // 是否已装备
+  bool is_equipped = 6;
+}
+
+// GetPlayerTitlesResponse 查询玩家称号响应
+message GetPlayerTitlesResponse {
+  xBase.BaseResponse base_response = 1;
+  // 玩家称号列表
+  repeated PlayerTitle titles = 11;
+}
+
+// GetEquippedTitleRequest 查询装备称号请求
+message GetEquippedTitleRequest {
+  // 玩家 UUID
+  string player_uuid = 11;
+}
+
+// GetEquippedTitleResponse 查询装备称号响应
+message GetEquippedTitleResponse {
+  xBase.BaseResponse base_response = 1;
+  // 称号 ID（Snowflake ID 字符串）
+  string title_id = 11;
+  // 称号名称
+  string name = 12;
+  // 称号描述
+  string description = 13;
+  // 称号类型
+  int32 type = 14;
+}
+
+// EquipTitleRequest 装备称号请求
+message EquipTitleRequest {
+  // 玩家 UUID
+  string player_uuid = 11;
+  // 称号 ID（Snowflake ID 字符串）
+  string title_id = 12;
+}
+
+// EquipTitleResponse 装备称号响应
+message EquipTitleResponse {
+  xBase.BaseResponse base_response = 1;
+}
+
+// UnequipTitleRequest 卸下称号请求
+message UnequipTitleRequest {
+  // 玩家 UUID
+  string player_uuid = 11;
+}
+
+// UnequipTitleResponse 卸下称号响应
+message UnequipTitleResponse {
+  xBase.BaseResponse base_response = 1;
+}

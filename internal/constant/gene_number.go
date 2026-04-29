@@ -12,5 +12,6 @@ const (
 	GenePlayerTitle        xSnowflake.Gene = 34 // 玩家称号关联
 	GeneAchievement        xSnowflake.Gene = 35 // 成就定义
 	GenePlayerAchievement  xSnowflake.Gene = 36 // 玩家成就
-	GeneAchievementClaim   xSnowflake.Gene = 38 // 成就申领记录
+	GeneAchievementClaim    xSnowflake.Gene = 38 // 成就申领记录
+	GenePluginCredential    xSnowflake.Gene = 39 // 插件授权凭证
 )
