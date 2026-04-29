@@ -640,6 +640,252 @@ func (x *PlayerStatus) GetWorldName() string {
 	return ""
 }
 
+// PlayerChatRequest 玩家聊天请求
+type PlayerChatRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 玩家 UUID
+	PlayerUuid string `protobuf:"bytes,11,opt,name=player_uuid,json=playerUuid,proto3" json:"player_uuid,omitempty"`
+	// 玩家用户名
+	PlayerName string `protobuf:"bytes,12,opt,name=player_name,json=playerName,proto3" json:"player_name,omitempty"`
+	// 服务器名称
+	ServerName string `protobuf:"bytes,13,opt,name=server_name,json=serverName,proto3" json:"server_name,omitempty"`
+	// 世界名称
+	WorldName string `protobuf:"bytes,14,opt,name=world_name,json=worldName,proto3" json:"world_name,omitempty"`
+	// 聊天消息内容
+	Message       string `protobuf:"bytes,15,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerChatRequest) Reset() {
+	*x = PlayerChatRequest{}
+	mi := &file_status_v1_status_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerChatRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerChatRequest) ProtoMessage() {}
+
+func (x *PlayerChatRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_status_v1_status_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerChatRequest.ProtoReflect.Descriptor instead.
+func (*PlayerChatRequest) Descriptor() ([]byte, []int) {
+	return file_status_v1_status_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *PlayerChatRequest) GetPlayerUuid() string {
+	if x != nil {
+		return x.PlayerUuid
+	}
+	return ""
+}
+
+func (x *PlayerChatRequest) GetPlayerName() string {
+	if x != nil {
+		return x.PlayerName
+	}
+	return ""
+}
+
+func (x *PlayerChatRequest) GetServerName() string {
+	if x != nil {
+		return x.ServerName
+	}
+	return ""
+}
+
+func (x *PlayerChatRequest) GetWorldName() string {
+	if x != nil {
+		return x.WorldName
+	}
+	return ""
+}
+
+func (x *PlayerChatRequest) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+// PlayerKickRequest 玩家被踢出请求
+type PlayerKickRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 玩家 UUID
+	PlayerUuid string `protobuf:"bytes,11,opt,name=player_uuid,json=playerUuid,proto3" json:"player_uuid,omitempty"`
+	// 玩家用户名
+	PlayerName string `protobuf:"bytes,12,opt,name=player_name,json=playerName,proto3" json:"player_name,omitempty"`
+	// 服务器名称
+	ServerName string `protobuf:"bytes,13,opt,name=server_name,json=serverName,proto3" json:"server_name,omitempty"`
+	// 世界名称
+	WorldName string `protobuf:"bytes,14,opt,name=world_name,json=worldName,proto3" json:"world_name,omitempty"`
+	// 踢出原因
+	Reason        string `protobuf:"bytes,15,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerKickRequest) Reset() {
+	*x = PlayerKickRequest{}
+	mi := &file_status_v1_status_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerKickRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerKickRequest) ProtoMessage() {}
+
+func (x *PlayerKickRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_status_v1_status_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerKickRequest.ProtoReflect.Descriptor instead.
+func (*PlayerKickRequest) Descriptor() ([]byte, []int) {
+	return file_status_v1_status_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *PlayerKickRequest) GetPlayerUuid() string {
+	if x != nil {
+		return x.PlayerUuid
+	}
+	return ""
+}
+
+func (x *PlayerKickRequest) GetPlayerName() string {
+	if x != nil {
+		return x.PlayerName
+	}
+	return ""
+}
+
+func (x *PlayerKickRequest) GetServerName() string {
+	if x != nil {
+		return x.ServerName
+	}
+	return ""
+}
+
+func (x *PlayerKickRequest) GetWorldName() string {
+	if x != nil {
+		return x.WorldName
+	}
+	return ""
+}
+
+func (x *PlayerKickRequest) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+// PlayerDeathRequest 玩家死亡请求
+type PlayerDeathRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 玩家 UUID
+	PlayerUuid string `protobuf:"bytes,11,opt,name=player_uuid,json=playerUuid,proto3" json:"player_uuid,omitempty"`
+	// 玩家用户名
+	PlayerName string `protobuf:"bytes,12,opt,name=player_name,json=playerName,proto3" json:"player_name,omitempty"`
+	// 服务器名称
+	ServerName string `protobuf:"bytes,13,opt,name=server_name,json=serverName,proto3" json:"server_name,omitempty"`
+	// 世界名称
+	WorldName string `protobuf:"bytes,14,opt,name=world_name,json=worldName,proto3" json:"world_name,omitempty"`
+	// 死亡消息
+	DeathMessage  string `protobuf:"bytes,15,opt,name=death_message,json=deathMessage,proto3" json:"death_message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerDeathRequest) Reset() {
+	*x = PlayerDeathRequest{}
+	mi := &file_status_v1_status_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerDeathRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerDeathRequest) ProtoMessage() {}
+
+func (x *PlayerDeathRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_status_v1_status_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerDeathRequest.ProtoReflect.Descriptor instead.
+func (*PlayerDeathRequest) Descriptor() ([]byte, []int) {
+	return file_status_v1_status_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *PlayerDeathRequest) GetPlayerUuid() string {
+	if x != nil {
+		return x.PlayerUuid
+	}
+	return ""
+}
+
+func (x *PlayerDeathRequest) GetPlayerName() string {
+	if x != nil {
+		return x.PlayerName
+	}
+	return ""
+}
+
+func (x *PlayerDeathRequest) GetServerName() string {
+	if x != nil {
+		return x.ServerName
+	}
+	return ""
+}
+
+func (x *PlayerDeathRequest) GetWorldName() string {
+	if x != nil {
+		return x.WorldName
+	}
+	return ""
+}
+
+func (x *PlayerDeathRequest) GetDeathMessage() string {
+	if x != nil {
+		return x.DeathMessage
+	}
+	return ""
+}
+
 var File_status_v1_status_proto protoreflect.FileDescriptor
 
 const file_status_v1_status_proto_rawDesc = "" +
@@ -697,7 +943,37 @@ const file_status_v1_status_proto_rawDesc = "" +
 	"\vplayer_name\x18\x02 \x01(\tR\n" +
 	"playerName\x12\x1d\n" +
 	"\n" +
-	"world_name\x18\x03 \x01(\tR\tworldName2\xa7\x05\n" +
+	"world_name\x18\x03 \x01(\tR\tworldName\"\xaf\x01\n" +
+	"\x11PlayerChatRequest\x12\x1f\n" +
+	"\vplayer_uuid\x18\v \x01(\tR\n" +
+	"playerUuid\x12\x1f\n" +
+	"\vplayer_name\x18\f \x01(\tR\n" +
+	"playerName\x12\x1f\n" +
+	"\vserver_name\x18\r \x01(\tR\n" +
+	"serverName\x12\x1d\n" +
+	"\n" +
+	"world_name\x18\x0e \x01(\tR\tworldName\x12\x18\n" +
+	"\amessage\x18\x0f \x01(\tR\amessage\"\xad\x01\n" +
+	"\x11PlayerKickRequest\x12\x1f\n" +
+	"\vplayer_uuid\x18\v \x01(\tR\n" +
+	"playerUuid\x12\x1f\n" +
+	"\vplayer_name\x18\f \x01(\tR\n" +
+	"playerName\x12\x1f\n" +
+	"\vserver_name\x18\r \x01(\tR\n" +
+	"serverName\x12\x1d\n" +
+	"\n" +
+	"world_name\x18\x0e \x01(\tR\tworldName\x12\x16\n" +
+	"\x06reason\x18\x0f \x01(\tR\x06reason\"\xbb\x01\n" +
+	"\x12PlayerDeathRequest\x12\x1f\n" +
+	"\vplayer_uuid\x18\v \x01(\tR\n" +
+	"playerUuid\x12\x1f\n" +
+	"\vplayer_name\x18\f \x01(\tR\n" +
+	"playerName\x12\x1f\n" +
+	"\vserver_name\x18\r \x01(\tR\n" +
+	"serverName\x12\x1d\n" +
+	"\n" +
+	"world_name\x18\x0e \x01(\tR\tworldName\x12#\n" +
+	"\rdeath_message\x18\x0f \x01(\tR\fdeathMessage2\xd5\a\n" +
 	"\x13ServerStatusService\x12c\n" +
 	"\n" +
 	"PlayerJoin\x12).frontleaves.status.v1.PlayerEventRequest\x1a*.frontleaves.status.v1.PlayerEventResponse\x12c\n" +
@@ -706,7 +982,12 @@ const file_status_v1_status_proto_rawDesc = "" +
 	"\x11PlayerSwitchWorld\x12/.frontleaves.status.v1.PlayerSwitchWorldRequest\x1a*.frontleaves.status.v1.PlayerEventResponse\x12p\n" +
 	"\x0fServerHeartbeat\x12-.frontleaves.status.v1.ServerHeartbeatRequest\x1a..frontleaves.status.v1.ServerHeartbeatResponse\x12p\n" +
 	"\x0fGetPlayerStatus\x12-.frontleaves.status.v1.GetPlayerStatusRequest\x1a..frontleaves.status.v1.GetPlayerStatusResponse\x12p\n" +
-	"\x0fGetServerStatus\x12-.frontleaves.status.v1.GetServerStatusRequest\x1a..frontleaves.status.v1.GetServerStatusResponseBSZQgithub.com/frontleaves-mc/frontleaves-plugin/internal/grpc/gen/status/v1;statuspbb\x06proto3"
+	"\x0fGetServerStatus\x12-.frontleaves.status.v1.GetServerStatusRequest\x1a..frontleaves.status.v1.GetServerStatusResponse\x12b\n" +
+	"\n" +
+	"PlayerChat\x12(.frontleaves.status.v1.PlayerChatRequest\x1a*.frontleaves.status.v1.PlayerEventResponse\x12b\n" +
+	"\n" +
+	"PlayerKick\x12(.frontleaves.status.v1.PlayerKickRequest\x1a*.frontleaves.status.v1.PlayerEventResponse\x12d\n" +
+	"\vPlayerDeath\x12).frontleaves.status.v1.PlayerDeathRequest\x1a*.frontleaves.status.v1.PlayerEventResponseBSZQgithub.com/frontleaves-mc/frontleaves-plugin/internal/grpc/gen/status/v1;statuspbb\x06proto3"
 
 var (
 	file_status_v1_status_proto_rawDescOnce sync.Once
@@ -720,7 +1001,7 @@ func file_status_v1_status_proto_rawDescGZIP() []byte {
 	return file_status_v1_status_proto_rawDescData
 }
 
-var file_status_v1_status_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_status_v1_status_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_status_v1_status_proto_goTypes = []any{
 	(*PlayerEventRequest)(nil),       // 0: frontleaves.status.v1.PlayerEventRequest
 	(*PlayerSwitchWorldRequest)(nil), // 1: frontleaves.status.v1.PlayerSwitchWorldRequest
@@ -732,13 +1013,16 @@ var file_status_v1_status_proto_goTypes = []any{
 	(*GetServerStatusRequest)(nil),   // 7: frontleaves.status.v1.GetServerStatusRequest
 	(*GetServerStatusResponse)(nil),  // 8: frontleaves.status.v1.GetServerStatusResponse
 	(*PlayerStatus)(nil),             // 9: frontleaves.status.v1.PlayerStatus
-	(*generate.BaseResponse)(nil),    // 10: xBase.BaseResponse
+	(*PlayerChatRequest)(nil),        // 10: frontleaves.status.v1.PlayerChatRequest
+	(*PlayerKickRequest)(nil),        // 11: frontleaves.status.v1.PlayerKickRequest
+	(*PlayerDeathRequest)(nil),       // 12: frontleaves.status.v1.PlayerDeathRequest
+	(*generate.BaseResponse)(nil),    // 13: xBase.BaseResponse
 }
 var file_status_v1_status_proto_depIdxs = []int32{
-	10, // 0: frontleaves.status.v1.PlayerEventResponse.base_response:type_name -> xBase.BaseResponse
-	10, // 1: frontleaves.status.v1.ServerHeartbeatResponse.base_response:type_name -> xBase.BaseResponse
-	10, // 2: frontleaves.status.v1.GetPlayerStatusResponse.base_response:type_name -> xBase.BaseResponse
-	10, // 3: frontleaves.status.v1.GetServerStatusResponse.base_response:type_name -> xBase.BaseResponse
+	13, // 0: frontleaves.status.v1.PlayerEventResponse.base_response:type_name -> xBase.BaseResponse
+	13, // 1: frontleaves.status.v1.ServerHeartbeatResponse.base_response:type_name -> xBase.BaseResponse
+	13, // 2: frontleaves.status.v1.GetPlayerStatusResponse.base_response:type_name -> xBase.BaseResponse
+	13, // 3: frontleaves.status.v1.GetServerStatusResponse.base_response:type_name -> xBase.BaseResponse
 	9,  // 4: frontleaves.status.v1.GetServerStatusResponse.players:type_name -> frontleaves.status.v1.PlayerStatus
 	0,  // 5: frontleaves.status.v1.ServerStatusService.PlayerJoin:input_type -> frontleaves.status.v1.PlayerEventRequest
 	0,  // 6: frontleaves.status.v1.ServerStatusService.PlayerQuit:input_type -> frontleaves.status.v1.PlayerEventRequest
@@ -746,14 +1030,20 @@ var file_status_v1_status_proto_depIdxs = []int32{
 	3,  // 8: frontleaves.status.v1.ServerStatusService.ServerHeartbeat:input_type -> frontleaves.status.v1.ServerHeartbeatRequest
 	5,  // 9: frontleaves.status.v1.ServerStatusService.GetPlayerStatus:input_type -> frontleaves.status.v1.GetPlayerStatusRequest
 	7,  // 10: frontleaves.status.v1.ServerStatusService.GetServerStatus:input_type -> frontleaves.status.v1.GetServerStatusRequest
-	2,  // 11: frontleaves.status.v1.ServerStatusService.PlayerJoin:output_type -> frontleaves.status.v1.PlayerEventResponse
-	2,  // 12: frontleaves.status.v1.ServerStatusService.PlayerQuit:output_type -> frontleaves.status.v1.PlayerEventResponse
-	2,  // 13: frontleaves.status.v1.ServerStatusService.PlayerSwitchWorld:output_type -> frontleaves.status.v1.PlayerEventResponse
-	4,  // 14: frontleaves.status.v1.ServerStatusService.ServerHeartbeat:output_type -> frontleaves.status.v1.ServerHeartbeatResponse
-	6,  // 15: frontleaves.status.v1.ServerStatusService.GetPlayerStatus:output_type -> frontleaves.status.v1.GetPlayerStatusResponse
-	8,  // 16: frontleaves.status.v1.ServerStatusService.GetServerStatus:output_type -> frontleaves.status.v1.GetServerStatusResponse
-	11, // [11:17] is the sub-list for method output_type
-	5,  // [5:11] is the sub-list for method input_type
+	10, // 11: frontleaves.status.v1.ServerStatusService.PlayerChat:input_type -> frontleaves.status.v1.PlayerChatRequest
+	11, // 12: frontleaves.status.v1.ServerStatusService.PlayerKick:input_type -> frontleaves.status.v1.PlayerKickRequest
+	12, // 13: frontleaves.status.v1.ServerStatusService.PlayerDeath:input_type -> frontleaves.status.v1.PlayerDeathRequest
+	2,  // 14: frontleaves.status.v1.ServerStatusService.PlayerJoin:output_type -> frontleaves.status.v1.PlayerEventResponse
+	2,  // 15: frontleaves.status.v1.ServerStatusService.PlayerQuit:output_type -> frontleaves.status.v1.PlayerEventResponse
+	2,  // 16: frontleaves.status.v1.ServerStatusService.PlayerSwitchWorld:output_type -> frontleaves.status.v1.PlayerEventResponse
+	4,  // 17: frontleaves.status.v1.ServerStatusService.ServerHeartbeat:output_type -> frontleaves.status.v1.ServerHeartbeatResponse
+	6,  // 18: frontleaves.status.v1.ServerStatusService.GetPlayerStatus:output_type -> frontleaves.status.v1.GetPlayerStatusResponse
+	8,  // 19: frontleaves.status.v1.ServerStatusService.GetServerStatus:output_type -> frontleaves.status.v1.GetServerStatusResponse
+	2,  // 20: frontleaves.status.v1.ServerStatusService.PlayerChat:output_type -> frontleaves.status.v1.PlayerEventResponse
+	2,  // 21: frontleaves.status.v1.ServerStatusService.PlayerKick:output_type -> frontleaves.status.v1.PlayerEventResponse
+	2,  // 22: frontleaves.status.v1.ServerStatusService.PlayerDeath:output_type -> frontleaves.status.v1.PlayerEventResponse
+	14, // [14:23] is the sub-list for method output_type
+	5,  // [5:14] is the sub-list for method input_type
 	5,  // [5:5] is the sub-list for extension type_name
 	5,  // [5:5] is the sub-list for extension extendee
 	0,  // [0:5] is the sub-list for field type_name
@@ -770,7 +1060,7 @@ func file_status_v1_status_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_status_v1_status_proto_rawDesc), len(file_status_v1_status_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

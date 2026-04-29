@@ -25,6 +25,9 @@ const (
 	ServerStatusService_ServerHeartbeat_FullMethodName   = "/frontleaves.status.v1.ServerStatusService/ServerHeartbeat"
 	ServerStatusService_GetPlayerStatus_FullMethodName   = "/frontleaves.status.v1.ServerStatusService/GetPlayerStatus"
 	ServerStatusService_GetServerStatus_FullMethodName   = "/frontleaves.status.v1.ServerStatusService/GetServerStatus"
+	ServerStatusService_PlayerChat_FullMethodName        = "/frontleaves.status.v1.ServerStatusService/PlayerChat"
+	ServerStatusService_PlayerKick_FullMethodName        = "/frontleaves.status.v1.ServerStatusService/PlayerKick"
+	ServerStatusService_PlayerDeath_FullMethodName       = "/frontleaves.status.v1.ServerStatusService/PlayerDeath"
 )
 
 // ServerStatusServiceClient is the client API for ServerStatusService service.
@@ -48,6 +51,12 @@ type ServerStatusServiceClient interface {
 	GetPlayerStatus(ctx context.Context, in *GetPlayerStatusRequest, opts ...grpc.CallOption) (*GetPlayerStatusResponse, error)
 	// GetServerStatus 查询服务器状态
 	GetServerStatus(ctx context.Context, in *GetServerStatusRequest, opts ...grpc.CallOption) (*GetServerStatusResponse, error)
+	// PlayerChat 玩家聊天
+	PlayerChat(ctx context.Context, in *PlayerChatRequest, opts ...grpc.CallOption) (*PlayerEventResponse, error)
+	// PlayerKick 玩家被踢出
+	PlayerKick(ctx context.Context, in *PlayerKickRequest, opts ...grpc.CallOption) (*PlayerEventResponse, error)
+	// PlayerDeath 玩家死亡
+	PlayerDeath(ctx context.Context, in *PlayerDeathRequest, opts ...grpc.CallOption) (*PlayerEventResponse, error)
 }
 
 type serverStatusServiceClient struct {
@@ -118,6 +127,36 @@ func (c *serverStatusServiceClient) GetServerStatus(ctx context.Context, in *Get
 	return out, nil
 }
 
+func (c *serverStatusServiceClient) PlayerChat(ctx context.Context, in *PlayerChatRequest, opts ...grpc.CallOption) (*PlayerEventResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PlayerEventResponse)
+	err := c.cc.Invoke(ctx, ServerStatusService_PlayerChat_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverStatusServiceClient) PlayerKick(ctx context.Context, in *PlayerKickRequest, opts ...grpc.CallOption) (*PlayerEventResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PlayerEventResponse)
+	err := c.cc.Invoke(ctx, ServerStatusService_PlayerKick_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverStatusServiceClient) PlayerDeath(ctx context.Context, in *PlayerDeathRequest, opts ...grpc.CallOption) (*PlayerEventResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PlayerEventResponse)
+	err := c.cc.Invoke(ctx, ServerStatusService_PlayerDeath_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ServerStatusServiceServer is the server API for ServerStatusService service.
 // All implementations must embed UnimplementedServerStatusServiceServer
 // for forward compatibility.
@@ -139,6 +178,12 @@ type ServerStatusServiceServer interface {
 	GetPlayerStatus(context.Context, *GetPlayerStatusRequest) (*GetPlayerStatusResponse, error)
 	// GetServerStatus 查询服务器状态
 	GetServerStatus(context.Context, *GetServerStatusRequest) (*GetServerStatusResponse, error)
+	// PlayerChat 玩家聊天
+	PlayerChat(context.Context, *PlayerChatRequest) (*PlayerEventResponse, error)
+	// PlayerKick 玩家被踢出
+	PlayerKick(context.Context, *PlayerKickRequest) (*PlayerEventResponse, error)
+	// PlayerDeath 玩家死亡
+	PlayerDeath(context.Context, *PlayerDeathRequest) (*PlayerEventResponse, error)
 	mustEmbedUnimplementedServerStatusServiceServer()
 }
 
@@ -166,6 +211,15 @@ func (UnimplementedServerStatusServiceServer) GetPlayerStatus(context.Context, *
 }
 func (UnimplementedServerStatusServiceServer) GetServerStatus(context.Context, *GetServerStatusRequest) (*GetServerStatusResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetServerStatus not implemented")
+}
+func (UnimplementedServerStatusServiceServer) PlayerChat(context.Context, *PlayerChatRequest) (*PlayerEventResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method PlayerChat not implemented")
+}
+func (UnimplementedServerStatusServiceServer) PlayerKick(context.Context, *PlayerKickRequest) (*PlayerEventResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method PlayerKick not implemented")
+}
+func (UnimplementedServerStatusServiceServer) PlayerDeath(context.Context, *PlayerDeathRequest) (*PlayerEventResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method PlayerDeath not implemented")
 }
 func (UnimplementedServerStatusServiceServer) mustEmbedUnimplementedServerStatusServiceServer() {}
 func (UnimplementedServerStatusServiceServer) testEmbeddedByValue()                             {}
@@ -296,6 +350,60 @@ func _ServerStatusService_GetServerStatus_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerStatusService_PlayerChat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PlayerChatRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerStatusServiceServer).PlayerChat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerStatusService_PlayerChat_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerStatusServiceServer).PlayerChat(ctx, req.(*PlayerChatRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerStatusService_PlayerKick_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PlayerKickRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerStatusServiceServer).PlayerKick(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerStatusService_PlayerKick_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerStatusServiceServer).PlayerKick(ctx, req.(*PlayerKickRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerStatusService_PlayerDeath_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PlayerDeathRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerStatusServiceServer).PlayerDeath(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerStatusService_PlayerDeath_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerStatusServiceServer).PlayerDeath(ctx, req.(*PlayerDeathRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ServerStatusService_ServiceDesc is the grpc.ServiceDesc for ServerStatusService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -326,6 +434,18 @@ var ServerStatusService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetServerStatus",
 			Handler:    _ServerStatusService_GetServerStatus_Handler,
+		},
+		{
+			MethodName: "PlayerChat",
+			Handler:    _ServerStatusService_PlayerChat_Handler,
+		},
+		{
+			MethodName: "PlayerKick",
+			Handler:    _ServerStatusService_PlayerKick_Handler,
+		},
+		{
+			MethodName: "PlayerDeath",
+			Handler:    _ServerStatusService_PlayerDeath_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

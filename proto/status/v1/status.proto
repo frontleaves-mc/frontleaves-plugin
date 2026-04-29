@@ -23,6 +23,12 @@ service ServerStatusService {
   rpc GetPlayerStatus(GetPlayerStatusRequest) returns (GetPlayerStatusResponse);
   // GetServerStatus 查询服务器状态
   rpc GetServerStatus(GetServerStatusRequest) returns (GetServerStatusResponse);
+  // PlayerChat 玩家聊天
+  rpc PlayerChat(PlayerChatRequest) returns (PlayerEventResponse);
+  // PlayerKick 玩家被踢出
+  rpc PlayerKick(PlayerKickRequest) returns (PlayerEventResponse);
+  // PlayerDeath 玩家死亡
+  rpc PlayerDeath(PlayerDeathRequest) returns (PlayerEventResponse);
 }
 
 // PlayerEventRequest 玩家事件请求
@@ -115,4 +121,46 @@ message PlayerStatus {
   string player_name = 2;
   // 所在世界名称
   string world_name = 3;
+}
+
+// PlayerChatRequest 玩家聊天请求
+message PlayerChatRequest {
+  // 玩家 UUID
+  string player_uuid = 11;
+  // 玩家用户名
+  string player_name = 12;
+  // 服务器名称
+  string server_name = 13;
+  // 世界名称
+  string world_name = 14;
+  // 聊天消息内容
+  string message = 15;
+}
+
+// PlayerKickRequest 玩家被踢出请求
+message PlayerKickRequest {
+  // 玩家 UUID
+  string player_uuid = 11;
+  // 玩家用户名
+  string player_name = 12;
+  // 服务器名称
+  string server_name = 13;
+  // 世界名称
+  string world_name = 14;
+  // 踢出原因
+  string reason = 15;
+}
+
+// PlayerDeathRequest 玩家死亡请求
+message PlayerDeathRequest {
+  // 玩家 UUID
+  string player_uuid = 11;
+  // 玩家用户名
+  string player_name = 12;
+  // 服务器名称
+  string server_name = 13;
+  // 世界名称
+  string world_name = 14;
+  // 死亡消息
+  string death_message = 15;
 }

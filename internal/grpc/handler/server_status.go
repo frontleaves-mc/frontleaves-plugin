@@ -197,3 +197,60 @@ func (h *ServerStatusHandler) GetServerStatus(
 
 	return resp, nil
 }
+
+func (h *ServerStatusHandler) PlayerChat(
+	ctx context.Context, req *statuspb.PlayerChatRequest,
+) (*statuspb.PlayerEventResponse, error) {
+	h.log.Info(ctx, "PlayerChat - 玩家聊天: "+req.GetPlayerName())
+
+	parsedUUID, err := uuid.Parse(req.GetPlayerUuid())
+	if err != nil {
+		return nil, xError.NewError(ctx, xError.ParameterError, "player_uuid 格式无效", true, err)
+	}
+
+	if xErr := h.service.playerChatLogic.RecordChat(ctx, parsedUUID, req.GetPlayerName(),
+		req.GetServerName(), req.GetWorldName(), req.GetMessage()); xErr != nil {
+		return nil, xErr
+	}
+
+	resp := xGrpcResult.SuccessWith[*statuspb.PlayerEventResponse](ctx, "聊天消息已记录")
+	return resp, nil
+}
+
+func (h *ServerStatusHandler) PlayerKick(
+	ctx context.Context, req *statuspb.PlayerKickRequest,
+) (*statuspb.PlayerEventResponse, error) {
+	h.log.Info(ctx, "PlayerKick - 玩家被踢出: "+req.GetPlayerName())
+
+	parsedUUID, err := uuid.Parse(req.GetPlayerUuid())
+	if err != nil {
+		return nil, xError.NewError(ctx, xError.ParameterError, "player_uuid 格式无效", true, err)
+	}
+
+	if xErr := h.service.playerEventLogic.RecordEvent(ctx, parsedUUID, req.GetPlayerName(),
+		req.GetServerName(), req.GetWorldName(), bConst.PlayerEventKick, req.GetReason()); xErr != nil {
+		return nil, xErr
+	}
+
+	resp := xGrpcResult.SuccessWith[*statuspb.PlayerEventResponse](ctx, "踢出事件已记录")
+	return resp, nil
+}
+
+func (h *ServerStatusHandler) PlayerDeath(
+	ctx context.Context, req *statuspb.PlayerDeathRequest,
+) (*statuspb.PlayerEventResponse, error) {
+	h.log.Info(ctx, "PlayerDeath - 玩家死亡: "+req.GetPlayerName())
+
+	parsedUUID, err := uuid.Parse(req.GetPlayerUuid())
+	if err != nil {
+		return nil, xError.NewError(ctx, xError.ParameterError, "player_uuid 格式无效", true, err)
+	}
+
+	if xErr := h.service.playerEventLogic.RecordEvent(ctx, parsedUUID, req.GetPlayerName(),
+		req.GetServerName(), req.GetWorldName(), bConst.PlayerEventDeath, req.GetDeathMessage()); xErr != nil {
+		return nil, xErr
+	}
+
+	resp := xGrpcResult.SuccessWith[*statuspb.PlayerEventResponse](ctx, "死亡事件已记录")
+	return resp, nil
+}
