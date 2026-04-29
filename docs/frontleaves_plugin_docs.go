@@ -27,7 +27,7 @@ const docTemplatefrontleaves_plugin = `{
                 "tags": [
                     "成就接口"
                 ],
-                "summary": "查询公开成就列表",
+                "summary": "[公共] 查询公开成就列表",
                 "responses": {
                     "200": {
                         "description": "成功",
@@ -1173,7 +1173,7 @@ const docTemplatefrontleaves_plugin = `{
                 "tags": [
                     "健康检查接口"
                 ],
-                "summary": "健康检查",
+                "summary": "[公共] 健康检查",
                 "responses": {
                     "200": {
                         "description": "成功",

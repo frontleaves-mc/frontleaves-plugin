@@ -291,7 +291,7 @@ paths:
           description: 请求参数错误
           schema:
             $ref: '#/definitions/xBase.BaseResponse'
-      summary: 查询公开成就列表
+      summary: '[公共] 查询公开成就列表'
       tags:
       - 成就接口
   /admin/achievements:
@@ -1006,7 +1006,7 @@ paths:
           description: 请求参数错误
           schema:
             $ref: '#/definitions/xBase.BaseResponse'
-      summary: 健康检查
+      summary: '[公共] 健康检查'
       tags:
       - 健康检查接口
 swagger: "2.0"

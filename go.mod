@@ -80,3 +80,5 @@ require (
 )
 
 replace github.com/frontleaves-mc/frontleaves-yggleaf/proto => ../frontleaves-yggleaf/proto
+
+replace github.com/frontleaves-mc/frontleaves-plugin/proto => ./proto
