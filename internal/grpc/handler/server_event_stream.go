@@ -31,6 +31,9 @@ func init() {
 func (h *ServerStatusHandler) setEventStream(serverName string, es *eventStream) {
 	eventStreamManager.mu.Lock()
 	defer eventStreamManager.mu.Unlock()
+	if _, exists := eventStreamManager.streams[serverName]; exists {
+		h.log.Warn(context.Background(), "EventStream - 替换已存在的流: "+serverName)
+	}
 	eventStreamManager.streams[serverName] = es
 	h.log.Info(context.Background(), "EventStream - 流已注册: "+serverName)
 }

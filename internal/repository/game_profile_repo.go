@@ -36,13 +36,16 @@ func (r *GameProfileRepo) GetByUUID(ctx context.Context, profileUUID uuid.UUID) 
 
 func (r *GameProfileRepo) CreateOrUpdate(ctx context.Context, gp *entity.GameProfile) *xError.Error {
 	r.log.Info(ctx, "CreateOrUpdate - 创建或更新玩家")
+	assigns := map[string]interface{}{
+		"username":    gp.Username,
+		"group_name":  gp.GroupName,
+		"reported_at": gp.ReportedAt,
+	}
+	if gp.UserID != 0 {
+		assigns["user_id"] = gp.UserID
+	}
 	result := r.db.WithContext(ctx).Where("uuid = ?", gp.UUID).
-		Assign(map[string]interface{}{
-			"user_id":     gp.UserID,
-			"username":    gp.Username,
-			"group_name":  gp.GroupName,
-			"reported_at": gp.ReportedAt,
-		}).
+		Assign(assigns).
 		FirstOrCreate(gp)
 	if result.Error != nil {
 		return xError.NewError(nil, xError.DatabaseError, "创建或更新玩家失败", false, result.Error)

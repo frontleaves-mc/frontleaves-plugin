@@ -76,6 +76,10 @@ func (h *ServerStatusHandler) dispatchEvent(
 	case *statuspb.ServerEventStreamRequest_HeartbeatEvent:
 		heartbeat := evt.HeartbeatEvent
 		serverName := heartbeat.GetServerName()
+		if serverName == "" {
+			h.log.Warn(ctx, "HeartbeatEvent - 收到空服务器名，跳过")
+			return
+		}
 		h.log.Info(ctx, "HeartbeatEvent - 服务器心跳: "+serverName)
 		serverKey := string(bConst.CacheStatusServer.Get(serverName))
 		h.rdb.HSet(ctx, serverKey, map[string]any{
@@ -99,6 +103,10 @@ func (h *ServerStatusHandler) dispatchEvent(
 		serverName := join.GetServerName()
 		worldName := join.GetWorldName()
 		playerName := join.GetPlayerName()
+		if playerUUID == "" || playerName == "" {
+			h.log.Warn(ctx, "PlayerJoinEvent - 玩家 UUID 或名称为空，跳过")
+			return
+		}
 		h.log.Info(ctx, "PlayerJoinEvent - 玩家加入: "+playerName)
 		playerKey := string(bConst.CacheStatusPlayer.Get(playerUUID))
 		h.rdb.HSet(ctx, playerKey, map[string]any{
@@ -127,6 +135,10 @@ func (h *ServerStatusHandler) dispatchEvent(
 		quit := evt.PlayerQuitEvent
 		playerUUID := quit.GetPlayerUuid()
 		serverName := quit.GetServerName()
+		if playerUUID == "" {
+			h.log.Warn(ctx, "PlayerQuitEvent - 玩家 UUID 为空，跳过")
+			return
+		}
 		h.log.Info(ctx, "PlayerQuitEvent - 玩家离开: "+quit.GetPlayerName())
 		playerKey := string(bConst.CacheStatusPlayer.Get(playerUUID))
 		h.rdb.HSet(ctx, playerKey, map[string]any{
@@ -140,6 +152,10 @@ func (h *ServerStatusHandler) dispatchEvent(
 	case *statuspb.ServerEventStreamRequest_PlayerSwitchWorldEvent:
 		sw := evt.PlayerSwitchWorldEvent
 		playerUUID := sw.GetPlayerUuid()
+		if playerUUID == "" {
+			h.log.Warn(ctx, "PlayerSwitchWorldEvent - 玩家 UUID 为空，跳过")
+			return
+		}
 		h.log.Info(ctx, "PlayerSwitchWorldEvent - 玩家切换世界")
 		playerKey := string(bConst.CacheStatusPlayer.Get(playerUUID))
 		h.rdb.HSet(ctx, playerKey, "world_name", sw.GetNewWorldName())
@@ -147,7 +163,12 @@ func (h *ServerStatusHandler) dispatchEvent(
 
 	case *statuspb.ServerEventStreamRequest_PlayerChatEvent:
 		chat := evt.PlayerChatEvent
-		h.log.Info(ctx, "PlayerChatEvent - 玩家聊天: "+chat.GetPlayerName())
+		playerName := chat.GetPlayerName()
+		if chat.GetPlayerUuid() == "" {
+			h.log.Warn(ctx, "PlayerChatEvent - player_uuid 为空，跳过")
+			return
+		}
+		h.log.Info(ctx, "PlayerChatEvent - 玩家聊天: "+playerName)
 		parsedUUID, err := uuid.Parse(chat.GetPlayerUuid())
 		if err != nil {
 			h.log.Warn(ctx, "PlayerChatEvent - player_uuid 格式无效: "+err.Error())
@@ -160,6 +181,10 @@ func (h *ServerStatusHandler) dispatchEvent(
 
 	case *statuspb.ServerEventStreamRequest_PlayerKickEvent:
 		kick := evt.PlayerKickEvent
+		if kick.GetPlayerUuid() == "" {
+			h.log.Warn(ctx, "PlayerKickEvent - player_uuid 为空，跳过")
+			return
+		}
 		h.log.Info(ctx, "PlayerKickEvent - 玩家被踢出: "+kick.GetPlayerName())
 		parsedUUID, err := uuid.Parse(kick.GetPlayerUuid())
 		if err != nil {
@@ -173,6 +198,10 @@ func (h *ServerStatusHandler) dispatchEvent(
 
 	case *statuspb.ServerEventStreamRequest_PlayerDeathEvent:
 		death := evt.PlayerDeathEvent
+		if death.GetPlayerUuid() == "" {
+			h.log.Warn(ctx, "PlayerDeathEvent - player_uuid 为空，跳过")
+			return
+		}
 		h.log.Info(ctx, "PlayerDeathEvent - 玩家死亡: "+death.GetPlayerName())
 		parsedUUID, err := uuid.Parse(death.GetPlayerUuid())
 		if err != nil {
@@ -186,6 +215,10 @@ func (h *ServerStatusHandler) dispatchEvent(
 
 	case *statuspb.ServerEventStreamRequest_PlayerGroupChangeEvent:
 		gc := evt.PlayerGroupChangeEvent
+		if gc.GetPlayerUuid() == "" {
+			h.log.Warn(ctx, "PlayerGroupChangeEvent - player_uuid 为空，跳过")
+			return
+		}
 		h.log.Info(ctx, "PlayerGroupChangeEvent - 权限组变更: "+gc.GetPlayerName()+" "+gc.GetOldGroupName()+" → "+gc.GetGroupName())
 		parsedUUID, err := uuid.Parse(gc.GetPlayerUuid())
 		if err != nil {
