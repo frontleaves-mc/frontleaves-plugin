@@ -28,6 +28,7 @@ go.work.sum
 
 ### Build ###
 build/
+frontleaves-plugin
 bamboo-base-go-template
 
 # AI
