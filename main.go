@@ -7,6 +7,7 @@ import (
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
 	xMain "github.com/bamboo-services/bamboo-base-go/major/main"
 	xReg "github.com/bamboo-services/bamboo-base-go/major/register"
+	xGrpcIStream "github.com/bamboo-services/bamboo-base-go/plugins/grpc/interceptor/stream"
 	xGrpcIUnary "github.com/bamboo-services/bamboo-base-go/plugins/grpc/interceptor/unary"
 	xGrpcRunner "github.com/bamboo-services/bamboo-base-go/plugins/grpc/runner"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/app/route"
@@ -27,6 +28,9 @@ func main() {
 		}),
 		xGrpcRunner.WithUnaryInterceptors(
 			xGrpcIUnary.ResponseBuilder(),
+		),
+		xGrpcRunner.WithStreamInterceptors(
+			xGrpcIStream.Middleware(),
 		),
 	)
 
