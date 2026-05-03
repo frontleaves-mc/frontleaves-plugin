@@ -1,0 +1,14 @@
+.git
+.claude
+.idea
+.run
+.sisyphus
+.logs
+.env
+.env.local
+.env.prod
+.env.test
+build/
+docs/
+*.md
+README.md

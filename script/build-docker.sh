@@ -138,9 +138,36 @@ echo ""
 # ============================================================================
 print_step "1/5" "确定版本号"
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$PROJECT_ROOT"
+
+YGGGLEAF_PROTO_DIR="$PROJECT_ROOT/../frontleaves-yggleaf/proto"
+LOCAL_YGGGLEAF_PROTO="$PROJECT_ROOT/.build-yggleaf-proto"
+
+cleanup() {
+    if [ -d "$LOCAL_YGGGLEAF_PROTO" ]; then
+        rm -rf "$LOCAL_YGGGLEAF_PROTO"
+    fi
+    if [ -f "$PROJECT_ROOT/.build-go.mod" ]; then
+        mv "$PROJECT_ROOT/.build-go.mod" "$PROJECT_ROOT/go.mod"
+    fi
+}
+trap cleanup EXIT
+
+log_info "准备构建上下文..."
+
+if [ ! -d "$YGGGLEAF_PROTO_DIR" ]; then
+    log_error "找不到 frontleaves-yggleaf/proto: $YGGLEAF_PROTO_DIR"
+    exit 1
+fi
+
+mkdir -p "$LOCAL_YGGLEAF_PROTO"
+cp -r "$YGGGLEAF_PROTO_DIR"/* "$LOCAL_YGGLEAF_PROTO/"
+log_success "已拷贝 yggleaf/proto 到构建上下文"
+
+cp "$PROJECT_ROOT/go.mod" "$PROJECT_ROOT/.build-go.mod"
+sed 's|=> ../frontleaves-yggleaf/proto|=> ./.build-yggleaf-proto|g' "$PROJECT_ROOT/.build-go.mod" > "$PROJECT_ROOT/go.mod"
+log_success "已修正 go.mod replace 路径"
 
 if [ -n "$SPECIFIED_VERSION" ]; then
     VERSION=$SPECIFIED_VERSION
