@@ -106,7 +106,7 @@ print_banner() {
     fi
 }
 
-DEPLOY_SERVER="${1:-${DEPLOY_FRONTLEAVES_SERVER:-localhost}}"
+DEPLOY_SERVER="${1:-${DEPLOY_FRONTLEAVES_GAME_SERVER:-localhost}}"
 DEPLOY_USER="${2:-${DEPLOY_USER:-root}}"
 DEPLOY_PATH="${3:-${DEPLOY_PATH:-/root/frontleaves-plugin}}"
 DEPLOY_PORT="${DEPLOY_PORT:-22}"

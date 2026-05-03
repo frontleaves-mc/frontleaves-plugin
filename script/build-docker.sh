@@ -138,7 +138,8 @@ echo ""
 # ============================================================================
 print_step "1/5" "确定版本号"
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_ROOT"
 
 if [ -n "$SPECIFIED_VERSION" ]; then
