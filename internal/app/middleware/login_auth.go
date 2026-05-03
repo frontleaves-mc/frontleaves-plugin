@@ -119,7 +119,7 @@ func syncUserAndGameProfiles(detachedCtx context.Context, authClient *pluginGrpc
 			log.Warn(context.Background(), "解析 GameProfile UUID 失败: "+parseErr.Error())
 			continue
 		}
-		if xErr := gpLogic.Upsert(detachedCtx, userID, gpUUID, gp.GetUsername()); xErr != nil {
+		if xErr := gpLogic.Upsert(detachedCtx, userID, gpUUID, gp.GetUsername(), "PLAYER"); xErr != nil {
 			log.Warn(context.Background(), "同步 GameProfile 失败: "+xErr.Error())
 		}
 	}

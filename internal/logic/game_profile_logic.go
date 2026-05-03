@@ -70,17 +70,34 @@ func (l *GameProfileLogic) ListPlayers(ctx context.Context, page, pageSize int) 
 	return resp, total, nil
 }
 
-func (l *GameProfileLogic) Upsert(ctx context.Context, userID xSnowflake.SnowflakeID, gpUUID uuid.UUID, name string) error {
+func (l *GameProfileLogic) Upsert(ctx context.Context, userID xSnowflake.SnowflakeID, gpUUID uuid.UUID, name string, groupName string) error {
 	l.log.Info(ctx, "Upsert - 同步 GameProfile")
 	gp := &entity.GameProfile{
 		UserID:     userID,
 		UUID:       gpUUID,
 		Username:   name,
-		GroupName:  "PLAYER",
+		GroupName:  groupName,
 		ReportedAt: time.Now(),
 	}
 	if xErr := l.repo.gameProfile.CreateOrUpdate(ctx, gp); xErr != nil {
 		l.log.Warn(ctx, "同步 GameProfile 失败: "+xErr.Error())
+		return xErr
+	}
+	return nil
+}
+
+func (l *GameProfileLogic) UpdateGroupName(ctx context.Context, playerUUID uuid.UUID, groupName string) error {
+	l.log.Info(ctx, "UpdateGroupName - 更新权限组: "+groupName)
+
+	gp, xErr := l.repo.gameProfile.GetByUUID(ctx, playerUUID)
+	if xErr != nil {
+		return xErr
+	}
+
+	gp.GroupName = groupName
+	gp.ReportedAt = time.Now()
+
+	if xErr := l.repo.gameProfile.CreateOrUpdate(ctx, gp); xErr != nil {
 		return xErr
 	}
 	return nil

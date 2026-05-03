@@ -58,7 +58,11 @@ func (h *ServerStatusHandler) PlayerJoin(
 
 	parsedUUID, err := uuid.Parse(playerUUID)
 	if err == nil {
-		if syncErr := h.service.gameProfileLogic.Upsert(ctx, 0, parsedUUID, req.GetPlayerName()); syncErr != nil {
+		groupName := req.GetGroupName()
+		if groupName == "" {
+			groupName = "PLAYER"
+		}
+		if syncErr := h.service.gameProfileLogic.Upsert(ctx, 0, parsedUUID, req.GetPlayerName(), groupName); syncErr != nil {
 			h.log.Warn(ctx, "同步 GameProfile 失败: "+syncErr.Error())
 		}
 	}
@@ -121,83 +125,6 @@ func (h *ServerStatusHandler) ServerHeartbeat(
 	return resp, nil
 }
 
-func (h *ServerStatusHandler) GetPlayerStatus(
-	ctx context.Context, req *statuspb.GetPlayerStatusRequest,
-) (*statuspb.GetPlayerStatusResponse, error) {
-	h.log.Info(ctx, "GetPlayerStatus - 查询玩家状态")
-
-	playerUUID := req.GetPlayerUuid()
-	playerKey := string(bConst.CacheStatusPlayer.Get(playerUUID))
-
-	result, err := h.rdb.HGetAll(ctx, playerKey).Result()
-	if err != nil {
-		return nil, xError.NewError(ctx, xError.CacheError, "查询玩家状态失败", false, err)
-	}
-
-	resp := xGrpcResult.SuccessWith[*statuspb.GetPlayerStatusResponse](ctx, "查询成功")
-	if len(result) > 0 {
-		resp.Online = result["online"] == "true"
-		resp.ServerName = result["server_name"]
-		resp.WorldName = result["world_name"]
-		resp.PlayerName = result["player_name"]
-		if ls, parseErr := strconv.ParseInt(result["last_seen"], 10, 64); parseErr == nil {
-			resp.LastSeen = ls
-		}
-	}
-
-	return resp, nil
-}
-
-func (h *ServerStatusHandler) GetServerStatus(
-	ctx context.Context, req *statuspb.GetServerStatusRequest,
-) (*statuspb.GetServerStatusResponse, error) {
-	h.log.Info(ctx, "GetServerStatus - 查询服务器状态: "+req.GetServerName())
-
-	serverName := req.GetServerName()
-	serverKey := string(bConst.CacheStatusServer.Get(serverName))
-	serverPlayersKey := string(bConst.CacheStatusServerPlayers.Get(serverName))
-
-	serverData, err := h.rdb.HGetAll(ctx, serverKey).Result()
-	if err != nil {
-		return nil, xError.NewError(ctx, xError.CacheError, "查询服务器状态失败", false, err)
-	}
-
-	resp := xGrpcResult.SuccessWith[*statuspb.GetServerStatusResponse](ctx, "查询成功")
-
-	if len(serverData) > 0 {
-		if op, parseErr := strconv.ParseInt(serverData["online_players"], 10, 32); parseErr == nil {
-			resp.OnlinePlayers = int32(op)
-		}
-		if tps, parseErr := strconv.ParseFloat(serverData["tps"], 64); parseErr == nil {
-			resp.Tps = tps
-		}
-		if ts, parseErr := strconv.ParseInt(serverData["timestamp"], 10, 64); parseErr == nil {
-			resp.LastHeartbeat = ts
-		}
-	}
-
-	playerUUIDs, err := h.rdb.SMembers(ctx, serverPlayersKey).Result()
-	if err != nil {
-		return nil, xError.NewError(ctx, xError.CacheError, "查询服务器玩家列表失败", false, err)
-	}
-
-	resp.Players = make([]*statuspb.PlayerStatus, 0, len(playerUUIDs))
-	for _, pUUID := range playerUUIDs {
-		playerKey := string(bConst.CacheStatusPlayer.Get(pUUID))
-		playerData, err := h.rdb.HGetAll(ctx, playerKey).Result()
-		if err != nil || len(playerData) == 0 {
-			continue
-		}
-		resp.Players = append(resp.Players, &statuspb.PlayerStatus{
-			PlayerUuid: pUUID,
-			PlayerName: playerData["player_name"],
-			WorldName:  playerData["world_name"],
-		})
-	}
-
-	return resp, nil
-}
-
 func (h *ServerStatusHandler) PlayerChat(
 	ctx context.Context, req *statuspb.PlayerChatRequest,
 ) (*statuspb.PlayerEventResponse, error) {
@@ -252,5 +179,30 @@ func (h *ServerStatusHandler) PlayerDeath(
 	}
 
 	resp := xGrpcResult.SuccessWith[*statuspb.PlayerEventResponse](ctx, "死亡事件已记录")
+	return resp, nil
+}
+
+func (h *ServerStatusHandler) PlayerGroupChange(
+	ctx context.Context, req *statuspb.PlayerGroupChangeRequest,
+) (*statuspb.PlayerGroupChangeResponse, error) {
+	h.log.Info(ctx, "PlayerGroupChange - 权限组变更: "+req.GetPlayerName()+" "+req.GetOldGroupName()+" → "+req.GetGroupName())
+
+	playerUUID := req.GetPlayerUuid()
+	groupName := req.GetGroupName()
+
+	// 更新 GameProfile 权限组
+	parsedUUID, err := uuid.Parse(playerUUID)
+	if err == nil {
+		if updateErr := h.service.gameProfileLogic.UpdateGroupName(ctx, parsedUUID, groupName); updateErr != nil {
+			h.log.Warn(ctx, "更新 GameProfile 权限组失败: "+updateErr.Error())
+		}
+
+		// 触发权限组称号匹配
+		if matchErr := h.service.titleLogic.MatchGroupTitle(ctx, parsedUUID, groupName); matchErr != nil {
+			h.log.Warn(ctx, "匹配权限组称号失败: "+matchErr.Error())
+		}
+	}
+
+	resp := xGrpcResult.SuccessWith[*statuspb.PlayerGroupChangeResponse](ctx, "权限组变更已处理")
 	return resp, nil
 }
