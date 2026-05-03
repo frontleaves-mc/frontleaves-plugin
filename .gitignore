@@ -28,7 +28,6 @@ go.work.sum
 
 ### Build ###
 build/
-.build-yggleaf-proto/
 frontleaves-plugin
 bamboo-base-go-template
 
