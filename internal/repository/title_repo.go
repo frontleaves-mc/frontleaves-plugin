@@ -79,10 +79,35 @@ func (r *TitleRepo) List(ctx context.Context, page, pageSize int, titleType *int
 	return titles, total, nil
 }
 
+// Deprecated: 使用 GetActiveGroupTitlesByGroupName 替代
 func (r *TitleRepo) GetByPermissionGroup(ctx context.Context, groupName string) ([]entity.Title, *xError.Error) {
 	r.log.Info(ctx, "GetByPermissionGroup - 按权限组查询称号")
 	var titles []entity.Title
 	if err := r.db.WithContext(ctx).Where("type = ? AND permission_group = ? AND is_active = ?", entity.TitleTypeGroup, groupName, true).Find(&titles).Error; err != nil {
+		return nil, xError.NewError(nil, xError.DatabaseError, "按权限组查询称号失败", false, err)
+	}
+	return titles, nil
+}
+
+// GetActiveFreeTitles 获取所有激活的免费称号
+func (r *TitleRepo) GetActiveFreeTitles(ctx context.Context) ([]entity.Title, *xError.Error) {
+	r.log.Info(ctx, "GetActiveFreeTitles - 获取所有免费称号")
+	var titles []entity.Title
+	if err := r.db.WithContext(ctx).
+		Where("type = ? AND is_active = ?", entity.TitleTypeFree, true).
+		Find(&titles).Error; err != nil {
+		return nil, xError.NewError(nil, xError.DatabaseError, "获取免费称号失败", false, err)
+	}
+	return titles, nil
+}
+
+// GetActiveGroupTitlesByGroupName 按权限组精确查询称号
+func (r *TitleRepo) GetActiveGroupTitlesByGroupName(ctx context.Context, groupName string) ([]entity.Title, *xError.Error) {
+	r.log.Info(ctx, "GetActiveGroupTitlesByGroupName - 按权限组精确查询称号")
+	var titles []entity.Title
+	if err := r.db.WithContext(ctx).
+		Where("type = ? AND permission_group = ? AND is_active = ?", entity.TitleTypeGroup, groupName, true).
+		Find(&titles).Error; err != nil {
 		return nil, xError.NewError(nil, xError.DatabaseError, "按权限组查询称号失败", false, err)
 	}
 	return titles, nil

@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	xModels "github.com/bamboo-services/bamboo-base-go/major/models"
@@ -36,6 +38,7 @@ type GameProfileTitle struct {
 	GameProfileUUID uuid.UUID              `gorm:"type:uuid;not null;uniqueIndex:uk_gpt_gameprofile_title;comment:玩家UUID" json:"game_profile_uuid"`
 	TitleID         xSnowflake.SnowflakeID `gorm:"not null;uniqueIndex:uk_gpt_gameprofile_title;index:idx_gpt_title;comment:称号ID" json:"title_id"`
 	Source          TitleSource            `gorm:"not null;type:smallint;comment:获得来源" json:"source"`
+	GrantedAt       time.Time              `gorm:"not null;comment:授予时间" json:"granted_at"`
 	IsEquipped      bool                   `gorm:"not null;default:false;index:idx_gpt_equipped;comment:是否装备" json:"is_equipped"`
 
 	Title       *Title       `gorm:"foreignKey:TitleID;references:ID;constraint:OnDelete:CASCADE" json:"title,omitempty"`

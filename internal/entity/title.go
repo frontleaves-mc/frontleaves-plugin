@@ -12,6 +12,7 @@ const (
 	TitleTypeGeneral   TitleType = 1 // 通用称号
 	TitleTypeGroup     TitleType = 2 // 权限组称号
 	TitleTypeExclusive TitleType = 3 // 玩家专属称号
+	TitleTypeFree     TitleType = 4 // 免费称号（所有玩家自动获得，虚拟授予）
 )
 
 func (t TitleType) String() string {
@@ -22,6 +23,8 @@ func (t TitleType) String() string {
 		return "权限组称号"
 	case TitleTypeExclusive:
 		return "玩家专属称号"
+	case TitleTypeFree:
+		return "免费称号"
 	default:
 		return "未知类型"
 	}

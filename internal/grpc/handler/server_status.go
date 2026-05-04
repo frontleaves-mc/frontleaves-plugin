@@ -228,9 +228,6 @@ func (h *ServerStatusHandler) dispatchEvent(
 		if updateErr := h.service.gameProfileLogic.UpdateGroupName(ctx, parsedUUID, gc.GetGroupName()); updateErr != nil {
 			h.log.Warn(ctx, "更新 GameProfile 权限组失败: "+updateErr.Error())
 		}
-		if matchErr := h.service.titleLogic.MatchGroupTitle(ctx, parsedUUID, gc.GetGroupName()); matchErr != nil {
-			h.log.Warn(ctx, "匹配权限组称号失败: "+matchErr.Error())
-		}
 
 	default:
 		h.log.Warn(ctx, "收到未知事件类型")

@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
@@ -14,8 +15,9 @@ import (
 )
 
 type titleRepo struct {
-	title       *repository.TitleRepo
+	title            *repository.TitleRepo
 	gameProfileTitle *repository.GameProfileTitleRepo
+	gameProfile      *repository.GameProfileRepo
 }
 
 type TitleLogic struct {
@@ -36,6 +38,7 @@ func NewTitleLogic(ctx context.Context) *TitleLogic {
 		repo: titleRepo{
 			title:            repository.NewTitleRepo(db),
 			gameProfileTitle: repository.NewGameProfileTitleRepo(db),
+			gameProfile:      repository.NewGameProfileRepo(db),
 		},
 	}
 }
@@ -125,6 +128,7 @@ func (l *TitleLogic) AssignTitleToPlayer(ctx context.Context, titleID xSnowflake
 		GameProfileUUID: playerUUID,
 		TitleID:    titleID,
 		Source:     entity.TitleSourceAdmin,
+		GrantedAt:  time.Now(),
 		IsEquipped: false,
 	}
 
@@ -143,8 +147,34 @@ func (l *TitleLogic) EquipTitle(ctx context.Context, playerUUID uuid.UUID, title
 	if xErr != nil {
 		return xErr
 	}
+
+	// 虚拟称号需要先创建 GameProfileTitle 记录才能装备
 	if !has {
-		return xError.NewError(nil, xError.ParameterError, "玩家未拥有该称号", true, nil)
+		title, xErr := l.repo.title.GetByID(ctx, titleID)
+		if xErr != nil {
+			return xErr
+		}
+
+		var source entity.TitleSource
+		switch title.Type {
+		case entity.TitleTypeFree:
+			source = entity.TitleSourceAuto
+		case entity.TitleTypeGroup:
+			source = entity.TitleSourceGroup
+		default:
+			return xError.NewError(nil, xError.ParameterError, "玩家未拥有该称号", true, nil)
+		}
+
+		playerTitle := &entity.GameProfileTitle{
+			GameProfileUUID: playerUUID,
+			TitleID:    titleID,
+			Source:     source,
+			GrantedAt:  time.Now(),
+			IsEquipped: false,
+		}
+		if xErr := l.repo.gameProfileTitle.Create(ctx, playerTitle); xErr != nil {
+			return xErr
+		}
 	}
 
 	return l.repo.gameProfileTitle.EquipTitle(ctx, l.db, playerUUID, titleID)
@@ -156,21 +186,60 @@ func (l *TitleLogic) UnequipTitle(ctx context.Context, playerUUID uuid.UUID) *xE
 }
 
 func (l *TitleLogic) GetPlayerTitles(ctx context.Context, playerUUID uuid.UUID) ([]apiTitle.PlayerTitleResponse, *xError.Error) {
-	l.log.Info(ctx, "GetPlayerTitles - 查询玩家拥有的称号")
+	l.log.Info(ctx, "GetPlayerTitles - 查询玩家拥有的称号（含虚拟授予）")
 
+	titleMap := make(map[xSnowflake.SnowflakeID]apiTitle.PlayerTitleResponse)
+
+	// 1. 免费称号（虚拟授予）
+	freeTitles, xErr := l.repo.title.GetActiveFreeTitles(ctx)
+	if xErr != nil {
+		return nil, xErr
+	}
+	for _, t := range freeTitles {
+		titleMap[t.ID] = apiTitle.PlayerTitleResponse{
+			TitleResponse: *l.toTitleResponse(&t),
+			Source:        int16(entity.TitleSourceAuto),
+			IsEquipped:    false,
+			GrantedAt:     time.Time{},
+		}
+	}
+
+	// 2. 权限组称号（虚拟授予）
+	profile, xErr := l.repo.gameProfile.GetByUUID(ctx, playerUUID)
+	if xErr == nil && profile.GroupName != "" {
+		groupTitles, xErr := l.repo.title.GetActiveGroupTitlesByGroupName(ctx, profile.GroupName)
+		if xErr != nil {
+			return nil, xErr
+		}
+		for _, t := range groupTitles {
+			titleMap[t.ID] = apiTitle.PlayerTitleResponse{
+				TitleResponse: *l.toTitleResponse(&t),
+				Source:        int16(entity.TitleSourceGroup),
+				IsEquipped:    false,
+				GrantedAt:     time.Time{},
+			}
+		}
+	}
+
+	// 3. GameProfileTitle 表中的专属记录
 	playerTitles, xErr := l.repo.gameProfileTitle.GetByGameProfileUUID(ctx, playerUUID)
 	if xErr != nil {
 		return nil, xErr
 	}
+	for _, pt := range playerTitles {
+		if pt.Title != nil {
+			titleMap[pt.TitleID] = apiTitle.PlayerTitleResponse{
+				TitleResponse: *l.toTitleResponse(pt.Title),
+				Source:        int16(pt.Source),
+				IsEquipped:    pt.IsEquipped,
+				GrantedAt:     pt.GrantedAt,
+			}
+		}
+	}
 
 	var resp []apiTitle.PlayerTitleResponse
-	for _, pt := range playerTitles {
-		resp = append(resp, apiTitle.PlayerTitleResponse{
-			TitleResponse: *l.toTitleResponse(pt.Title),
-			Source:        int16(pt.Source),
-			IsEquipped:    pt.IsEquipped,
-			GrantedAt:     pt.CreatedAt,
-		})
+	for _, t := range titleMap {
+		resp = append(resp, t)
 	}
 	return resp, nil
 }
@@ -195,30 +264,7 @@ func (l *TitleLogic) GetEquippedTitle(ctx context.Context, playerUUID uuid.UUID)
 }
 
 func (l *TitleLogic) MatchGroupTitle(ctx context.Context, playerUUID uuid.UUID, groupName string) *xError.Error {
-	l.log.Info(ctx, "MatchGroupTitle - 匹配权限组称号")
-
-	titles, xErr := l.repo.title.GetByPermissionGroup(ctx, groupName)
-	if xErr != nil {
-		return xErr
-	}
-
-	for _, title := range titles {
-		has, xErr := l.repo.gameProfileTitle.HasTitle(ctx, playerUUID, title.ID)
-		if xErr != nil {
-			return xErr
-		}
-		if !has {
-			playerTitle := &entity.GameProfileTitle{
-				GameProfileUUID: playerUUID,
-				TitleID:    title.ID,
-				Source:     entity.TitleSourceGroup,
-				IsEquipped: false,
-			}
-			if xErr := l.repo.gameProfileTitle.Create(ctx, playerTitle); xErr != nil {
-				return xErr
-			}
-		}
-	}
+	l.log.Info(ctx, "MatchGroupTitle - 已废弃，权限组称号现通过虚拟授予获取")
 	return nil
 }
 
