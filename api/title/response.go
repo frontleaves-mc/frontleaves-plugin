@@ -6,6 +6,7 @@ type TitleResponse struct {
 	ID              string  `json:"id"`
 	Name            string  `json:"name"`
 	Description     string  `json:"description"`
+	Color           string  `json:"color"`
 	Type            int16   `json:"type"`
 	PermissionGroup *string `json:"permission_group,omitempty"`
 	IsActive        bool    `json:"is_active"`
@@ -23,5 +24,6 @@ type EquippedTitleResponse struct {
 	TitleID    string `json:"title_id"`
 	Name       string `json:"name"`
 	Description string `json:"description"`
+	Color      string `json:"color"`
 	Type       int16  `json:"type"`
 }

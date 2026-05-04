@@ -1827,11 +1827,15 @@ const docTemplatefrontleaves_plugin = `{
         "apiTitle.CreateTitleRequest": {
             "type": "object",
             "required": [
+                "color",
                 "description",
                 "name",
                 "type"
             ],
             "properties": {
+                "color": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -1865,6 +1869,9 @@ const docTemplatefrontleaves_plugin = `{
         "apiTitle.EquippedTitleResponse": {
             "type": "object",
             "properties": {
+                "color": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -1882,6 +1889,9 @@ const docTemplatefrontleaves_plugin = `{
         "apiTitle.PlayerTitleResponse": {
             "type": "object",
             "properties": {
+                "color": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -1917,6 +1927,9 @@ const docTemplatefrontleaves_plugin = `{
         "apiTitle.TitleResponse": {
             "type": "object",
             "properties": {
+                "color": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -1943,11 +1956,15 @@ const docTemplatefrontleaves_plugin = `{
         "apiTitle.UpdateTitleRequest": {
             "type": "object",
             "required": [
+                "color",
                 "description",
                 "name",
                 "type"
             ],
             "properties": {
+                "color": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },

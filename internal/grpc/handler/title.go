@@ -53,6 +53,7 @@ func (h *TitleHandler) GetPlayerTitles(
 			TitleId:    pt.ID,
 			Name:       pt.Name,
 			Description: pt.Description,
+			Color:      pt.Color,
 			Type:       int32(pt.Type),
 			Source:     int32(pt.Source),
 			IsEquipped: pt.IsEquipped,
@@ -83,6 +84,7 @@ func (h *TitleHandler) GetEquippedTitle(
 		resp.TitleId = equipped.TitleID
 		resp.Name = equipped.Name
 		resp.Description = equipped.Description
+		resp.Color = equipped.Color
 		resp.Type = int32(equipped.Type)
 	}
 

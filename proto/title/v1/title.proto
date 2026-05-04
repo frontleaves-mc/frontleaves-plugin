@@ -40,6 +40,8 @@ message PlayerTitle {
   int32 source = 5;
   // 是否已装备
   bool is_equipped = 6;
+  // 称号颜色(hex格式)
+  string color = 7;
 }
 
 // GetPlayerTitlesResponse 查询玩家称号响应
@@ -66,6 +68,8 @@ message GetEquippedTitleResponse {
   string description = 13;
   // 称号类型
   int32 type = 14;
+  // 称号颜色(hex格式)
+  string color = 15;
 }
 
 // EquipTitleRequest 装备称号请求

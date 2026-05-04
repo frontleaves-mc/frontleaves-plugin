@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"regexp"
 	"time"
 
 	"github.com/google/uuid"
@@ -43,12 +44,17 @@ func NewTitleLogic(ctx context.Context) *TitleLogic {
 	}
 }
 
-func (l *TitleLogic) CreateTitle(ctx context.Context, name, description string, titleType entity.TitleType, permissionGroup *string) (*apiTitle.TitleResponse, *xError.Error) {
+func (l *TitleLogic) CreateTitle(ctx context.Context, name, description, color string, titleType entity.TitleType, permissionGroup *string) (*apiTitle.TitleResponse, *xError.Error) {
 	l.log.Info(ctx, "CreateTitle - 创建称号")
+
+	if !isValidHexColor(color) {
+		return nil, xError.NewError(nil, xError.ParameterError, "颜色格式无效，需为 #000000 格式", true, nil)
+	}
 
 	title := &entity.Title{
 		Name:            name,
 		Description:     description,
+		Color:           color,
 		Type:            titleType,
 		PermissionGroup: permissionGroup,
 		IsActive:        true,
@@ -61,8 +67,12 @@ func (l *TitleLogic) CreateTitle(ctx context.Context, name, description string, 
 	return l.toTitleResponse(title), nil
 }
 
-func (l *TitleLogic) UpdateTitle(ctx context.Context, id xSnowflake.SnowflakeID, name, description string, titleType entity.TitleType, permissionGroup *string, isActive *bool) (*apiTitle.TitleResponse, *xError.Error) {
+func (l *TitleLogic) UpdateTitle(ctx context.Context, id xSnowflake.SnowflakeID, name, description, color string, titleType entity.TitleType, permissionGroup *string, isActive *bool) (*apiTitle.TitleResponse, *xError.Error) {
 	l.log.Info(ctx, "UpdateTitle - 更新称号")
+
+	if !isValidHexColor(color) {
+		return nil, xError.NewError(nil, xError.ParameterError, "颜色格式无效，需为 #000000 格式", true, nil)
+	}
 
 	title, xErr := l.repo.title.GetByID(ctx, id)
 	if xErr != nil {
@@ -71,6 +81,7 @@ func (l *TitleLogic) UpdateTitle(ctx context.Context, id xSnowflake.SnowflakeID,
 
 	title.Name = name
 	title.Description = description
+	title.Color = color
 	title.Type = titleType
 	title.PermissionGroup = permissionGroup
 	if isActive != nil {
@@ -259,6 +270,7 @@ func (l *TitleLogic) GetEquippedTitle(ctx context.Context, playerUUID uuid.UUID)
 		TitleID:     playerTitle.TitleID.String(),
 		Name:        playerTitle.Title.Name,
 		Description: playerTitle.Title.Description,
+		Color:       playerTitle.Title.Color,
 		Type:        int16(playerTitle.Title.Type),
 	}, nil
 }
@@ -273,6 +285,7 @@ func (l *TitleLogic) toTitleResponse(title *entity.Title) *apiTitle.TitleRespons
 		ID:          title.ID.String(),
 		Name:        title.Name,
 		Description: title.Description,
+		Color:       title.Color,
 		Type:        int16(title.Type),
 		IsActive:    title.IsActive,
 		CreatedAt:   title.CreatedAt,
@@ -281,4 +294,11 @@ func (l *TitleLogic) toTitleResponse(title *entity.Title) *apiTitle.TitleRespons
 		resp.PermissionGroup = title.PermissionGroup
 	}
 	return resp
+}
+
+// isValidHexColor 校验颜色是否为合法的 hex 格式 (#000000)
+var hexColorRegex = regexp.MustCompile(`^#[0-9A-Fa-f]{6}$`)
+
+func isValidHexColor(color string) bool {
+	return hexColorRegex.MatchString(color)
 }

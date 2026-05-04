@@ -39,7 +39,7 @@ func (h *TitleAdminHandler) CreateTitle(ctx *gin.Context) {
 		return
 	}
 
-	title, xErr := h.service.titleLogic.CreateTitle(ctx.Request.Context(), req.Name, req.Description, entity.TitleType(req.Type), req.PermissionGroup)
+	title, xErr := h.service.titleLogic.CreateTitle(ctx.Request.Context(), req.Name, req.Description, req.Color, entity.TitleType(req.Type), req.PermissionGroup)
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return
@@ -76,7 +76,7 @@ func (h *TitleAdminHandler) UpdateTitle(ctx *gin.Context) {
 		return
 	}
 
-	title, xErr := h.service.titleLogic.UpdateTitle(ctx.Request.Context(), titleID, req.Name, req.Description, entity.TitleType(req.Type), req.PermissionGroup, req.IsActive)
+	title, xErr := h.service.titleLogic.UpdateTitle(ctx.Request.Context(), titleID, req.Name, req.Description, req.Color, entity.TitleType(req.Type), req.PermissionGroup, req.IsActive)
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return

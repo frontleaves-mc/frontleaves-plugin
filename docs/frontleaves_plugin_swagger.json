@@ -1816,11 +1816,15 @@
         "apiTitle.CreateTitleRequest": {
             "type": "object",
             "required": [
+                "color",
                 "description",
                 "name",
                 "type"
             ],
             "properties": {
+                "color": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -1854,6 +1858,9 @@
         "apiTitle.EquippedTitleResponse": {
             "type": "object",
             "properties": {
+                "color": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -1871,6 +1878,9 @@
         "apiTitle.PlayerTitleResponse": {
             "type": "object",
             "properties": {
+                "color": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -1906,6 +1916,9 @@
         "apiTitle.TitleResponse": {
             "type": "object",
             "properties": {
+                "color": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -1932,11 +1945,15 @@
         "apiTitle.UpdateTitleRequest": {
             "type": "object",
             "required": [
+                "color",
                 "description",
                 "name",
                 "type"
             ],
             "properties": {
+                "color": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },

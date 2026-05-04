@@ -33,6 +33,7 @@ func (t TitleType) String() string {
 type Title struct {
 	xModels.BaseEntity
 	Name            string  `gorm:"not null;type:varchar(64);uniqueIndex:uk_title_name;comment:称号名称" json:"name"`
+	Color           string  `gorm:"not null;type:varchar(7);comment:称号颜色(hex格式)" json:"color"`
 	Description     string  `gorm:"not null;type:varchar(255);comment:称号描述" json:"description"`
 	Type            TitleType `gorm:"not null;type:smallint;index:idx_title_type;comment:称号类型" json:"type"`
 	PermissionGroup *string `gorm:"type:varchar(64);index:idx_title_perm_group;comment:关联权限组" json:"permission_group,omitempty"`

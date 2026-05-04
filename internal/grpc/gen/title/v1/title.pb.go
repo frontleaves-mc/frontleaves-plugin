@@ -82,7 +82,9 @@ type PlayerTitle struct {
 	// 来源
 	Source int32 `protobuf:"varint,5,opt,name=source,proto3" json:"source,omitempty"`
 	// 是否已装备
-	IsEquipped    bool `protobuf:"varint,6,opt,name=is_equipped,json=isEquipped,proto3" json:"is_equipped,omitempty"`
+	IsEquipped bool `protobuf:"varint,6,opt,name=is_equipped,json=isEquipped,proto3" json:"is_equipped,omitempty"`
+	// 称号颜色(hex格式)
+	Color         string `protobuf:"bytes,7,opt,name=color,proto3" json:"color,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -157,6 +159,13 @@ func (x *PlayerTitle) GetIsEquipped() bool {
 		return x.IsEquipped
 	}
 	return false
+}
+
+func (x *PlayerTitle) GetColor() string {
+	if x != nil {
+		return x.Color
+	}
+	return ""
 }
 
 // GetPlayerTitlesResponse 查询玩家称号响应
@@ -270,7 +279,9 @@ type GetEquippedTitleResponse struct {
 	// 称号描述
 	Description string `protobuf:"bytes,13,opt,name=description,proto3" json:"description,omitempty"`
 	// 称号类型
-	Type          int32 `protobuf:"varint,14,opt,name=type,proto3" json:"type,omitempty"`
+	Type int32 `protobuf:"varint,14,opt,name=type,proto3" json:"type,omitempty"`
+	// 称号颜色(hex格式)
+	Color         string `protobuf:"bytes,15,opt,name=color,proto3" json:"color,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -338,6 +349,13 @@ func (x *GetEquippedTitleResponse) GetType() int32 {
 		return x.Type
 	}
 	return 0
+}
+
+func (x *GetEquippedTitleResponse) GetColor() string {
+	if x != nil {
+		return x.Color
+	}
+	return ""
 }
 
 // EquipTitleRequest 装备称号请求
@@ -538,7 +556,7 @@ const file_title_v1_title_proto_rawDesc = "" +
 	"\x14title/v1/title.proto\x12\x14frontleaves.title.v1\x1a\x0flink/base.proto\"9\n" +
 	"\x16GetPlayerTitlesRequest\x12\x1f\n" +
 	"\vplayer_uuid\x18\v \x01(\tR\n" +
-	"playerUuid\"\xab\x01\n" +
+	"playerUuid\"\xc1\x01\n" +
 	"\vPlayerTitle\x12\x19\n" +
 	"\btitle_id\x18\x01 \x01(\tR\atitleId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
@@ -546,19 +564,21 @@ const file_title_v1_title_proto_rawDesc = "" +
 	"\x04type\x18\x04 \x01(\x05R\x04type\x12\x16\n" +
 	"\x06source\x18\x05 \x01(\x05R\x06source\x12\x1f\n" +
 	"\vis_equipped\x18\x06 \x01(\bR\n" +
-	"isEquipped\"\x8e\x01\n" +
+	"isEquipped\x12\x14\n" +
+	"\x05color\x18\a \x01(\tR\x05color\"\x8e\x01\n" +
 	"\x17GetPlayerTitlesResponse\x128\n" +
 	"\rbase_response\x18\x01 \x01(\v2\x13.xBase.BaseResponseR\fbaseResponse\x129\n" +
 	"\x06titles\x18\v \x03(\v2!.frontleaves.title.v1.PlayerTitleR\x06titles\":\n" +
 	"\x17GetEquippedTitleRequest\x12\x1f\n" +
 	"\vplayer_uuid\x18\v \x01(\tR\n" +
-	"playerUuid\"\xb9\x01\n" +
+	"playerUuid\"\xcf\x01\n" +
 	"\x18GetEquippedTitleResponse\x128\n" +
 	"\rbase_response\x18\x01 \x01(\v2\x13.xBase.BaseResponseR\fbaseResponse\x12\x19\n" +
 	"\btitle_id\x18\v \x01(\tR\atitleId\x12\x12\n" +
 	"\x04name\x18\f \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\r \x01(\tR\vdescription\x12\x12\n" +
-	"\x04type\x18\x0e \x01(\x05R\x04type\"O\n" +
+	"\x04type\x18\x0e \x01(\x05R\x04type\x12\x14\n" +
+	"\x05color\x18\x0f \x01(\tR\x05color\"O\n" +
 	"\x11EquipTitleRequest\x12\x1f\n" +
 	"\vplayer_uuid\x18\v \x01(\tR\n" +
 	"playerUuid\x12\x19\n" +
