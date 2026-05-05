@@ -25,6 +25,9 @@ var migrateTables = []interface{}{
 	&entity.PluginCredential{},
 	&entity.PlayerEvent{},
 	&entity.PlayerChatLog{},
+	&entity.Announcement{},
+	&entity.AnnouncementSchedule{},
+	&entity.AnnouncementScheduleItem{},
 }
 
 func (r *reg) databaseInit(ctx context.Context) (any, error) {

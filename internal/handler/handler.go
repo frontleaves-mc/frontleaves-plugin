@@ -12,7 +12,9 @@ type service struct {
 	serverStatusLogic     *logic.ServerStatusLogic
 	titleLogic            *logic.TitleLogic
 	achievementLogic      *logic.AchievementLogic
-	pluginCredentialLogic *logic.PluginCredentialLogic
+	announcementLogic          *logic.AnnouncementLogic
+	announcementScheduleLogic  *logic.AnnouncementScheduleLogic
+	pluginCredentialLogic      *logic.PluginCredentialLogic
 }
 
 type handler struct {
@@ -38,7 +40,9 @@ func NewHandler[T IHandler](ctx context.Context, handlerName string) *T {
 			serverStatusLogic:     logic.NewServerStatusLogic(ctx),
 			titleLogic:            logic.NewTitleLogic(ctx),
 			achievementLogic:      logic.NewAchievementLogic(ctx),
-			pluginCredentialLogic: logic.NewPluginCredentialLogic(ctx),
+			announcementLogic:          logic.NewAnnouncementLogic(ctx),
+			announcementScheduleLogic:  logic.NewAnnouncementScheduleLogic(ctx),
+			pluginCredentialLogic:      logic.NewPluginCredentialLogic(ctx),
 		},
 	}
 }

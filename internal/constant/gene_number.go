@@ -16,4 +16,9 @@ const (
 	GenePluginCredential    xSnowflake.Gene = 39 // 插件授权凭证
 	GenePlayerEvent         xSnowflake.Gene = 41 // 玩家事件
 	GenePlayerChatLog       xSnowflake.Gene = 42 // 玩家聊天日志
+
+	// 公告系统
+	GeneAnnouncement             xSnowflake.Gene = 43 // 公告
+	GeneAnnouncementSchedule     xSnowflake.Gene = 44 // 公告调度
+	GeneAnnouncementScheduleItem xSnowflake.Gene = 45 // 公告调度项
 )

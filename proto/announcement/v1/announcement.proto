@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package frontleaves.announcement.v1;
+
+option go_package = "github.com/frontleaves-mc/frontleaves-plugin/internal/grpc/gen/announcement/v1;announcementpb";
+
+import "link/base.proto";
+import "google/protobuf/empty.proto";
+
+// AnnouncementService 公告服务
+//
+// 处理公告推送到 Minecraft 服务器，
+// 使用 Server-Streaming 模式由 Go 服务端主动推送公告内容。
+service AnnouncementService {
+  // AnnouncementStream 公告推送服务端流
+  rpc AnnouncementStream(google.protobuf.Empty) returns (stream AnnouncementPushResponse);
+}
+
+// AnnouncementPushResponse 公告推送响应
+message AnnouncementPushResponse {
+  // 基础响应
+  xBase.BaseResponse base_response = 1;
+  // 公告ID
+  string announcement_id = 2;
+  // 公告标题
+  string title = 3;
+  // 公告内容（完整 Markdown）
+  string content = 4;
+  // 公告类型（1=站内, 2=全局）
+  int32 type = 5;
+}
