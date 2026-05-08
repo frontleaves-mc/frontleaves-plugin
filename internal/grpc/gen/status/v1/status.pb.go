@@ -395,7 +395,7 @@ type HeartbeatEvent struct {
 	// 服务器名称
 	ServerName string `protobuf:"bytes,1,opt,name=server_name,json=serverName,proto3" json:"server_name,omitempty"`
 	// 服务器 TPS
-	Tps           float64 `protobuf:"fixed64,3,opt,name=tps,proto3" json:"tps,omitempty"`
+	Tps           float64 `protobuf:"fixed64,2,opt,name=tps,proto3" json:"tps,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1774,11 +1774,11 @@ const file_status_v1_status_proto_rawDesc = "" +
 	"\x19player_group_change_event\x18\x12 \x01(\v2-.frontleaves.status.v1.PlayerGroupChangeEventH\x00R\x16playerGroupChangeEventB\a\n" +
 	"\x05event\"U\n" +
 	"\x19ServerEventStreamResponse\x128\n" +
-	"\rbase_response\x18\x01 \x01(\v2\x13.xBase.BaseResponseR\fbaseResponse\"Y\n" +
+	"\rbase_response\x18\x01 \x01(\v2\x13.xBase.BaseResponseR\fbaseResponse\"C\n" +
 	"\x0eHeartbeatEvent\x12\x1f\n" +
 	"\vserver_name\x18\x01 \x01(\tR\n" +
 	"serverName\x12\x10\n" +
-	"\x03tps\x18\x03 \x01(\x01R\x03tpsJ\x04\b\x02\x10\x03R\x0eonline_players\"\xb2\x01\n" +
+	"\x03tps\x18\x02 \x01(\x01R\x03tps\"\xb2\x01\n" +
 	"\x0fPlayerJoinEvent\x12\x1f\n" +
 	"\vplayer_uuid\x18\x01 \x01(\tR\n" +
 	"playerUuid\x12\x1f\n" +

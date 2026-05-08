@@ -9,18 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ⚠️ Breaking Changes — gRPC Proto
 
-#### `HeartbeatEvent.online_players` 字段弃用 (reserved)
+#### `HeartbeatEvent` 字段变更
 
-- **Proto**: `frontleaves.status.v1.HeartbeatEvent` 中的 `int32 online_players = 2` 字段已被标记为 `reserved`
+- **Proto**: `frontleaves.status.v1.HeartbeatEvent` 移除 `int32 online_players` 字段，`tps` 字段编号从 3 前移至 2
 - **影响范围**: 所有使用 `ServerEventStream` RPC 发送 `HeartbeatEvent` 的 Java 插件
 - **迁移路径**:
-  - **不再需要**在心跳中发送 `online_players` 字段
+  - 移除 `HeartbeatEvent` 构建中的 `setOnlinePlayers()` 调用
+  - 将 `setTps()` 对应的字段编号从 3 更新为 2（protobuf 自动处理，但手动构建需注意）
   - 在线人数现在由 Go 服务端自动计算：`PlayerJoinEvent` 时 `SAdd` 到 Redis set，`PlayerQuitEvent` 时 `SRem`，服务端通过 `SCard` 获取实时在线人数
   - Java 插件只需正确上报 `PlayerJoinEvent` 和 `PlayerQuitEvent` 即可
-- **字段编号 2 已永久保留**，不可复用于其他字段
-- **旧版 Java 插件兼容性**: 旧版插件继续发送 `online_players` 字段不会报错，但该值会被 Go 服务端忽略
+- **旧版 Java 插件兼容性**: ⚠️ **不兼容** — 旧版插件发送的 `online_players`（编号 2）会被 Go 服务端解析为 `tps` 字段，导致 TPS 数值异常。Java 插件必须同步更新
 
-> **Java 插件开发者行动项**: 移除 `HeartbeatEvent` 构建中的 `setOnlinePlayers()` 调用，并确保 `PlayerJoinEvent` / `PlayerQuitEvent` 正确上报
+> **Java 插件开发者行动项**: 移除 `HeartbeatEvent` 中的 `online_players` 字段，确认 `tps` 字段编号为 2，确保 `PlayerJoinEvent` / `PlayerQuitEvent` 正确上报
 
 ---
 
