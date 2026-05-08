@@ -64,6 +64,10 @@ message ServerEventStreamResponse {
 message HeartbeatEvent {
   // 服务器名称
   string server_name = 1;
+  // [DEPRECATED] online_players 字段已移除，在线人数改由
+  // PlayerJoinEvent/PlayerQuitEvent 事件驱动，通过 Redis set SCard 计算
+  reserved 2;
+  reserved "online_players";
   // 服务器 TPS
   double tps = 3;
 }
