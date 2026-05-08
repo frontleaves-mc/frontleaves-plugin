@@ -35,6 +35,7 @@ func NewRoute(reg *xReg.Reg) {
 	apiRouter := r.engine.Group("/api/v1")
 	r.healthRouter(apiRouter)
 	r.serverStatusRouter(apiRouter)
+	r.serverRouter(apiRouter)
 	r.titleRouter(apiRouter)
 	r.achievementRouter(apiRouter)
 	r.pluginCredentialRouter(apiRouter)

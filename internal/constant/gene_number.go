@@ -21,4 +21,7 @@ const (
 	GeneAnnouncement             xSnowflake.Gene = 43 // 公告
 	GeneAnnouncementSchedule     xSnowflake.Gene = 44 // 公告调度
 	GeneAnnouncementScheduleItem xSnowflake.Gene = 45 // 公告调度项
+
+	// 服务器系统
+	GeneServer xSnowflake.Gene = 46 // 服务器
 )

@@ -3,7 +3,6 @@ package logic
 import (
 	"context"
 	"strconv"
-	"strings"
 	"time"
 
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
@@ -11,6 +10,7 @@ import (
 	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
 	apiServerStatus "github.com/frontleaves-mc/frontleaves-plugin/api/server_status"
 	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
+	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
 )
 
 const heartbeatTimeout = 2 * time.Minute
@@ -34,44 +34,32 @@ func NewServerStatusLogic(ctx context.Context) *ServerStatusLogic {
 func (l *ServerStatusLogic) GetAllServerStatus(ctx context.Context) ([]apiServerStatus.ServerStatusResponse, *xError.Error) {
 	l.log.Info(ctx, "GetAllServerStatus - 查询所有服务器状态")
 
-	wildcardKey := string(bConst.CacheStatusServer.Get("*"))
-	keys, err := l.rdb.Keys(ctx, wildcardKey).Result()
-	if err != nil {
-		return nil, xError.NewError(ctx, xError.CacheError, "查询服务器列表失败", false, err)
+	var publicServers []entity.Server
+	if err := l.db.WithContext(ctx).Where("is_public = ? AND is_enabled = ?", true, true).Order("sort_order ASC, created_at DESC").Find(&publicServers).Error; err != nil {
+		return nil, xError.NewError(ctx, xError.DatabaseError, "查询公开服务器列表失败", false, err)
 	}
 
-	serverKeyPrefix := string(bConst.CacheStatusServer.Get(""))
-	servers := make([]apiServerStatus.ServerStatusResponse, 0, len(keys))
+	servers := make([]apiServerStatus.ServerStatusResponse, 0, len(publicServers))
 	now := time.Now().UnixMilli()
 
-	for _, key := range keys {
-		if strings.HasSuffix(key, ":players") {
-			continue
-		}
-
-		serverName := strings.TrimPrefix(key, serverKeyPrefix)
-
-		// 服务器状态查询失败时优雅降级：标记为离线 + 0 人
+	for _, srv := range publicServers {
+		serverName := srv.Name
 		resp := &apiServerStatus.ServerStatusResponse{
-			ServerName:    serverName,
-			Online:        false,
-			OnlinePlayers: 0,
-			Tps:           0,
-			Players:       []apiServerStatus.PlayerStatusInfo{},
+			ServerName:        serverName,
+			ServerDisplayName: srv.DisplayName,
+			Online:            false,
+			Tps:               0,
+			Players:           []apiServerStatus.PlayerStatusInfo{},
 		}
 
-		serverData, err := l.rdb.HGetAll(ctx, key).Result()
-		if err != nil {
-			l.log.Warn(ctx, "查询服务器状态失败，降级为离线: "+serverName)
-			servers = append(servers, *resp)
-			continue
-		}
-		if len(serverData) == 0 {
+		serverKey := string(bConst.CacheStatusServer.Get(serverName))
+		serverData, err := l.rdb.HGetAll(ctx, serverKey).Result()
+		if err != nil || len(serverData) == 0 {
 			servers = append(servers, *resp)
 			continue
 		}
 
-		resp = parseServerData(serverName, serverData, now)
+		resp = parseServerData(serverName, srv.DisplayName, serverData, now)
 
 		playerUUIDs, pErr := l.rdb.SMembers(ctx, string(bConst.CacheStatusServerPlayers.Get(serverName))).Result()
 		if pErr != nil {
@@ -82,7 +70,6 @@ func (l *ServerStatusLogic) GetAllServerStatus(ctx context.Context) ([]apiServer
 		}
 
 		resp.Players = l.getPlayerInfosGraceful(ctx, playerUUIDs)
-
 		servers = append(servers, *resp)
 	}
 
@@ -92,13 +79,20 @@ func (l *ServerStatusLogic) GetAllServerStatus(ctx context.Context) ([]apiServer
 func (l *ServerStatusLogic) GetServerStatus(ctx context.Context, serverName string) (*apiServerStatus.ServerStatusResponse, *xError.Error) {
 	l.log.Info(ctx, "GetServerStatus - 查询服务器状态: "+serverName)
 
+	// 检查该 server_name 是否为公开且启用的服务器
+	var server entity.Server
+	if err := l.db.WithContext(ctx).Where("name = ? AND is_public = ? AND is_enabled = ?", serverName, true, true).First(&server).Error; err != nil {
+		return nil, xError.NewError(ctx, xError.NotFound, "服务器不存在或未公开", false, err)
+	}
+
 	resp := &apiServerStatus.ServerStatusResponse{
-		ServerName:    serverName,
-		Online:        false,
-		OnlinePlayers: 0,
-		Tps:           0,
-		LastHeartbeat: 0,
-		Players:       []apiServerStatus.PlayerStatusInfo{},
+		ServerName:        serverName,
+		ServerDisplayName: server.DisplayName,
+		Online:            false,
+		OnlinePlayers:     0,
+		Tps:               0,
+		LastHeartbeat:     0,
+		Players:           []apiServerStatus.PlayerStatusInfo{},
 	}
 
 	serverKey := string(bConst.CacheStatusServer.Get(serverName))
@@ -113,7 +107,7 @@ func (l *ServerStatusLogic) GetServerStatus(ctx context.Context, serverName stri
 	}
 
 	now := time.Now().UnixMilli()
-	resp = parseServerData(serverName, serverData, now)
+	resp = parseServerData(serverName, server.DisplayName, serverData, now)
 
 	playerUUIDs, err := l.rdb.SMembers(ctx, string(bConst.CacheStatusServerPlayers.Get(serverName))).Result()
 	if err != nil {
@@ -127,11 +121,12 @@ func (l *ServerStatusLogic) GetServerStatus(ctx context.Context, serverName stri
 	return resp, nil
 }
 
-func parseServerData(serverName string, data map[string]string, now int64) *apiServerStatus.ServerStatusResponse {
+func parseServerData(serverName string, displayName string, data map[string]string, now int64) *apiServerStatus.ServerStatusResponse {
 	resp := &apiServerStatus.ServerStatusResponse{
-		ServerName: serverName,
-		Online:     false,
-		Players:    []apiServerStatus.PlayerStatusInfo{},
+		ServerName:        serverName,
+		ServerDisplayName: displayName,
+		Online:            false,
+		Players:           []apiServerStatus.PlayerStatusInfo{},
 	}
 
 	if op, parseErr := strconv.ParseInt(data["online_players"], 10, 32); parseErr == nil {

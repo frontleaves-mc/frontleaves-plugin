@@ -17,6 +17,7 @@ type grpcService struct {
 	playerEventLogic          *logic.PlayerEventLogic
 	playerChatLogic           *logic.PlayerChatLogic
 	announcementLogic          *logic.AnnouncementLogic
+	serverLogic                *logic.ServerLogic
 }
 
 // grpcHandler gRPC Handler 基类
@@ -50,6 +51,7 @@ func NewGRPCHandler[T IGRPCHandler](ctx context.Context, handlerName string) *T 
 			playerEventLogic:          logic.NewPlayerEventLogic(ctx),
 			playerChatLogic:           logic.NewPlayerChatLogic(ctx),
 			announcementLogic:          logic.NewAnnouncementLogic(ctx),
+			serverLogic:                logic.NewServerLogic(ctx),
 		},
 		rdb: rdb,
 	}

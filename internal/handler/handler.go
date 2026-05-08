@@ -10,6 +10,7 @@ import (
 type service struct {
 	healthLogic           *logic.HealthLogic
 	serverStatusLogic     *logic.ServerStatusLogic
+	serverLogic           *logic.ServerLogic
 	titleLogic            *logic.TitleLogic
 	achievementLogic      *logic.AchievementLogic
 	announcementLogic          *logic.AnnouncementLogic
@@ -38,6 +39,7 @@ func NewHandler[T IHandler](ctx context.Context, handlerName string) *T {
 		service: &service{
 			healthLogic:           logic.NewHealthLogic(ctx),
 			serverStatusLogic:     logic.NewServerStatusLogic(ctx),
+			serverLogic:           logic.NewServerLogic(ctx),
 			titleLogic:            logic.NewTitleLogic(ctx),
 			achievementLogic:      logic.NewAchievementLogic(ctx),
 			announcementLogic:          logic.NewAnnouncementLogic(ctx),

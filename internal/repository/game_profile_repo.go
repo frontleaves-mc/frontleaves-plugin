@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
+	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
 	"gorm.io/gorm"
 )
@@ -65,4 +66,13 @@ func (r *GameProfileRepo) List(ctx context.Context, page, pageSize int) ([]entit
 		return nil, 0, xError.NewError(nil, xError.DatabaseError, "查询玩家列表失败", false, err)
 	}
 	return gps, total, nil
+}
+
+func (r *GameProfileRepo) GetByUserID(ctx context.Context, userID xSnowflake.SnowflakeID) ([]entity.GameProfile, *xError.Error) {
+	r.log.Info(ctx, "GetByUserID - 按用户ID查询玩家列表")
+	var profiles []entity.GameProfile
+	if err := r.db.WithContext(ctx).Where("user_id = ?", userID).Find(&profiles).Error; err != nil {
+		return nil, xError.NewError(nil, xError.DatabaseError, "按用户ID查询玩家列表失败", false, err)
+	}
+	return profiles, nil
 }

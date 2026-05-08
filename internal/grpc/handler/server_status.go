@@ -81,9 +81,29 @@ func (h *ServerStatusHandler) dispatchEvent(
 			return
 		}
 		h.log.Info(ctx, "HeartbeatEvent - 服务器心跳: "+serverName)
+
+		server, xErr := h.service.serverLogic.GetOrCreateByName(ctx, serverName)
+		if xErr != nil {
+			h.log.Warn(ctx, "HeartbeatEvent - 被动创建服务器失败: "+xErr.Error())
+		}
+
 		serverKey := string(bConst.CacheStatusServer.Get(serverName))
+		if server == nil || !server.IsEnabled {
+			if *registeredServerName == "" {
+				*registeredServerName = serverName
+				h.setEventStream(serverName, &eventStream{
+					stream:     stream,
+					serverName: serverName,
+					log:        h.log,
+				})
+			}
+			return
+		}
+
+		serverPlayersKey := string(bConst.CacheStatusServerPlayers.Get(serverName))
+		onlineCount := h.rdb.SCard(ctx, serverPlayersKey).Val()
 		h.rdb.HSet(ctx, serverKey, map[string]any{
-			"online_players": strconv.FormatInt(int64(heartbeat.GetOnlinePlayers()), 10),
+			"online_players": strconv.FormatInt(onlineCount, 10),
 			"tps":           fmt.Sprintf("%.2f", heartbeat.GetTps()),
 			"timestamp":      strconv.FormatInt(time.Now().UnixMilli(), 10),
 		})
@@ -120,6 +140,11 @@ func (h *ServerStatusHandler) dispatchEvent(
 		serverPlayersKey := string(bConst.CacheStatusServerPlayers.Get(serverName))
 		h.rdb.SAdd(ctx, serverPlayersKey, playerUUID)
 		h.rdb.Expire(ctx, serverPlayersKey, statusTTL)
+
+		serverKey := string(bConst.CacheStatusServer.Get(serverName))
+		onlineCount := h.rdb.SCard(ctx, serverPlayersKey).Val()
+		h.rdb.HSet(ctx, serverKey, "online_players", strconv.FormatInt(onlineCount, 10))
+
 		parsedUUID, err := uuid.Parse(playerUUID)
 		if err == nil {
 			groupName := join.GetGroupName()
@@ -148,6 +173,10 @@ func (h *ServerStatusHandler) dispatchEvent(
 		h.rdb.Expire(ctx, playerKey, statusTTL)
 		serverPlayersKey := string(bConst.CacheStatusServerPlayers.Get(serverName))
 		h.rdb.SRem(ctx, serverPlayersKey, playerUUID)
+
+		serverKey := string(bConst.CacheStatusServer.Get(serverName))
+		onlineCount := h.rdb.SCard(ctx, serverPlayersKey).Val()
+		h.rdb.HSet(ctx, serverKey, "online_players", strconv.FormatInt(onlineCount, 10))
 
 	case *statuspb.ServerEventStreamRequest_PlayerSwitchWorldEvent:
 		sw := evt.PlayerSwitchWorldEvent

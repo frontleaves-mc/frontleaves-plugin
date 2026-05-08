@@ -133,6 +133,140 @@ definitions:
     - name
     - type
     type: object
+  apiAnnouncement.AnnouncementResponse:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      published_at:
+        type: string
+      status:
+        type: integer
+      title:
+        type: string
+      type:
+        type: integer
+    type: object
+  apiAnnouncement.CreateAnnouncementRequest:
+    properties:
+      content:
+        type: string
+      title:
+        type: string
+      type:
+        enum:
+        - 1
+        - 2
+        type: integer
+    required:
+    - content
+    - title
+    - type
+    type: object
+  apiAnnouncement.UpdateAnnouncementRequest:
+    properties:
+      content:
+        type: string
+      title:
+        type: string
+      type:
+        enum:
+        - 1
+        - 2
+        type: integer
+    required:
+    - content
+    - title
+    - type
+    type: object
+  apiAnnouncementSchedule.CreateScheduleRequest:
+    properties:
+      interval_seconds:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/apiAnnouncementSchedule.ScheduleItemInput'
+        minItems: 1
+        type: array
+      mode:
+        enum:
+        - 1
+        - 2
+        type: integer
+      name:
+        type: string
+    required:
+    - items
+    - mode
+    - name
+    type: object
+  apiAnnouncementSchedule.ScheduleItemInput:
+    properties:
+      announcement_id:
+        type: string
+      delay_seconds:
+        type: integer
+      sort_order:
+        type: integer
+    required:
+    - announcement_id
+    type: object
+  apiAnnouncementSchedule.ScheduleItemResponse:
+    properties:
+      announcement_id:
+        type: string
+      announcement_title:
+        type: string
+      delay_seconds:
+        type: integer
+      sort_order:
+        type: integer
+    type: object
+  apiAnnouncementSchedule.ScheduleResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      interval_seconds:
+        type: integer
+      is_active:
+        type: boolean
+      items:
+        items:
+          $ref: '#/definitions/apiAnnouncementSchedule.ScheduleItemResponse'
+        type: array
+      mode:
+        type: integer
+      name:
+        type: string
+      status:
+        type: integer
+    type: object
+  apiAnnouncementSchedule.UpdateScheduleRequest:
+    properties:
+      interval_seconds:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/apiAnnouncementSchedule.ScheduleItemInput'
+        minItems: 1
+        type: array
+      mode:
+        enum:
+        - 1
+        - 2
+        type: integer
+      name:
+        type: string
+    required:
+    - items
+    - mode
+    - name
+    type: object
   apiPC.CreatePluginCredentialRequest:
     properties:
       description:
@@ -176,6 +310,107 @@ definitions:
     required:
     - description
     type: object
+  apiServer.CreateServerRequest:
+    properties:
+      address:
+        type: string
+      description:
+        type: string
+      display_name:
+        type: string
+      name:
+        type: string
+      sort_order:
+        type: integer
+    required:
+    - display_name
+    - name
+    type: object
+  apiServer.OnlineGameProfileResponse:
+    properties:
+      server_name:
+        type: string
+      username:
+        type: string
+      uuid:
+        type: string
+      world_name:
+        type: string
+    type: object
+  apiServer.PlayerOnlineResponse:
+    properties:
+      last_seen:
+        type: integer
+      online:
+        type: boolean
+      player_name:
+        type: string
+      player_uuid:
+        type: string
+      server_name:
+        type: string
+      world_name:
+        type: string
+    type: object
+  apiServer.ServerListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/apiServer.ServerResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  apiServer.ServerResponse:
+    properties:
+      address:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      display_name:
+        type: string
+      id:
+        type: string
+      is_enabled:
+        type: boolean
+      is_public:
+        type: boolean
+      name:
+        type: string
+      sort_order:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  apiServer.SetServerEnabledRequest:
+    properties:
+      is_enabled:
+        type: boolean
+    type: object
+  apiServer.SetServerPublicRequest:
+    properties:
+      is_public:
+        type: boolean
+    type: object
+  apiServer.UpdateServerRequest:
+    properties:
+      address:
+        type: string
+      description:
+        type: string
+      display_name:
+        type: string
+      sort_order:
+        type: integer
+    required:
+    - display_name
+    type: object
   apiServerStatus.PlayerStatusInfo:
     properties:
       player_name:
@@ -197,6 +432,8 @@ definitions:
         items:
           $ref: '#/definitions/apiServerStatus.PlayerStatusInfo'
         type: array
+      server_display_name:
+        type: string
       server_name:
         type: string
       tps:
@@ -562,6 +799,463 @@ paths:
       summary: '[管理] 手动授予成就'
       tags:
       - 管理-成就接口
+  /admin/announcements:
+    get:
+      consumes:
+      - application/json
+      description: 分页查询公告列表，可按类型和状态筛选
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: 公告类型筛选
+        in: query
+        name: type
+        type: integer
+      - description: 公告状态筛选
+        in: query
+        name: status
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 查询公告列表'
+      tags:
+      - 管理-公告接口
+    post:
+      consumes:
+      - application/json
+      description: 创建新的公告
+      parameters:
+      - description: 创建公告请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiAnnouncement.CreateAnnouncementRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiAnnouncement.AnnouncementResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 创建公告'
+      tags:
+      - 管理-公告接口
+  /admin/announcements/:id:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定公告
+      parameters:
+      - description: 公告ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 公告不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 删除公告'
+      tags:
+      - 管理-公告接口
+    get:
+      consumes:
+      - application/json
+      description: 根据公告 ID 查询公告详情
+      parameters:
+      - description: 公告ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiAnnouncement.AnnouncementResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 公告不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 查询公告详情'
+      tags:
+      - 管理-公告接口
+    put:
+      consumes:
+      - application/json
+      description: 更新指定公告的信息
+      parameters:
+      - description: 公告ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 更新公告请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiAnnouncement.UpdateAnnouncementRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiAnnouncement.AnnouncementResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 公告不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 更新公告'
+      tags:
+      - 管理-公告接口
+  /admin/announcements/:id/offline:
+    post:
+      consumes:
+      - application/json
+      description: 将指定公告下线，仅已发布状态可下线
+      parameters:
+      - description: 公告ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiAnnouncement.AnnouncementResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 公告不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 下线公告'
+      tags:
+      - 管理-公告接口
+  /admin/announcements/:id/publish:
+    post:
+      consumes:
+      - application/json
+      description: 将指定公告发布，仅草稿状态可发布
+      parameters:
+      - description: 公告ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiAnnouncement.AnnouncementResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 公告不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 发布公告'
+      tags:
+      - 管理-公告接口
+  /admin/announcements/schedules:
+    get:
+      consumes:
+      - application/json
+      description: 分页查询公告调度列表
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 查询公告调度列表'
+      tags:
+      - 管理-公告调度接口
+    post:
+      consumes:
+      - application/json
+      description: 创建新的公告调度，指定调度名称、模式、间隔秒数和调度项
+      parameters:
+      - description: 创建调度请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiAnnouncementSchedule.CreateScheduleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiAnnouncementSchedule.ScheduleResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 创建公告调度'
+      tags:
+      - 管理-公告调度接口
+  /admin/announcements/schedules/:id:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定公告调度，活动调度需先停用才能删除
+      parameters:
+      - description: 调度ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 调度不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 删除公告调度'
+      tags:
+      - 管理-公告调度接口
+    get:
+      consumes:
+      - application/json
+      description: 根据调度 ID 查询公告调度详情，包含调度项列表
+      parameters:
+      - description: 调度ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiAnnouncementSchedule.ScheduleResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 调度不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 查询公告调度详情'
+      tags:
+      - 管理-公告调度接口
+    put:
+      consumes:
+      - application/json
+      description: 更新指定公告调度的名称、模式、间隔秒数和调度项
+      parameters:
+      - description: 调度ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 更新调度请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiAnnouncementSchedule.UpdateScheduleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiAnnouncementSchedule.ScheduleResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 调度不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 更新公告调度'
+      tags:
+      - 管理-公告调度接口
+  /admin/announcements/schedules/:id/activate:
+    post:
+      consumes:
+      - application/json
+      description: 将调度设为活动状态并启动推送引擎
+      parameters:
+      - description: 调度ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiAnnouncementSchedule.ScheduleResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 调度不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 激活公告调度'
+      tags:
+      - 管理-公告调度接口
+  /admin/announcements/schedules/:id/deactivate:
+    post:
+      consumes:
+      - application/json
+      description: 停用调度并停止推送引擎
+      parameters:
+      - description: 调度ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 调度不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 停用公告调度'
+      tags:
+      - 管理-公告调度接口
   /admin/plugin-credentials:
     get:
       consumes:
@@ -760,6 +1454,250 @@ paths:
       summary: '[超管] 重置插件密钥'
       tags:
       - 超管-插件密钥接口
+  /admin/servers:
+    get:
+      consumes:
+      - application/json
+      description: 分页查询服务器列表
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiServer.ServerListResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[超管] 查询服务器列表'
+      tags:
+      - 超管-服务器管理接口
+    post:
+      consumes:
+      - application/json
+      description: 创建新的服务器记录
+      parameters:
+      - description: 创建服务器请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiServer.CreateServerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiServer.ServerResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[超管] 创建服务器'
+      tags:
+      - 超管-服务器管理接口
+  /admin/servers/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 硬删除指定的服务器记录
+      parameters:
+      - description: 服务器ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 服务器不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[超管] 删除服务器'
+      tags:
+      - 超管-服务器管理接口
+    get:
+      consumes:
+      - application/json
+      description: 根据服务器 ID 查询详情
+      parameters:
+      - description: 服务器ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiServer.ServerResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 服务器不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[超管] 查询服务器详情'
+      tags:
+      - 超管-服务器管理接口
+    put:
+      consumes:
+      - application/json
+      description: 更新指定服务器的信息
+      parameters:
+      - description: 服务器ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 更新服务器请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiServer.UpdateServerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiServer.ServerResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 服务器不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[超管] 更新服务器'
+      tags:
+      - 超管-服务器管理接口
+  /admin/servers/{id}/enabled:
+    put:
+      consumes:
+      - application/json
+      description: 启用或禁用服务器
+      parameters:
+      - description: 服务器ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 设置启用状态请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiServer.SetServerEnabledRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiServer.ServerResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 服务器不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[超管] 设置服务器启用状态'
+      tags:
+      - 超管-服务器管理接口
+  /admin/servers/{id}/public:
+    put:
+      consumes:
+      - application/json
+      description: 设置服务器是否对外公开可见
+      parameters:
+      - description: 服务器ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 设置公开状态请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiServer.SetServerPublicRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiServer.ServerResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 服务器不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[超管] 设置服务器公开状态'
+      tags:
+      - 超管-服务器管理接口
   /admin/titles:
     get:
       consumes:
@@ -992,6 +1930,72 @@ paths:
       summary: '[管理] 分配称号'
       tags:
       - 管理-称号接口
+  /announcements:
+    get:
+      consumes:
+      - application/json
+      description: 分页查询已发布公告列表，支持按类型筛选（公开接口，无需认证）
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: 公告类型筛选(1=站内,2=全局)
+        in: query
+        name: type
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: 查询已发布公告列表
+      tags:
+      - 公开-公告接口
+  /announcements/:id:
+    get:
+      consumes:
+      - application/json
+      description: 根据公告 ID 查询已发布公告详情，返回完整 Markdown 内容（公开接口）
+      parameters:
+      - description: 公告ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiAnnouncement.AnnouncementResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 公告不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: 查询已发布公告详情
+      tags:
+      - 公开-公告接口
   /game-profiles/:uuid/achievements:
     get:
       consumes:
@@ -1245,6 +2249,65 @@ paths:
       summary: '[用户] 刷新服务器状态'
       tags:
       - 服务器状态接口
+  /servers/game-profiles/online/mine:
+    get:
+      consumes:
+      - application/json
+      description: 查询当前登录用户所有在线的游戏账号
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/apiServer.OnlineGameProfileResponse'
+                  type: array
+              type: object
+        "401":
+          description: 未登录
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[用户] 获取在线游戏账号'
+      tags:
+      - 玩家在线查询接口
+  /servers/players/online/check:
+    get:
+      consumes:
+      - application/json
+      description: 按 UUID 或用户名检查指定玩家是否在线
+      parameters:
+      - description: 玩家 UUID
+        in: query
+        name: uuid
+        type: string
+      - description: 玩家用户名
+        in: query
+        name: username
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiServer.PlayerOnlineResponse'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[用户] 检查玩家在线状态'
+      tags:
+      - 玩家在线查询接口
   /servers/status:
     get:
       consumes:
