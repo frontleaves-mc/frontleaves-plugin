@@ -3,8 +3,8 @@ package handler
 import (
 	"context"
 
-	"github.com/gin-gonic/gin"
 	xResult "github.com/bamboo-services/bamboo-base-go/major/result"
+	"github.com/gin-gonic/gin"
 )
 
 type ServerStatusHandler handler

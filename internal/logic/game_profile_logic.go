@@ -4,14 +4,14 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
-	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
+	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
 	apiGameProfile "github.com/frontleaves-mc/frontleaves-plugin/api/game_profile"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository"
+	"github.com/google/uuid"
 )
 
 type gameProfileRepo struct {

@@ -4,8 +4,8 @@ import (
 	"context"
 
 	xCtx "github.com/bamboo-services/bamboo-base-go/defined/context"
-	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
 	xRegNode "github.com/bamboo-services/bamboo-base-go/major/register/node"
+	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
 )
 
 type reg struct {

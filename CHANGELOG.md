@@ -11,51 +11,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### `HeartbeatEvent` 字段变更
 
-- **Proto**: `frontleaves.status.v1.HeartbeatEvent` 移除 `int32 online_players` 字段，`tps` 字段编号从 3 前移至 2
+- **Proto**: `frontleaves.status.v1.HeartbeatEvent` 新增 `int32 online_player = 3` 和 `repeated PlayerStatus players = 4` 字段
 - **影响范围**: 所有使用 `ServerEventStream` RPC 发送 `HeartbeatEvent` 的 Java 插件
 - **迁移路径**:
-  - 移除 `HeartbeatEvent` 构建中的 `setOnlinePlayers()` 调用
-  - 将 `setTps()` 对应的字段编号从 3 更新为 2（protobuf 自动处理，但手动构建需注意）
-  - 在线人数现在由 Go 服务端自动计算：`PlayerJoinEvent` 时 `SAdd` 到 Redis set，`PlayerQuitEvent` 时 `SRem`，服务端通过 `SCard` 获取实时在线人数
-  - Java 插件只需正确上报 `PlayerJoinEvent` 和 `PlayerQuitEvent` 即可
-- **旧版 Java 插件兼容性**: ⚠️ **不兼容** — 旧版插件发送的 `online_players`（编号 2）会被 Go 服务端解析为 `tps` 字段，导致 TPS 数值异常。Java 插件必须同步更新
+  - 在 `HeartbeatEvent` 构建中添加 `online_player`（在线玩家数）和 `players`（`PlayerStatus` 列表）字段填充
+  - `online_player` 和 `players` 为可选字段，不填充不影响服务端正常运作
+  - 填充后 Go 服务端将使用心跳携带的玩家列表进行定期校准/对账，增强在线状态可靠性
+- **旧版 Java 插件兼容性**: ✅ **向后兼容** — 新增字段使用编号 3 和 4，旧版插件不发送这两个字段，Go 服务端按零值/空列表处理，跳过对账逻辑
 
-> **Java 插件开发者行动项**: 移除 `HeartbeatEvent` 中的 `online_players` 字段，确认 `tps` 字段编号为 2，确保 `PlayerJoinEvent` / `PlayerQuitEvent` 正确上报
+> **Java 插件开发者行动项**: 建议在心跳中填充 `online_player` 和 `players` 字段以启用服务端玩家对账，防止 Redis 缓存过期导致玩家离线误判
 
 ---
 
 ### Added
 
-#### fp_server 服务器管理系统
+#### fp_server_player 玩家在线快照持久化
 
-- 新增 `fp_server` 数据表，支持服务器注册与管理（Snowflake ID, Gene=46）
-- 新增管理员 CRUD 接口（`/api/v1/admin/servers`，需 `LoginAuth` + `SuperAdmin` 中间件）:
-  - `POST /admin/servers` — 创建服务器
-  - `GET /admin/servers` — 列表查询
-  - `GET /admin/servers/:id` — 单个查询
-  - `PUT /admin/servers/:id` — 更新服务器信息
-  - `DELETE /admin/servers/:id` — 删除服务器
-  - `PUT /admin/servers/:id/public` — 设置公开可见性
-  - `PUT /admin/servers/:id/enabled` — 设置启用/禁用状态
-- 新增 gRPC 心跳被动创建：当收到未注册服务器的心跳时，自动创建 `fp_server` 记录（默认 `IsPublic=false, IsEnabled=true`）
-- 新增用户查询接口（`/api/v1/servers`，需 `LoginAuth` 中间件）:
-  - `GET /servers/game-profiles/online/mine` — 查询当前用户在线游戏账号
-  - `GET /servers/players/online/check?uuid=&username=` — 按 UUID 或用户名检查玩家在线状态
+- 新增 `fp_server_player` 数据表，持久化玩家在线状态快照（Snowflake ID, Gene=47）
+  - 外键关联 `fp_server` 表（`server_id → id`）
+  - 唯一索引 `uk_server_player`（`server_id + player_uuid`）
+  - 字段：`player_uuid`, `player_name`, `world_name`, `online`, `last_seen`
+- 新增 `ServerPlayerRepository` 数据访问层（`internal/repository/server_player_repo.go`）:
+  - `UpsertOnline` — 创建或更新玩家在线状态（`FirstOrCreate + Assign` 模式）
+  - `MarkOffline` — 标记指定玩家离线
+  - `MarkAllOfflineByServer` — 标记某服务器所有在线玩家离线
+  - `GetOnlineByServer` — 查询服务器所有在线玩家
+  - `GetOnlineByServerAndUUIDs` — 查询指定 UUID 中在线的玩家
+  - `GetOnlinePlayerUUIDsByServer` — 查询服务器在线玩家 UUID 列表
+- 新增 `ServerPlayerLogic` 业务逻辑层（`internal/logic/server_player_logic.go`）:
+  - `ReconcilePlayers` — 心跳对账：比较心跳玩家列表与 DB 状态，新增玩家 `UpsertOnline`，缺失玩家 `MarkOffline`，空列表跳过对账
+  - `PlayerJoined` / `PlayerLeft` / `ServerOffline` — 事件驱动的 DB 状态同步
+  - `GetOnlinePlayers` — 查询服务器在线玩家列表
 
-#### gRPC 心跳逻辑调整
+#### gRPC 心跳玩家对账
 
-- `HeartbeatEvent` 处理新增被动服务器注册（调用 `ServerLogic.GetOrCreateByName`）
-- `HeartbeatEvent` 处理新增禁用服务器过滤（`IsEnabled=false` 的服务器跳过状态更新）
-- `PlayerJoinEvent` / `PlayerQuitEvent` 处理新增在线人数自动更新（通过 Redis set `SCard` 计算）
+- `HeartbeatEvent` 处理新增玩家列表解析与 DB 对账：
+  - 解析 `players` 字段，将 proto `PlayerStatus` 转换为 `PlayerInfo`
+  - 调用 `ServerPlayerLogic.ReconcilePlayers` 与 DB 状态 diff 同步
+  - 仅当 `players` 非空时触发对账，空列表心跳安全跳过（不会误标记全部离线）
+- `PlayerJoinEvent` 处理新增 DB 同步：Redis 更新后调用 `ServerPlayerLogic.PlayerJoined`
+- `PlayerQuitEvent` 处理新增 DB 同步：Redis 更新后调用 `ServerPlayerLogic.PlayerLeft`
+- `cleanupServerStatus` 新增 DB 清理：Redis 清理后调用 `ServerPlayerLogic.ServerOffline` 标记所有玩家离线
+- 所有 DB 同步错误仅 `log.Warn`，不阻断 Redis 主流程
 
-### Changed
+#### HTTP API DB 降级读取
 
-#### 服务器状态接口过滤
-
-- `GET /servers/status` 不再使用 `rdb.Keys` 扫描全部 Redis key，改为查询 `fp_server` 表中 `IsPublic=true AND IsEnabled=true` 的服务器
-- `POST /servers/:name/refresh` 新增公开性检查，非公开或禁用的服务器返回 `404`
-- 服务器状态响应新增 `server_display_name` 字段，来自 `fp_server.DisplayName`
-
-### Fixed
-
-- 修复 `SetServerPublicRequest` / `SetServerEnabledRequest` 中 `bool` 字段的 `binding:"required"` 标签导致 `false` 值被拒绝的 400 错误
+- `GET /servers/status` 和 `POST /servers/:name/refresh` 新增 DB 降级：
+  - 当 Redis 缓存过期（`HGetAll` 返回空）时，查询 `fp_server_player` 表获取在线玩家
+  - 降级数据包含：玩家 UUID、名称、所在世界
+  - 降级数据不含：TPS、最后心跳时间（Redis 过期后无法获取，保持为 0）
+  - DB 查询失败时优雅降级为空结果，不返回错误

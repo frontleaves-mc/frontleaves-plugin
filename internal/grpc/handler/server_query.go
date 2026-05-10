@@ -179,7 +179,7 @@ func (h *ServerStatusHandler) QueryCheckPermission(ctx context.Context, playerUU
 		RequestId: reqID,
 		Query: &statuspb.ServerQueryResponse_CheckPermissionQuery{
 			CheckPermissionQuery: &statuspb.QueryCheckPermissionQuery{
-				PlayerUuid:    playerUUID,
+				PlayerUuid:     playerUUID,
 				PermissionNode: permissionNode,
 			},
 		},

@@ -7,16 +7,23 @@ import (
 
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
+	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
 	apiServerStatus "github.com/frontleaves-mc/frontleaves-plugin/api/server_status"
 	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
+	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository"
 )
 
 const heartbeatTimeout = 2 * time.Minute
 
+type serverStatusPlayerRepo struct {
+	serverPlayer *repository.ServerPlayerRepo
+}
+
 type ServerStatusLogic struct {
 	logic
+	repo serverStatusPlayerRepo
 }
 
 func NewServerStatusLogic(ctx context.Context) *ServerStatusLogic {
@@ -27,6 +34,9 @@ func NewServerStatusLogic(ctx context.Context) *ServerStatusLogic {
 			db:  db,
 			rdb: rdb,
 			log: xLog.WithName(xLog.NamedLOGC, "ServerStatusLogic"),
+		},
+		repo: serverStatusPlayerRepo{
+			serverPlayer: repository.NewServerPlayerRepo(db),
 		},
 	}
 }
@@ -55,6 +65,8 @@ func (l *ServerStatusLogic) GetAllServerStatus(ctx context.Context) ([]apiServer
 		serverKey := string(bConst.CacheStatusServer.Get(serverName))
 		serverData, err := l.rdb.HGetAll(ctx, serverKey).Result()
 		if err != nil || len(serverData) == 0 {
+			// Redis 缓存过期，尝试 DB 降级
+			resp = l.dbFallbackServerStatus(ctx, srv.ID, resp)
 			servers = append(servers, *resp)
 			continue
 		}
@@ -103,6 +115,8 @@ func (l *ServerStatusLogic) GetServerStatus(ctx context.Context, serverName stri
 	}
 
 	if len(serverData) == 0 {
+		// Redis 缓存过期，尝试 DB 降级
+		resp = l.dbFallbackServerStatus(ctx, server.ID, resp)
 		return resp, nil
 	}
 
@@ -161,4 +175,30 @@ func (l *ServerStatusLogic) getPlayerInfosGraceful(ctx context.Context, playerUU
 		})
 	}
 	return players
+}
+
+func (l *ServerStatusLogic) dbFallbackServerStatus(ctx context.Context, serverID xSnowflake.SnowflakeID, resp *apiServerStatus.ServerStatusResponse) *apiServerStatus.ServerStatusResponse {
+	dbPlayers, xErr := l.repo.serverPlayer.GetOnlineByServer(ctx, serverID)
+	if xErr != nil {
+		l.log.Warn(ctx, "DB 降级查询在线玩家失败: "+xErr.Error())
+		return resp
+	}
+	if len(dbPlayers) == 0 {
+		return resp
+	}
+
+	resp.Online = true
+	resp.OnlinePlayers = int32(len(dbPlayers))
+
+	players := make([]apiServerStatus.PlayerStatusInfo, 0, len(dbPlayers))
+	for _, p := range dbPlayers {
+		players = append(players, apiServerStatus.PlayerStatusInfo{
+			PlayerUUID: p.PlayerUUID.String(),
+			PlayerName: p.PlayerName,
+			WorldName:  p.WorldName,
+		})
+	}
+	resp.Players = players
+
+	return resp
 }

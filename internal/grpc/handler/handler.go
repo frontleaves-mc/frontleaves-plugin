@@ -11,13 +11,14 @@ import (
 
 // grpcService gRPC 服务的业务逻辑处理层
 type grpcService struct {
-	titleLogic                *logic.TitleLogic
-	gameProfileLogic          *logic.GameProfileLogic
-	pluginCredentialLogic     *logic.PluginCredentialLogic
-	playerEventLogic          *logic.PlayerEventLogic
-	playerChatLogic           *logic.PlayerChatLogic
-	announcementLogic          *logic.AnnouncementLogic
-	serverLogic                *logic.ServerLogic
+	titleLogic            *logic.TitleLogic
+	gameProfileLogic      *logic.GameProfileLogic
+	pluginCredentialLogic *logic.PluginCredentialLogic
+	playerEventLogic      *logic.PlayerEventLogic
+	playerChatLogic       *logic.PlayerChatLogic
+	announcementLogic     *logic.AnnouncementLogic
+	serverLogic           *logic.ServerLogic
+	serverPlayerLogic     *logic.ServerPlayerLogic
 }
 
 // grpcHandler gRPC Handler 基类
@@ -45,13 +46,14 @@ func NewGRPCHandler[T IGRPCHandler](ctx context.Context, handlerName string) *T 
 		name: handlerName,
 		log:  xLog.WithName(xLog.NamedGRPC, handlerName),
 		service: &grpcService{
-			titleLogic:                logic.NewTitleLogic(ctx),
-			gameProfileLogic:          logic.NewGameProfileLogic(ctx),
-			pluginCredentialLogic:     logic.NewPluginCredentialLogic(ctx),
-			playerEventLogic:          logic.NewPlayerEventLogic(ctx),
-			playerChatLogic:           logic.NewPlayerChatLogic(ctx),
-			announcementLogic:          logic.NewAnnouncementLogic(ctx),
-			serverLogic:                logic.NewServerLogic(ctx),
+			titleLogic:            logic.NewTitleLogic(ctx),
+			gameProfileLogic:      logic.NewGameProfileLogic(ctx),
+			pluginCredentialLogic: logic.NewPluginCredentialLogic(ctx),
+			playerEventLogic:      logic.NewPlayerEventLogic(ctx),
+			playerChatLogic:       logic.NewPlayerChatLogic(ctx),
+			announcementLogic:     logic.NewAnnouncementLogic(ctx),
+			serverLogic:           logic.NewServerLogic(ctx),
+			serverPlayerLogic:     logic.NewServerPlayerLogic(ctx),
 		},
 		rdb: rdb,
 	}

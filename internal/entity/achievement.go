@@ -34,14 +34,14 @@ func (t AchievementType) String() string {
 
 type Achievement struct {
 	xModels.BaseEntity
-	Name             string                  `gorm:"not null;type:varchar(64);comment:成就名称" json:"name"`
-	Description      string                  `gorm:"not null;type:varchar(255);comment:成就描述" json:"description"`
-	Type             AchievementType         `gorm:"not null;type:smallint;index:idx_ach_type;comment:成就类型" json:"type"`
-	ConditionKey     string                  `gorm:"not null;type:varchar(64);uniqueIndex:uk_ach_condition_key;comment:条件标识" json:"condition_key"`
-	ConditionParams  json.RawMessage         `gorm:"type:jsonb;comment:条件参数" json:"condition_params,omitempty"`
-	RewardConfig     json.RawMessage         `gorm:"type:jsonb;comment:奖励配置" json:"reward_config,omitempty"`
-	IsActive         bool                    `gorm:"not null;default:true;comment:是否启用" json:"is_active"`
-	SortOrder        int                     `gorm:"not null;default:0;comment:展示排序" json:"sort_order"`
+	Name            string          `gorm:"not null;type:varchar(64);comment:成就名称" json:"name"`
+	Description     string          `gorm:"not null;type:varchar(255);comment:成就描述" json:"description"`
+	Type            AchievementType `gorm:"not null;type:smallint;index:idx_ach_type;comment:成就类型" json:"type"`
+	ConditionKey    string          `gorm:"not null;type:varchar(64);uniqueIndex:uk_ach_condition_key;comment:条件标识" json:"condition_key"`
+	ConditionParams json.RawMessage `gorm:"type:jsonb;comment:条件参数" json:"condition_params,omitempty"`
+	RewardConfig    json.RawMessage `gorm:"type:jsonb;comment:奖励配置" json:"reward_config,omitempty"`
+	IsActive        bool            `gorm:"not null;default:true;comment:是否启用" json:"is_active"`
+	SortOrder       int             `gorm:"not null;default:0;comment:展示排序" json:"sort_order"`
 }
 
 func (_ *Achievement) GetGene() xSnowflake.Gene {

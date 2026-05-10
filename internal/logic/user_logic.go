@@ -4,9 +4,9 @@ import (
 	"context"
 
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
+	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
 	xModels "github.com/bamboo-services/bamboo-base-go/major/models"
-	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository"
 )

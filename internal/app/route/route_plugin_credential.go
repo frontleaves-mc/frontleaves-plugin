@@ -1,8 +1,8 @@
 package route
 
 import (
-	handler "github.com/frontleaves-mc/frontleaves-plugin/internal/handler"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/app/middleware"
+	handler "github.com/frontleaves-mc/frontleaves-plugin/internal/handler"
 	"github.com/gin-gonic/gin"
 )
 

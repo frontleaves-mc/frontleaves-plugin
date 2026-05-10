@@ -5,14 +5,14 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/google/uuid"
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
-	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
+	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
 	apiTitle "github.com/frontleaves-mc/frontleaves-plugin/api/title"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository"
+	"github.com/google/uuid"
 )
 
 type titleRepo struct {
@@ -137,10 +137,10 @@ func (l *TitleLogic) AssignTitleToPlayer(ctx context.Context, titleID xSnowflake
 
 	playerTitle := &entity.GameProfileTitle{
 		GameProfileUUID: playerUUID,
-		TitleID:    titleID,
-		Source:     entity.TitleSourceAdmin,
-		GrantedAt:  time.Now(),
-		IsEquipped: false,
+		TitleID:         titleID,
+		Source:          entity.TitleSourceAdmin,
+		GrantedAt:       time.Now(),
+		IsEquipped:      false,
 	}
 
 	return l.repo.gameProfileTitle.Create(ctx, playerTitle)
@@ -178,10 +178,10 @@ func (l *TitleLogic) EquipTitle(ctx context.Context, playerUUID uuid.UUID, title
 
 		playerTitle := &entity.GameProfileTitle{
 			GameProfileUUID: playerUUID,
-			TitleID:    titleID,
-			Source:     source,
-			GrantedAt:  time.Now(),
-			IsEquipped: false,
+			TitleID:         titleID,
+			Source:          source,
+			GrantedAt:       time.Now(),
+			IsEquipped:      false,
 		}
 		if xErr := l.repo.gameProfileTitle.Create(ctx, playerTitle); xErr != nil {
 			return xErr

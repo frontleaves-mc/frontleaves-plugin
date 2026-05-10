@@ -29,6 +29,7 @@ var migrateTables = []interface{}{
 	&entity.AnnouncementSchedule{},
 	&entity.AnnouncementScheduleItem{},
 	&entity.Server{},
+	&entity.ServerPlayer{},
 }
 
 func (r *reg) databaseInit(ctx context.Context) (any, error) {

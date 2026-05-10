@@ -8,14 +8,14 @@ import (
 )
 
 type service struct {
-	healthLogic           *logic.HealthLogic
-	serverStatusLogic     *logic.ServerStatusLogic
-	serverLogic           *logic.ServerLogic
-	titleLogic            *logic.TitleLogic
-	achievementLogic      *logic.AchievementLogic
-	announcementLogic          *logic.AnnouncementLogic
-	announcementScheduleLogic  *logic.AnnouncementScheduleLogic
-	pluginCredentialLogic      *logic.PluginCredentialLogic
+	healthLogic               *logic.HealthLogic
+	serverStatusLogic         *logic.ServerStatusLogic
+	serverLogic               *logic.ServerLogic
+	titleLogic                *logic.TitleLogic
+	achievementLogic          *logic.AchievementLogic
+	announcementLogic         *logic.AnnouncementLogic
+	announcementScheduleLogic *logic.AnnouncementScheduleLogic
+	pluginCredentialLogic     *logic.PluginCredentialLogic
 }
 
 type handler struct {
@@ -37,14 +37,14 @@ func NewHandler[T IHandler](ctx context.Context, handlerName string) *T {
 		name: handlerName,
 		log:  xLog.WithName(xLog.NamedCONT, handlerName),
 		service: &service{
-			healthLogic:           logic.NewHealthLogic(ctx),
-			serverStatusLogic:     logic.NewServerStatusLogic(ctx),
-			serverLogic:           logic.NewServerLogic(ctx),
-			titleLogic:            logic.NewTitleLogic(ctx),
-			achievementLogic:      logic.NewAchievementLogic(ctx),
-			announcementLogic:          logic.NewAnnouncementLogic(ctx),
-			announcementScheduleLogic:  logic.NewAnnouncementScheduleLogic(ctx),
-			pluginCredentialLogic:      logic.NewPluginCredentialLogic(ctx),
+			healthLogic:               logic.NewHealthLogic(ctx),
+			serverStatusLogic:         logic.NewServerStatusLogic(ctx),
+			serverLogic:               logic.NewServerLogic(ctx),
+			titleLogic:                logic.NewTitleLogic(ctx),
+			achievementLogic:          logic.NewAchievementLogic(ctx),
+			announcementLogic:         logic.NewAnnouncementLogic(ctx),
+			announcementScheduleLogic: logic.NewAnnouncementScheduleLogic(ctx),
+			pluginCredentialLogic:     logic.NewPluginCredentialLogic(ctx),
 		},
 	}
 }

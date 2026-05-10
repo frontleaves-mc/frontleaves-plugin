@@ -3,14 +3,14 @@ package apiAnnouncementSchedule
 import "time"
 
 type ScheduleResponse struct {
-	ID              string                `json:"id"`
-	Name            string                `json:"name"`
-	Mode            int16                 `json:"mode"`
-	IntervalSeconds int                   `json:"interval_seconds"`
-	IsActive        bool                  `json:"is_active"`
-	Status          int16                 `json:"status"`
+	ID              string                 `json:"id"`
+	Name            string                 `json:"name"`
+	Mode            int16                  `json:"mode"`
+	IntervalSeconds int                    `json:"interval_seconds"`
+	IsActive        bool                   `json:"is_active"`
+	Status          int16                  `json:"status"`
 	Items           []ScheduleItemResponse `json:"items"`
-	CreatedAt       time.Time             `json:"created_at"`
+	CreatedAt       time.Time              `json:"created_at"`
 }
 
 type ScheduleItemResponse struct {

@@ -3,12 +3,12 @@ package logic
 import (
 	"context"
 
-	"github.com/google/uuid"
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
 	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
 	constant "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository"
+	"github.com/google/uuid"
 )
 
 type playerEventRepo struct {

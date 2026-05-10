@@ -8,14 +8,14 @@ const (
 	Demo xSnowflake.Gene = 32
 
 	// 称号系统 + 成就系统
-	GeneTitle              xSnowflake.Gene = 33 // 称号定义
-	GenePlayerTitle        xSnowflake.Gene = 34 // 玩家称号关联
-	GeneAchievement        xSnowflake.Gene = 35 // 成就定义
-	GenePlayerAchievement  xSnowflake.Gene = 36 // 玩家成就
-	GeneAchievementClaim    xSnowflake.Gene = 38 // 成就申领记录
-	GenePluginCredential    xSnowflake.Gene = 39 // 插件授权凭证
-	GenePlayerEvent         xSnowflake.Gene = 41 // 玩家事件
-	GenePlayerChatLog       xSnowflake.Gene = 42 // 玩家聊天日志
+	GeneTitle             xSnowflake.Gene = 33 // 称号定义
+	GenePlayerTitle       xSnowflake.Gene = 34 // 玩家称号关联
+	GeneAchievement       xSnowflake.Gene = 35 // 成就定义
+	GenePlayerAchievement xSnowflake.Gene = 36 // 玩家成就
+	GeneAchievementClaim  xSnowflake.Gene = 38 // 成就申领记录
+	GenePluginCredential  xSnowflake.Gene = 39 // 插件授权凭证
+	GenePlayerEvent       xSnowflake.Gene = 41 // 玩家事件
+	GenePlayerChatLog     xSnowflake.Gene = 42 // 玩家聊天日志
 
 	// 公告系统
 	GeneAnnouncement             xSnowflake.Gene = 43 // 公告
@@ -23,5 +23,6 @@ const (
 	GeneAnnouncementScheduleItem xSnowflake.Gene = 45 // 公告调度项
 
 	// 服务器系统
-	GeneServer xSnowflake.Gene = 46 // 服务器
+	GeneServer       xSnowflake.Gene = 46 // 服务器
+	GeneServerPlayer xSnowflake.Gene = 47 // 服务器玩家
 )

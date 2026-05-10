@@ -395,7 +395,11 @@ type HeartbeatEvent struct {
 	// 服务器名称
 	ServerName string `protobuf:"bytes,1,opt,name=server_name,json=serverName,proto3" json:"server_name,omitempty"`
 	// 服务器 TPS
-	Tps           float64 `protobuf:"fixed64,2,opt,name=tps,proto3" json:"tps,omitempty"`
+	Tps float64 `protobuf:"fixed64,2,opt,name=tps,proto3" json:"tps,omitempty"`
+	// 在线玩家数量
+	OnlinePlayer int32 `protobuf:"varint,3,opt,name=online_player,json=onlinePlayer,proto3" json:"online_player,omitempty"`
+	// 在线玩家列表
+	Players       []*PlayerStatus `protobuf:"bytes,4,rep,name=players,proto3" json:"players,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -442,6 +446,20 @@ func (x *HeartbeatEvent) GetTps() float64 {
 		return x.Tps
 	}
 	return 0
+}
+
+func (x *HeartbeatEvent) GetOnlinePlayer() int32 {
+	if x != nil {
+		return x.OnlinePlayer
+	}
+	return 0
+}
+
+func (x *HeartbeatEvent) GetPlayers() []*PlayerStatus {
+	if x != nil {
+		return x.Players
+	}
+	return nil
 }
 
 // PlayerJoinEvent 玩家加入事件
@@ -1774,11 +1792,13 @@ const file_status_v1_status_proto_rawDesc = "" +
 	"\x19player_group_change_event\x18\x12 \x01(\v2-.frontleaves.status.v1.PlayerGroupChangeEventH\x00R\x16playerGroupChangeEventB\a\n" +
 	"\x05event\"U\n" +
 	"\x19ServerEventStreamResponse\x128\n" +
-	"\rbase_response\x18\x01 \x01(\v2\x13.xBase.BaseResponseR\fbaseResponse\"C\n" +
+	"\rbase_response\x18\x01 \x01(\v2\x13.xBase.BaseResponseR\fbaseResponse\"\xa7\x01\n" +
 	"\x0eHeartbeatEvent\x12\x1f\n" +
 	"\vserver_name\x18\x01 \x01(\tR\n" +
 	"serverName\x12\x10\n" +
-	"\x03tps\x18\x02 \x01(\x01R\x03tps\"\xb2\x01\n" +
+	"\x03tps\x18\x02 \x01(\x01R\x03tps\x12#\n" +
+	"\ronline_player\x18\x03 \x01(\x05R\fonlinePlayer\x12=\n" +
+	"\aplayers\x18\x04 \x03(\v2#.frontleaves.status.v1.PlayerStatusR\aplayers\"\xb2\x01\n" +
 	"\x0fPlayerJoinEvent\x12\x1f\n" +
 	"\vplayer_uuid\x18\x01 \x01(\tR\n" +
 	"playerUuid\x12\x1f\n" +
@@ -1969,25 +1989,26 @@ var file_status_v1_status_proto_depIdxs = []int32{
 	10, // 7: frontleaves.status.v1.ServerEventStreamRequest.player_death_event:type_name -> frontleaves.status.v1.PlayerDeathEvent
 	11, // 8: frontleaves.status.v1.ServerEventStreamRequest.player_group_change_event:type_name -> frontleaves.status.v1.PlayerGroupChangeEvent
 	23, // 9: frontleaves.status.v1.ServerEventStreamResponse.base_response:type_name -> xBase.BaseResponse
-	18, // 10: frontleaves.status.v1.ServerQueryRequest.player_status_result:type_name -> frontleaves.status.v1.QueryPlayerStatusResult
-	19, // 11: frontleaves.status.v1.ServerQueryRequest.server_status_result:type_name -> frontleaves.status.v1.QueryServerStatusResult
-	20, // 12: frontleaves.status.v1.ServerQueryRequest.check_permission_result:type_name -> frontleaves.status.v1.QueryCheckPermissionResult
-	21, // 13: frontleaves.status.v1.ServerQueryRequest.player_groups_result:type_name -> frontleaves.status.v1.QueryPlayerGroupsResult
-	23, // 14: frontleaves.status.v1.ServerQueryResponse.base_response:type_name -> xBase.BaseResponse
-	14, // 15: frontleaves.status.v1.ServerQueryResponse.player_status_query:type_name -> frontleaves.status.v1.QueryPlayerStatusQuery
-	15, // 16: frontleaves.status.v1.ServerQueryResponse.server_status_query:type_name -> frontleaves.status.v1.QueryServerStatusQuery
-	16, // 17: frontleaves.status.v1.ServerQueryResponse.check_permission_query:type_name -> frontleaves.status.v1.QueryCheckPermissionQuery
-	17, // 18: frontleaves.status.v1.ServerQueryResponse.player_groups_query:type_name -> frontleaves.status.v1.QueryPlayerGroupsQuery
-	22, // 19: frontleaves.status.v1.QueryServerStatusResult.players:type_name -> frontleaves.status.v1.PlayerStatus
-	2,  // 20: frontleaves.status.v1.ServerStatusService.ServerEventStream:input_type -> frontleaves.status.v1.ServerEventStreamRequest
-	12, // 21: frontleaves.status.v1.ServerStatusService.ServerQuery:input_type -> frontleaves.status.v1.ServerQueryRequest
-	3,  // 22: frontleaves.status.v1.ServerStatusService.ServerEventStream:output_type -> frontleaves.status.v1.ServerEventStreamResponse
-	13, // 23: frontleaves.status.v1.ServerStatusService.ServerQuery:output_type -> frontleaves.status.v1.ServerQueryResponse
-	22, // [22:24] is the sub-list for method output_type
-	20, // [20:22] is the sub-list for method input_type
-	20, // [20:20] is the sub-list for extension type_name
-	20, // [20:20] is the sub-list for extension extendee
-	0,  // [0:20] is the sub-list for field type_name
+	22, // 10: frontleaves.status.v1.HeartbeatEvent.players:type_name -> frontleaves.status.v1.PlayerStatus
+	18, // 11: frontleaves.status.v1.ServerQueryRequest.player_status_result:type_name -> frontleaves.status.v1.QueryPlayerStatusResult
+	19, // 12: frontleaves.status.v1.ServerQueryRequest.server_status_result:type_name -> frontleaves.status.v1.QueryServerStatusResult
+	20, // 13: frontleaves.status.v1.ServerQueryRequest.check_permission_result:type_name -> frontleaves.status.v1.QueryCheckPermissionResult
+	21, // 14: frontleaves.status.v1.ServerQueryRequest.player_groups_result:type_name -> frontleaves.status.v1.QueryPlayerGroupsResult
+	23, // 15: frontleaves.status.v1.ServerQueryResponse.base_response:type_name -> xBase.BaseResponse
+	14, // 16: frontleaves.status.v1.ServerQueryResponse.player_status_query:type_name -> frontleaves.status.v1.QueryPlayerStatusQuery
+	15, // 17: frontleaves.status.v1.ServerQueryResponse.server_status_query:type_name -> frontleaves.status.v1.QueryServerStatusQuery
+	16, // 18: frontleaves.status.v1.ServerQueryResponse.check_permission_query:type_name -> frontleaves.status.v1.QueryCheckPermissionQuery
+	17, // 19: frontleaves.status.v1.ServerQueryResponse.player_groups_query:type_name -> frontleaves.status.v1.QueryPlayerGroupsQuery
+	22, // 20: frontleaves.status.v1.QueryServerStatusResult.players:type_name -> frontleaves.status.v1.PlayerStatus
+	2,  // 21: frontleaves.status.v1.ServerStatusService.ServerEventStream:input_type -> frontleaves.status.v1.ServerEventStreamRequest
+	12, // 22: frontleaves.status.v1.ServerStatusService.ServerQuery:input_type -> frontleaves.status.v1.ServerQueryRequest
+	3,  // 23: frontleaves.status.v1.ServerStatusService.ServerEventStream:output_type -> frontleaves.status.v1.ServerEventStreamResponse
+	13, // 24: frontleaves.status.v1.ServerStatusService.ServerQuery:output_type -> frontleaves.status.v1.ServerQueryResponse
+	23, // [23:25] is the sub-list for method output_type
+	21, // [21:23] is the sub-list for method input_type
+	21, // [21:21] is the sub-list for extension type_name
+	21, // [21:21] is the sub-list for extension extendee
+	0,  // [0:21] is the sub-list for field type_name
 }
 
 func init() { file_status_v1_status_proto_init() }

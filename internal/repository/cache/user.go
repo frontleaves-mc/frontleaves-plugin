@@ -6,18 +6,18 @@ import (
 	"fmt"
 	"time"
 
-	xCache "github.com/bamboo-services/bamboo-base-go/major/cache"
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
+	xCache "github.com/bamboo-services/bamboo-base-go/major/cache"
 	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
 	"github.com/redis/go-redis/v9"
 )
 
 const (
-	userCacheFieldID       = "id"
-	userCacheFieldUpdated  = "updated_at"
-	userCacheFieldName     = "username"
-	userCacheTimeLayout    = "2006-01-02T15:04:05.999999999Z07:00"
+	userCacheFieldID      = "id"
+	userCacheFieldUpdated = "updated_at"
+	userCacheFieldName    = "username"
+	userCacheTimeLayout   = "2006-01-02T15:04:05.999999999Z07:00"
 )
 
 // UserCache 用户实体缓存管理器，基于 xCache.Cache 标准类型

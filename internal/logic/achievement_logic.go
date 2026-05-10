@@ -6,20 +6,20 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/google/uuid"
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
-	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
+	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
 	apiAchievement "github.com/frontleaves-mc/frontleaves-plugin/api/achievement"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository"
+	"github.com/google/uuid"
 )
 
 type achievementRepo struct {
-	achievement *repository.AchievementRepo
-	gameProfileAch *repository.GameProfileAchievementRepo
-	claim          *repository.GameProfileAchievementClaimRepo
+	achievement      *repository.AchievementRepo
+	gameProfileAch   *repository.GameProfileAchievementRepo
+	claim            *repository.GameProfileAchievementClaimRepo
 	gameProfileTitle *repository.GameProfileTitleRepo
 }
 
@@ -39,9 +39,9 @@ func NewAchievementLogic(ctx context.Context) *AchievementLogic {
 			log: xLog.WithName(xLog.NamedLOGC, "AchievementLogic"),
 		},
 		repo: achievementRepo{
-			achievement: repository.NewAchievementRepo(db),
+			achievement:      repository.NewAchievementRepo(db),
 			gameProfileAch:   repository.NewGameProfileAchievementRepo(db),
-			claim:       repository.NewGameProfileAchievementClaimRepo(db),
+			claim:            repository.NewGameProfileAchievementClaimRepo(db),
 			gameProfileTitle: repository.NewGameProfileTitleRepo(db),
 		},
 	}
@@ -140,10 +140,10 @@ func (l *AchievementLogic) GrantAchievement(ctx context.Context, achievementID x
 	}
 
 	pa := &entity.GameProfileAchievement{
-		GameProfileUUID:    playerUUID,
-		AchievementID: achievementID,
-		Status:        entity.AchievementStatusCompleted,
-		Progress:      1,
+		GameProfileUUID: playerUUID,
+		AchievementID:   achievementID,
+		Status:          entity.AchievementStatusCompleted,
+		Progress:        1,
 	}
 	now := time.Now()
 	pa.CompletedAt = &now
@@ -154,9 +154,9 @@ func (l *AchievementLogic) GrantAchievement(ctx context.Context, achievementID x
 
 	if len(ach.RewardConfig) > 0 {
 		claim := &entity.GameProfileAchievementClaim{
-			GameProfileUUID:    playerUUID,
-			AchievementID: achievementID,
-			TitleClaimed:  false,
+			GameProfileUUID: playerUUID,
+			AchievementID:   achievementID,
+			TitleClaimed:    false,
 		}
 		if xErr := l.repo.claim.Create(ctx, claim); xErr != nil {
 			return xErr
@@ -194,10 +194,10 @@ func (l *AchievementLogic) EvaluateEvent(ctx context.Context, conditionKey strin
 
 		if pa == nil {
 			pa = &entity.GameProfileAchievement{
-				GameProfileUUID:    playerUUID,
-				AchievementID: ach.ID,
-				Status:        entity.AchievementStatusInProgress,
-				Progress:      0,
+				GameProfileUUID: playerUUID,
+				AchievementID:   ach.ID,
+				Status:          entity.AchievementStatusInProgress,
+				Progress:        0,
 			}
 			if xErr := l.repo.gameProfileAch.Create(ctx, pa); xErr != nil {
 				return xErr
@@ -237,9 +237,9 @@ func (l *AchievementLogic) EvaluateEvent(ctx context.Context, conditionKey strin
 
 			if len(ach.RewardConfig) > 0 {
 				claim := &entity.GameProfileAchievementClaim{
-					GameProfileUUID:    playerUUID,
-					AchievementID: ach.ID,
-					TitleClaimed:  false,
+					GameProfileUUID: playerUUID,
+					AchievementID:   ach.ID,
+					TitleClaimed:    false,
 				}
 				if xErr := l.repo.claim.Create(ctx, claim); xErr != nil {
 					return xErr
@@ -298,9 +298,9 @@ func (l *AchievementLogic) ClaimReward(ctx context.Context, playerUUID uuid.UUID
 			if !has {
 				playerTitle := &entity.GameProfileTitle{
 					GameProfileUUID: playerUUID,
-					TitleID:    xSnowflake.SnowflakeID(titleID),
-					Source:     entity.TitleSourceAchievement,
-					IsEquipped: false,
+					TitleID:         xSnowflake.SnowflakeID(titleID),
+					Source:          entity.TitleSourceAchievement,
+					IsEquipped:      false,
 				}
 				if xErr := l.repo.gameProfileTitle.Create(ctx, playerTitle); xErr != nil {
 					return nil, xErr

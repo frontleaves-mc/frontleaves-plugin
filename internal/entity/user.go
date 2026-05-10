@@ -1,8 +1,8 @@
 package entity
 
 import (
-	xModels "github.com/bamboo-services/bamboo-base-go/major/models"
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
+	xModels "github.com/bamboo-services/bamboo-base-go/major/models"
 	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
 )
 

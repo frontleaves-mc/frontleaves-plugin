@@ -49,11 +49,11 @@ func (s AnnouncementStatus) String() string {
 
 type Announcement struct {
 	xModels.BaseEntity
-	Title       string             `gorm:"not null;type:varchar(128);comment:公告标题" json:"title"` // 公告标题
-	Content     string             `gorm:"not null;type:text;comment:公告内容(Markdown)" json:"content"` // 公告内容(Markdown)
-	Type        AnnouncementType   `gorm:"not null;type:smallint;index:idx_announcement_type;comment:公告类型" json:"type"` // 公告类型
+	Title       string             `gorm:"not null;type:varchar(128);comment:公告标题" json:"title"`                            // 公告标题
+	Content     string             `gorm:"not null;type:text;comment:公告内容(Markdown)" json:"content"`                        // 公告内容(Markdown)
+	Type        AnnouncementType   `gorm:"not null;type:smallint;index:idx_announcement_type;comment:公告类型" json:"type"`     // 公告类型
 	Status      AnnouncementStatus `gorm:"not null;type:smallint;index:idx_announcement_status;comment:公告状态" json:"status"` // 公告状态
-	PublishedAt *time.Time         `gorm:"comment:发布时间" json:"published_at,omitempty"` // 发布时间
+	PublishedAt *time.Time         `gorm:"comment:发布时间" json:"published_at,omitempty"`                                      // 发布时间
 }
 
 func (_ *Announcement) GetGene() xSnowflake.Gene {

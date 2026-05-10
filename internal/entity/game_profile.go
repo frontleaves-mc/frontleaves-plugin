@@ -3,8 +3,8 @@ package entity
 import (
 	"time"
 
-	"github.com/google/uuid"
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
+	"github.com/google/uuid"
 )
 
 type GameProfile struct {

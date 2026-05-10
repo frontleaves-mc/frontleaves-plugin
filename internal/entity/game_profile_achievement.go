@@ -3,10 +3,10 @@ package entity
 import (
 	"time"
 
-	"github.com/google/uuid"
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	xModels "github.com/bamboo-services/bamboo-base-go/major/models"
 	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
+	"github.com/google/uuid"
 )
 
 type AchievementStatus int16
@@ -38,7 +38,7 @@ type GameProfileAchievement struct {
 	Progress        int64                  `gorm:"not null;default:0;comment:当前进度" json:"progress"`
 	CompletedAt     *time.Time             `gorm:"type:timestamptz;comment:完成时间" json:"completed_at,omitempty"`
 
-	Achievement *Achievement  `gorm:"foreignKey:AchievementID;references:ID;constraint:OnDelete:CASCADE" json:"achievement,omitempty"`
+	Achievement *Achievement `gorm:"foreignKey:AchievementID;references:ID;constraint:OnDelete:CASCADE" json:"achievement,omitempty"`
 	GameProfile *GameProfile `gorm:"foreignKey:GameProfileUUID;references:UUID;constraint:OnDelete:CASCADE" json:"game_profile,omitempty"`
 }
 

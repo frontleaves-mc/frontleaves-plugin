@@ -3,13 +3,13 @@ package handler
 import (
 	"context"
 
-	"github.com/google/uuid"
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	xGrpcMiddle "github.com/bamboo-services/bamboo-base-go/plugins/grpc/middleware"
 	xGrpcResult "github.com/bamboo-services/bamboo-base-go/plugins/grpc/result"
-	"github.com/frontleaves-mc/frontleaves-plugin/internal/grpc/middleware"
 	titlepb "github.com/frontleaves-mc/frontleaves-plugin/internal/grpc/gen/title/v1"
+	"github.com/frontleaves-mc/frontleaves-plugin/internal/grpc/middleware"
+	"github.com/google/uuid"
 	"google.golang.org/grpc"
 )
 
@@ -50,13 +50,13 @@ func (h *TitleHandler) GetPlayerTitles(
 	resp.Titles = make([]*titlepb.PlayerTitle, len(playerTitles))
 	for i, pt := range playerTitles {
 		resp.Titles[i] = &titlepb.PlayerTitle{
-			TitleId:    pt.ID,
-			Name:       pt.Name,
+			TitleId:     pt.ID,
+			Name:        pt.Name,
 			Description: pt.Description,
-			Color:      pt.Color,
-			Type:       int32(pt.Type),
-			Source:     int32(pt.Source),
-			IsEquipped: pt.IsEquipped,
+			Color:       pt.Color,
+			Type:        int32(pt.Type),
+			Source:      int32(pt.Source),
+			IsEquipped:  pt.IsEquipped,
 		}
 	}
 

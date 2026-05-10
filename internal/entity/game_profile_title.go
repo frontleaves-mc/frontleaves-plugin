@@ -3,10 +3,10 @@ package entity
 import (
 	"time"
 
-	"github.com/google/uuid"
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	xModels "github.com/bamboo-services/bamboo-base-go/major/models"
 	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
+	"github.com/google/uuid"
 )
 
 type TitleSource int16

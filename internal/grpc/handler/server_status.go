@@ -6,11 +6,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/google/uuid"
 	xGrpcMiddle "github.com/bamboo-services/bamboo-base-go/plugins/grpc/middleware"
 	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
 	statuspb "github.com/frontleaves-mc/frontleaves-plugin/internal/grpc/gen/status/v1"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/grpc/middleware"
+	"github.com/frontleaves-mc/frontleaves-plugin/internal/logic"
+	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -104,10 +105,34 @@ func (h *ServerStatusHandler) dispatchEvent(
 		onlineCount := h.rdb.SCard(ctx, serverPlayersKey).Val()
 		h.rdb.HSet(ctx, serverKey, map[string]any{
 			"online_players": strconv.FormatInt(onlineCount, 10),
-			"tps":           fmt.Sprintf("%.2f", heartbeat.GetTps()),
+			"tps":            fmt.Sprintf("%.2f", heartbeat.GetTps()),
 			"timestamp":      strconv.FormatInt(time.Now().UnixMilli(), 10),
 		})
 		h.rdb.Expire(ctx, serverKey, statusTTL)
+
+		// 心跳对账：同步 DB 玩家在线状态
+		players := heartbeat.GetPlayers()
+		if len(players) > 0 {
+			playerInfos := make([]logic.PlayerInfo, 0, len(players))
+			for _, p := range players {
+				parsedUUID, err := uuid.Parse(p.GetPlayerUuid())
+				if err != nil {
+					h.log.Warn(ctx, "HeartbeatEvent - 玩家 UUID 格式无效: "+p.GetPlayerUuid())
+					continue
+				}
+				playerInfos = append(playerInfos, logic.PlayerInfo{
+					UUID:  parsedUUID,
+					Name:  p.GetPlayerName(),
+					World: p.GetWorldName(),
+				})
+			}
+			if len(playerInfos) > 0 {
+				if err := h.service.serverPlayerLogic.ReconcilePlayers(ctx, server.ID, playerInfos); err != nil {
+					h.log.Warn(ctx, "HeartbeatEvent - 心跳对账失败: "+err.Error())
+				}
+			}
+		}
+
 		if *registeredServerName == "" {
 			*registeredServerName = serverName
 			h.setEventStream(serverName, &eventStream{
@@ -154,6 +179,13 @@ func (h *ServerStatusHandler) dispatchEvent(
 			if syncErr := h.service.gameProfileLogic.Upsert(ctx, 0, parsedUUID, playerName, groupName); syncErr != nil {
 				h.log.Warn(ctx, "同步 GameProfile 失败: "+syncErr.Error())
 			}
+
+			// DB 同步玩家加入状态
+			if server, xErr := h.service.serverLogic.GetOrCreateByName(ctx, serverName); xErr == nil && server != nil {
+				if err := h.service.serverPlayerLogic.PlayerJoined(ctx, server.ID, parsedUUID, playerName, worldName); err != nil {
+					h.log.Warn(ctx, "PlayerJoinEvent - DB 同步玩家加入失败: "+err.Error())
+				}
+			}
 		}
 
 	case *statuspb.ServerEventStreamRequest_PlayerQuitEvent:
@@ -177,6 +209,16 @@ func (h *ServerStatusHandler) dispatchEvent(
 		serverKey := string(bConst.CacheStatusServer.Get(serverName))
 		onlineCount := h.rdb.SCard(ctx, serverPlayersKey).Val()
 		h.rdb.HSet(ctx, serverKey, "online_players", strconv.FormatInt(onlineCount, 10))
+
+		// DB 同步玩家离开状态
+		parsedUUID, parseErr := uuid.Parse(playerUUID)
+		if parseErr == nil {
+			if server, xErr := h.service.serverLogic.GetOrCreateByName(ctx, serverName); xErr == nil && server != nil {
+				if err := h.service.serverPlayerLogic.PlayerLeft(ctx, server.ID, parsedUUID); err != nil {
+					h.log.Warn(ctx, "PlayerQuitEvent - DB 同步玩家离开失败: "+err.Error())
+				}
+			}
+		}
 
 	case *statuspb.ServerEventStreamRequest_PlayerSwitchWorldEvent:
 		sw := evt.PlayerSwitchWorldEvent
@@ -277,4 +319,11 @@ func (h *ServerStatusHandler) cleanupServerStatus(ctx context.Context, serverNam
 		h.rdb.Expire(ctx, playerKey, statusTTL)
 	}
 	h.rdb.Del(ctx, serverPlayersKey)
+
+	// DB 同步标记该服务器所有玩家离线
+	if server, xErr := h.service.serverLogic.GetOrCreateByName(ctx, serverName); xErr == nil && server != nil {
+		if err := h.service.serverPlayerLogic.ServerOffline(ctx, server.ID); err != nil {
+			h.log.Warn(ctx, "cleanupServerStatus - DB 标记服务器玩家离线失败: "+err.Error())
+		}
+	}
 }

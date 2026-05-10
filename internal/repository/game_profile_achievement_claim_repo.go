@@ -3,11 +3,11 @@ package repository
 import (
 	"context"
 
-	"github.com/google/uuid"
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 

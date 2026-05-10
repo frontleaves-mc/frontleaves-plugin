@@ -3,10 +3,10 @@ package middleware
 import (
 	"context"
 
-	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
 	xGrpcUtil "github.com/bamboo-services/bamboo-base-go/plugins/grpc/utility"
+	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/logic"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
