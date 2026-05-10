@@ -3,8 +3,8 @@ package logic
 import (
 	"context"
 	"strconv"
-	"strings"
 
+	"github.com/google/uuid"
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
@@ -16,7 +16,8 @@ import (
 )
 
 type serverRepo struct {
-	server *repository.ServerRepo
+	server       *repository.ServerRepo
+	serverPlayer *repository.ServerPlayerRepo
 }
 
 type ServerLogic struct {
@@ -35,7 +36,8 @@ func NewServerLogic(ctx context.Context) *ServerLogic {
 			log: xLog.WithName(xLog.NamedLOGC, "ServerLogic"),
 		},
 		repo: serverRepo{
-			server: repository.NewServerRepo(db),
+			server:       repository.NewServerRepo(db),
+			serverPlayer: repository.NewServerPlayerRepo(db),
 		},
 	}
 }
@@ -218,13 +220,23 @@ func (l *ServerLogic) GetMyOnlineProfiles(ctx context.Context, userID xSnowflake
 	}
 
 	var onlineProfiles []apiServer.OnlineGameProfileResponse
-	for _, profile := range profiles {
+	var missedUUIDs []uuid.UUID
+	missedIndex := make(map[uuid.UUID]int)
+
+	for i, profile := range profiles {
 		playerKey := string(bConst.CacheStatusPlayer.Get(profile.UUID.String()))
 		playerData, err := l.rdb.HGetAll(ctx, playerKey).Result()
 		if err != nil {
+			missedUUIDs = append(missedUUIDs, profile.UUID)
+			missedIndex[profile.UUID] = i
 			continue
 		}
-		if len(playerData) == 0 || playerData["online"] != "true" {
+		if len(playerData) == 0 {
+			missedUUIDs = append(missedUUIDs, profile.UUID)
+			missedIndex[profile.UUID] = i
+			continue
+		}
+		if playerData["online"] != "true" {
 			continue
 		}
 		onlineProfiles = append(onlineProfiles, apiServer.OnlineGameProfileResponse{
@@ -233,6 +245,22 @@ func (l *ServerLogic) GetMyOnlineProfiles(ctx context.Context, userID xSnowflake
 			ServerName: playerData["server_name"],
 			WorldName:  playerData["world_name"],
 		})
+	}
+
+	if len(missedUUIDs) > 0 {
+		dbPlayers, xErr := l.repo.serverPlayer.GetOnlineByPlayerUUIDs(ctx, missedUUIDs)
+		if xErr == nil {
+			for _, p := range dbPlayers {
+				if idx, ok := missedIndex[p.PlayerUUID]; ok {
+					onlineProfiles = append(onlineProfiles, apiServer.OnlineGameProfileResponse{
+						UUID:       p.PlayerUUID.String(),
+						Username:   profiles[idx].Username,
+						ServerName: "",
+						WorldName:  p.WorldName,
+					})
+				}
+			}
+		}
 	}
 
 	if onlineProfiles == nil {
@@ -249,10 +277,7 @@ func (l *ServerLogic) CheckPlayerOnline(ctx context.Context, playerUUID, usernam
 	if playerUUID != "" {
 		playerKey := string(bConst.CacheStatusPlayer.Get(playerUUID))
 		playerData, err := l.rdb.HGetAll(ctx, playerKey).Result()
-		if err != nil {
-			return resp, nil
-		}
-		if len(playerData) > 0 {
+		if err == nil && len(playerData) > 0 {
 			resp.PlayerUUID = playerUUID
 			resp.PlayerName = playerData["player_name"]
 			if ls, parseErr := strconv.ParseInt(playerData["last_seen"], 10, 64); parseErr == nil {
@@ -263,33 +288,27 @@ func (l *ServerLogic) CheckPlayerOnline(ctx context.Context, playerUUID, usernam
 				resp.ServerName = playerData["server_name"]
 				resp.WorldName = playerData["world_name"]
 			}
+		} else {
+			parsedUUID, parseErr := uuid.Parse(playerUUID)
+			if parseErr == nil {
+				dbPlayers, xErr := l.repo.serverPlayer.GetOnlineByPlayerUUIDs(ctx, []uuid.UUID{parsedUUID})
+				if xErr == nil && len(dbPlayers) > 0 {
+					p := dbPlayers[0]
+					resp.PlayerUUID = p.PlayerUUID.String()
+					resp.PlayerName = p.PlayerName
+					resp.Online = true
+					resp.WorldName = p.WorldName
+				}
+			}
 		}
 	} else if username != "" {
-		wildcardKey := string(bConst.CacheStatusPlayer.Get("*"))
-		keys, err := l.rdb.Keys(ctx, wildcardKey).Result()
-		if err != nil {
-			return resp, nil
-		}
-
-		playerKeyPrefix := string(bConst.CacheStatusPlayer.Get(""))
-		for _, key := range keys {
-			playerData, err := l.rdb.HGetAll(ctx, key).Result()
-			if err != nil || len(playerData) == 0 {
-				continue
-			}
-			if playerData["player_name"] == username {
-				resp.PlayerUUID = strings.TrimPrefix(key, playerKeyPrefix)
-				resp.PlayerName = playerData["player_name"]
-				if ls, parseErr := strconv.ParseInt(playerData["last_seen"], 10, 64); parseErr == nil {
-					resp.LastSeen = ls
-				}
-				if playerData["online"] == "true" {
-					resp.Online = true
-					resp.ServerName = playerData["server_name"]
-					resp.WorldName = playerData["world_name"]
-				}
-				break
-			}
+		dbPlayers, xErr := l.repo.serverPlayer.GetOnlineByPlayerName(ctx, username)
+		if xErr == nil && len(dbPlayers) > 0 {
+			p := dbPlayers[0]
+			resp.PlayerUUID = p.PlayerUUID.String()
+			resp.PlayerName = p.PlayerName
+			resp.Online = true
+			resp.WorldName = p.WorldName
 		}
 	}
 

@@ -13,6 +13,7 @@ import (
 	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository"
+	"github.com/google/uuid"
 )
 
 const heartbeatTimeout = 2 * time.Minute
@@ -75,8 +76,8 @@ func (l *ServerStatusLogic) GetAllServerStatus(ctx context.Context) ([]apiServer
 
 		playerUUIDs, pErr := l.rdb.SMembers(ctx, string(bConst.CacheStatusServerPlayers.Get(serverName))).Result()
 		if pErr != nil {
-			l.log.Warn(ctx, "查询服务器玩家列表失败，降级为空玩家列表: "+serverName)
-			resp.Players = []apiServerStatus.PlayerStatusInfo{}
+			l.log.Warn(ctx, "查询服务器玩家列表失败，尝试 DB 降级: "+serverName)
+			resp = l.dbFallbackServerStatus(ctx, srv.ID, resp)
 			servers = append(servers, *resp)
 			continue
 		}
@@ -125,8 +126,8 @@ func (l *ServerStatusLogic) GetServerStatus(ctx context.Context, serverName stri
 
 	playerUUIDs, err := l.rdb.SMembers(ctx, string(bConst.CacheStatusServerPlayers.Get(serverName))).Result()
 	if err != nil {
-		l.log.Warn(ctx, "查询服务器玩家列表失败，降级为空玩家列表: "+serverName)
-		resp.Players = []apiServerStatus.PlayerStatusInfo{}
+		l.log.Warn(ctx, "查询服务器玩家列表失败，尝试 DB 降级: "+serverName)
+		resp = l.dbFallbackServerStatus(ctx, server.ID, resp)
 		return resp, nil
 	}
 
@@ -166,6 +167,22 @@ func (l *ServerStatusLogic) getPlayerInfosGraceful(ctx context.Context, playerUU
 			continue
 		}
 		if len(playerData) == 0 {
+			// 单个 player hash 过期，尝试 DB 降级查询
+			parsedUUID, parseErr := uuid.Parse(pUUID)
+			if parseErr != nil {
+				l.log.Warn(ctx, "玩家 UUID 格式无效，跳过: "+pUUID)
+				continue
+			}
+			dbPlayers, xErr := l.repo.serverPlayer.GetOnlineByPlayerUUIDs(ctx, []uuid.UUID{parsedUUID})
+			if xErr != nil || len(dbPlayers) == 0 {
+				continue
+			}
+			p := dbPlayers[0]
+			players = append(players, apiServerStatus.PlayerStatusInfo{
+				PlayerUUID: p.PlayerUUID.String(),
+				PlayerName: p.PlayerName,
+				WorldName:  p.WorldName,
+			})
 			continue
 		}
 		players = append(players, apiServerStatus.PlayerStatusInfo{

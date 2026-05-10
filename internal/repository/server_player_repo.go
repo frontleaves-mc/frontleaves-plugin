@@ -110,3 +110,21 @@ func (r *ServerPlayerRepo) GetOnlinePlayerUUIDsByServer(ctx context.Context, ser
 	}
 	return uuids, nil
 }
+
+func (r *ServerPlayerRepo) GetOnlineByPlayerUUIDs(ctx context.Context, uuids []uuid.UUID) ([]entity.ServerPlayer, *xError.Error) {
+	r.log.Info(ctx, "GetOnlineByPlayerUUIDs - 按UUID列表查询在线玩家")
+	var players []entity.ServerPlayer
+	if err := r.db.WithContext(ctx).Where("online = ? AND player_uuid IN ?", true, uuids).Find(&players).Error; err != nil {
+		return nil, xError.NewError(ctx, xError.DatabaseError, "按UUID列表查询在线玩家失败", false, err)
+	}
+	return players, nil
+}
+
+func (r *ServerPlayerRepo) GetOnlineByPlayerName(ctx context.Context, playerName string) ([]entity.ServerPlayer, *xError.Error) {
+	r.log.Info(ctx, "GetOnlineByPlayerName - 按玩家名称查询在线玩家")
+	var players []entity.ServerPlayer
+	if err := r.db.WithContext(ctx).Where("player_name = ? AND online = ?", playerName, true).Find(&players).Error; err != nil {
+		return nil, xError.NewError(ctx, xError.DatabaseError, "按玩家名称查询在线玩家失败", false, err)
+	}
+	return players, nil
+}

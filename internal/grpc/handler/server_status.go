@@ -130,6 +130,19 @@ func (h *ServerStatusHandler) dispatchEvent(
 				if err := h.service.serverPlayerLogic.ReconcilePlayers(ctx, server.ID, playerInfos); err != nil {
 					h.log.Warn(ctx, "HeartbeatEvent - 心跳对账失败: "+err.Error())
 				}
+
+				// ReconcilePlayers 成功且非空列表时，刷新 player 相关 key 的 TTL
+				h.rdb.Expire(ctx, serverPlayersKey, statusTTL)
+
+				// Pipeline 批量刷新所有 player hash TTL
+				pipe := h.rdb.Pipeline()
+				for _, info := range playerInfos {
+					playerKey := string(bConst.CacheStatusPlayer.Get(info.UUID.String()))
+					pipe.Expire(ctx, playerKey, statusTTL)
+				}
+				if _, err := pipe.Exec(ctx); err != nil {
+					h.log.Warn(ctx, "HeartbeatEvent - Pipeline 刷新 player TTL 失败: "+err.Error())
+				}
 			}
 		}
 
