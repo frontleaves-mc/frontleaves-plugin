@@ -19,3 +19,11 @@ type ScheduleItemResponse struct {
 	SortOrder         int    `json:"sort_order"`
 	DelaySeconds      int    `json:"delay_seconds"`
 }
+
+// ScheduleListResponse 公告调度分页列表响应
+type ScheduleListResponse struct {
+	List     []ScheduleResponse `json:"list"`
+	Total    int64              `json:"total"`
+	Page     int                `json:"page"`
+	PageSize int                `json:"page_size"`
+}

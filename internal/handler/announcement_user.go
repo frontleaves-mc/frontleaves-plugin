@@ -7,6 +7,7 @@ import (
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	xResult "github.com/bamboo-services/bamboo-base-go/major/result"
+	apiAnnouncement "github.com/frontleaves-mc/frontleaves-plugin/api/announcement"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
 	"github.com/gin-gonic/gin"
 )
@@ -27,7 +28,7 @@ func NewAnnouncementUserHandler(ctx context.Context) *AnnouncementUserHandler {
 // @Param       page       query  int  false  "页码"
 // @Param       page_size  query  int  false  "每页数量"
 // @Param       type       query  int  false  "公告类型筛选(1=站内,2=全局)"
-// @Success     200  {object}  xBase.BaseResponse  "成功"
+// @Success     200  {object}  xBase.BaseResponse{data=apiAnnouncement.AnnouncementListResponse}  "成功"
 // @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
 // @Router      /announcements [GET]
 func (h *AnnouncementUserHandler) ListPublishedAnnouncements(ctx *gin.Context) {
@@ -57,11 +58,11 @@ func (h *AnnouncementUserHandler) ListPublishedAnnouncements(ctx *gin.Context) {
 		return
 	}
 
-	xResult.SuccessHasData(ctx, "查询成功", gin.H{
-		"list":      announcements,
-		"total":     total,
-		"page":      page,
-		"page_size": pageSize,
+	xResult.SuccessHasData(ctx, "查询成功", &apiAnnouncement.AnnouncementListResponse{
+		List:     announcements,
+		Total:    total,
+		Page:     page,
+		PageSize: pageSize,
 	})
 }
 

@@ -155,7 +155,7 @@ func (h *AchievementAdminHandler) GetAchievement(ctx *gin.Context) {
 // @Param       page       query  int  false  "页码"
 // @Param       page_size  query  int  false  "每页数量"
 // @Param       type       query  int  false  "成就类型筛选"
-// @Success     200  {object}  xBase.BaseResponse  "成功"
+// @Success     200  {object}  xBase.BaseResponse{data=apiAchievement.AchievementListResponse}  "成功"
 // @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
 // @Router      /admin/achievements [GET]
 func (h *AchievementAdminHandler) ListAchievements(ctx *gin.Context) {
@@ -183,11 +183,11 @@ func (h *AchievementAdminHandler) ListAchievements(ctx *gin.Context) {
 		return
 	}
 
-	xResult.SuccessHasData(ctx, "查询成功", gin.H{
-		"list":      achievements,
-		"total":     total,
-		"page":      page,
-		"page_size": pageSize,
+	xResult.SuccessHasData(ctx, "查询成功", &apiAchievement.AchievementListResponse{
+		List:     achievements,
+		Total:    total,
+		Page:     page,
+		PageSize: pageSize,
 	})
 }
 

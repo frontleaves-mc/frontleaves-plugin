@@ -154,7 +154,7 @@ func (h *TitleAdminHandler) GetTitle(ctx *gin.Context) {
 // @Param       page       query  int  false  "页码"
 // @Param       page_size  query  int  false  "每页数量"
 // @Param       type       query  int  false  "称号类型筛选"
-// @Success     200  {object}  xBase.BaseResponse  "成功"
+// @Success     200  {object}  xBase.BaseResponse{data=apiTitle.TitleListResponse}  "成功"
 // @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
 // @Router      /admin/titles [GET]
 func (h *TitleAdminHandler) ListTitles(ctx *gin.Context) {
@@ -182,11 +182,11 @@ func (h *TitleAdminHandler) ListTitles(ctx *gin.Context) {
 		return
 	}
 
-	xResult.SuccessHasData(ctx, "查询成功", gin.H{
-		"list":      titles,
-		"total":     total,
-		"page":      page,
-		"page_size": pageSize,
+	xResult.SuccessHasData(ctx, "查询成功", &apiTitle.TitleListResponse{
+		List:     titles,
+		Total:    total,
+		Page:     page,
+		PageSize: pageSize,
 	})
 }
 

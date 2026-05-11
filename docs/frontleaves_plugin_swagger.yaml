@@ -6,6 +6,19 @@ definitions:
       title_claimed:
         type: boolean
     type: object
+  apiAchievement.AchievementListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/apiAchievement.AchievementResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
   apiAchievement.AchievementResponse:
     properties:
       condition_key:
@@ -133,6 +146,36 @@ definitions:
     - name
     - type
     type: object
+  apiAnnouncement.AnnouncementListItemResponse:
+    properties:
+      created_at:
+        type: string
+      desc:
+        type: string
+      id:
+        type: string
+      published_at:
+        type: string
+      status:
+        type: integer
+      title:
+        type: string
+      type:
+        type: integer
+    type: object
+  apiAnnouncement.AnnouncementListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/apiAnnouncement.AnnouncementListItemResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
   apiAnnouncement.AnnouncementResponse:
     properties:
       content:
@@ -223,6 +266,19 @@ definitions:
       delay_seconds:
         type: integer
       sort_order:
+        type: integer
+    type: object
+  apiAnnouncementSchedule.ScheduleListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/apiAnnouncementSchedule.ScheduleResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
         type: integer
     type: object
   apiAnnouncementSchedule.ScheduleResponse:
@@ -513,6 +569,19 @@ definitions:
       type:
         type: integer
     type: object
+  apiTitle.TitleListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/apiTitle.TitleResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
   apiTitle.TitleResponse:
     properties:
       color:
@@ -625,7 +694,12 @@ paths:
         "200":
           description: 成功
           schema:
-            $ref: '#/definitions/xBase.BaseResponse'
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiAchievement.AchievementListResponse'
+              type: object
         "400":
           description: 请求参数错误
           schema:
@@ -827,7 +901,12 @@ paths:
         "200":
           description: 成功
           schema:
-            $ref: '#/definitions/xBase.BaseResponse'
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiAnnouncement.AnnouncementListResponse'
+              type: object
         "400":
           description: 请求参数错误
           schema:
@@ -1054,7 +1133,12 @@ paths:
         "200":
           description: 成功
           schema:
-            $ref: '#/definitions/xBase.BaseResponse'
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiAnnouncementSchedule.ScheduleListResponse'
+              type: object
         "400":
           description: 请求参数错误
           schema:
@@ -1722,7 +1806,12 @@ paths:
         "200":
           description: 成功
           schema:
-            $ref: '#/definitions/xBase.BaseResponse'
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiTitle.TitleListResponse'
+              type: object
         "400":
           description: 请求参数错误
           schema:
@@ -1954,7 +2043,12 @@ paths:
         "200":
           description: 成功
           schema:
-            $ref: '#/definitions/xBase.BaseResponse'
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiAnnouncement.AnnouncementListResponse'
+              type: object
         "400":
           description: 请求参数错误
           schema:

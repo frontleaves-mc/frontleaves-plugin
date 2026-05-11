@@ -27,3 +27,11 @@ type EquippedTitleResponse struct {
 	Color       string `json:"color"`
 	Type        int16  `json:"type"`
 }
+
+// TitleListResponse 称号分页列表响应
+type TitleListResponse struct {
+	List     []TitleResponse `json:"list"`
+	Total    int64           `json:"total"`
+	Page     int             `json:"page"`
+	PageSize int             `json:"page_size"`
+}

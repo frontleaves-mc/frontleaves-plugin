@@ -152,7 +152,7 @@ func (h *AnnouncementScheduleAdminHandler) GetSchedule(ctx *gin.Context) {
 // @Produce     json
 // @Param       page       query  int  false  "页码"
 // @Param       page_size  query  int  false  "每页数量"
-// @Success     200  {object}  xBase.BaseResponse  "成功"
+// @Success     200  {object}  xBase.BaseResponse{data=apiAnnouncementSchedule.ScheduleListResponse}  "成功"
 // @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
 // @Router      /admin/announcements/schedules [GET]
 func (h *AnnouncementScheduleAdminHandler) ListSchedules(ctx *gin.Context) {
@@ -173,11 +173,11 @@ func (h *AnnouncementScheduleAdminHandler) ListSchedules(ctx *gin.Context) {
 		return
 	}
 
-	xResult.SuccessHasData(ctx, "查询成功", gin.H{
-		"list":      schedules,
-		"total":     total,
-		"page":      page,
-		"page_size": pageSize,
+	xResult.SuccessHasData(ctx, "查询成功", &apiAnnouncementSchedule.ScheduleListResponse{
+		List:     schedules,
+		Total:    total,
+		Page:     page,
+		PageSize: pageSize,
 	})
 }
 

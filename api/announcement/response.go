@@ -21,3 +21,11 @@ type AnnouncementListItemResponse struct {
 	PublishedAt *time.Time `json:"published_at,omitempty"`
 	CreatedAt   time.Time  `json:"created_at"`
 }
+
+// AnnouncementListResponse 公告分页列表响应
+type AnnouncementListResponse struct {
+	List     []AnnouncementListItemResponse `json:"list"`
+	Total    int64                          `json:"total"`
+	Page     int                            `json:"page"`
+	PageSize int                            `json:"page_size"`
+}

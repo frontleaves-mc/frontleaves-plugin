@@ -96,7 +96,19 @@ const docTemplatefrontleaves_plugin = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiAchievement.AchievementListResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -415,7 +427,19 @@ const docTemplatefrontleaves_plugin = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiAnnouncement.AnnouncementListResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -781,7 +805,19 @@ const docTemplatefrontleaves_plugin = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiAnnouncementSchedule.ScheduleListResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -1859,7 +1895,19 @@ const docTemplatefrontleaves_plugin = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiTitle.TitleListResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -2223,7 +2271,19 @@ const docTemplatefrontleaves_plugin = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiAnnouncement.AnnouncementListResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -2852,6 +2912,26 @@ const docTemplatefrontleaves_plugin = `{
                 }
             }
         },
+        "apiAchievement.AchievementListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/apiAchievement.AchievementResponse"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "apiAchievement.AchievementResponse": {
             "type": "object",
             "properties": {
@@ -3039,6 +3119,52 @@ const docTemplatefrontleaves_plugin = `{
                 }
             }
         },
+        "apiAnnouncement.AnnouncementListItemResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "published_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiAnnouncement.AnnouncementListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/apiAnnouncement.AnnouncementListItemResponse"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "apiAnnouncement.AnnouncementResponse": {
             "type": "object",
             "properties": {
@@ -3171,6 +3297,26 @@ const docTemplatefrontleaves_plugin = `{
                     "type": "integer"
                 },
                 "sort_order": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiAnnouncementSchedule.ScheduleListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/apiAnnouncementSchedule.ScheduleResponse"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
                     "type": "integer"
                 }
             }
@@ -3608,6 +3754,26 @@ const docTemplatefrontleaves_plugin = `{
                     "type": "integer"
                 },
                 "type": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiTitle.TitleListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/apiTitle.TitleResponse"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
                     "type": "integer"
                 }
             }

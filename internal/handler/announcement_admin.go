@@ -154,7 +154,7 @@ func (h *AnnouncementAdminHandler) GetAnnouncement(ctx *gin.Context) {
 // @Param       page_size  query  int  false  "每页数量"
 // @Param       type       query  int  false  "公告类型筛选"
 // @Param       status     query  int  false  "公告状态筛选"
-// @Success     200  {object}  xBase.BaseResponse  "成功"
+// @Success     200  {object}  xBase.BaseResponse{data=apiAnnouncement.AnnouncementListResponse}  "成功"
 // @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
 // @Router      /admin/announcements [GET]
 func (h *AnnouncementAdminHandler) ListAnnouncements(ctx *gin.Context) {
@@ -189,11 +189,11 @@ func (h *AnnouncementAdminHandler) ListAnnouncements(ctx *gin.Context) {
 		return
 	}
 
-	xResult.SuccessHasData(ctx, "查询成功", gin.H{
-		"list":      announcements,
-		"total":     total,
-		"page":      page,
-		"page_size": pageSize,
+	xResult.SuccessHasData(ctx, "查询成功", &apiAnnouncement.AnnouncementListResponse{
+		List:     announcements,
+		Total:    total,
+		Page:     page,
+		PageSize: pageSize,
 	})
 }
 

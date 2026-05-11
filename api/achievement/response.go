@@ -28,3 +28,11 @@ type AchievementClaimResponse struct {
 	AchievementID string `json:"achievement_id"`
 	TitleClaimed  bool   `json:"title_claimed"`
 }
+
+// AchievementListResponse 成就分页列表响应
+type AchievementListResponse struct {
+	List     []AchievementResponse `json:"list"`
+	Total    int64                 `json:"total"`
+	Page     int                   `json:"page"`
+	PageSize int                   `json:"page_size"`
+}
