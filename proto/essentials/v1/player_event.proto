@@ -1,0 +1,103 @@
+syntax = "proto3";
+
+package frontleaves.essentials.v1;
+
+option go_package = "github.com/frontleaves-mc/frontleaves-plugin/internal/grpc/gen/essentials/v1;essentialspb";
+
+import "link/base.proto";
+
+// PlayerEventService 玩家事件服务
+//
+// 处理 Minecraft 服务器上报的玩家行为事件。
+service PlayerEventService {
+  // PlayerEventStream 玩家事件客户端流
+  rpc PlayerEventStream(stream PlayerEventStreamRequest) returns (PlayerEventStreamResponse);
+}
+
+// PlayerEventType 玩家事件类型
+enum PlayerEventType {
+  PLAYER_EVENT_TYPE_UNSPECIFIED = 0;
+  PLAYER_EVENT_TYPE_PLAYER_JOIN = 1;
+  PLAYER_EVENT_TYPE_PLAYER_QUIT = 2;
+  PLAYER_EVENT_TYPE_PLAYER_CHAT = 3;
+  PLAYER_EVENT_TYPE_PLAYER_KICK = 4;
+  PLAYER_EVENT_TYPE_PLAYER_DEATH = 5;
+  PLAYER_EVENT_TYPE_PLAYER_GROUP_CHANGE = 6;
+}
+
+// PlayerEventStreamRequest 玩家事件流请求
+message PlayerEventStreamRequest {
+  // 事件类型标识
+  PlayerEventType event_type = 1;
+  // 事件内容
+  oneof event {
+    // 玩家加入事件
+    PlayerJoinEvent player_join_event = 11;
+    // 玩家离开事件
+    PlayerQuitEvent player_quit_event = 12;
+    // 玩家聊天事件
+    PlayerChatEvent player_chat_event = 13;
+    // 玩家被踢出事件
+    PlayerKickEvent player_kick_event = 14;
+    // 玩家死亡事件
+    PlayerDeathEvent player_death_event = 15;
+    // 玩家权限组变更事件
+    PlayerGroupChangeEvent player_group_change_event = 16;
+  }
+}
+
+// PlayerEventStreamResponse 玩家事件流响应
+message PlayerEventStreamResponse {
+  xBase.BaseResponse base_response = 1;
+}
+
+// PlayerJoinEvent 玩家加入事件
+message PlayerJoinEvent {
+  string player_uuid = 1;
+  string player_name = 2;
+  string server_name = 3;
+  string world_name = 4;
+  string group_name = 5;
+}
+
+// PlayerQuitEvent 玩家离开事件
+message PlayerQuitEvent {
+  string player_uuid = 1;
+  string player_name = 2;
+  string server_name = 3;
+}
+
+// PlayerChatEvent 玩家聊天事件
+message PlayerChatEvent {
+  string player_uuid = 1;
+  string player_name = 2;
+  string server_name = 3;
+  string world_name = 4;
+  string message = 5;
+}
+
+// PlayerKickEvent 玩家被踢出事件
+message PlayerKickEvent {
+  string player_uuid = 1;
+  string player_name = 2;
+  string server_name = 3;
+  string world_name = 4;
+  string reason = 5;
+}
+
+// PlayerDeathEvent 玩家死亡事件
+message PlayerDeathEvent {
+  string player_uuid = 1;
+  string player_name = 2;
+  string server_name = 3;
+  string world_name = 4;
+  string death_message = 5;
+}
+
+// PlayerGroupChangeEvent 玩家权限组变更事件
+message PlayerGroupChangeEvent {
+  string player_uuid = 1;
+  string player_name = 2;
+  string group_name = 3;
+  string old_group_name = 4;
+}

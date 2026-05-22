@@ -26,15 +26,8 @@ const (
 type ServerEventType int32
 
 const (
-	ServerEventType_SERVER_EVENT_TYPE_UNSPECIFIED         ServerEventType = 0
-	ServerEventType_SERVER_EVENT_TYPE_HEARTBEAT           ServerEventType = 1
-	ServerEventType_SERVER_EVENT_TYPE_PLAYER_JOIN         ServerEventType = 2
-	ServerEventType_SERVER_EVENT_TYPE_PLAYER_QUIT         ServerEventType = 3
-	ServerEventType_SERVER_EVENT_TYPE_PLAYER_SWITCH_WORLD ServerEventType = 4
-	ServerEventType_SERVER_EVENT_TYPE_PLAYER_CHAT         ServerEventType = 5
-	ServerEventType_SERVER_EVENT_TYPE_PLAYER_KICK         ServerEventType = 6
-	ServerEventType_SERVER_EVENT_TYPE_PLAYER_DEATH        ServerEventType = 7
-	ServerEventType_SERVER_EVENT_TYPE_PLAYER_GROUP_CHANGE ServerEventType = 8
+	ServerEventType_SERVER_EVENT_TYPE_UNSPECIFIED ServerEventType = 0
+	ServerEventType_SERVER_EVENT_TYPE_HEARTBEAT   ServerEventType = 1
 )
 
 // Enum value maps for ServerEventType.
@@ -42,24 +35,10 @@ var (
 	ServerEventType_name = map[int32]string{
 		0: "SERVER_EVENT_TYPE_UNSPECIFIED",
 		1: "SERVER_EVENT_TYPE_HEARTBEAT",
-		2: "SERVER_EVENT_TYPE_PLAYER_JOIN",
-		3: "SERVER_EVENT_TYPE_PLAYER_QUIT",
-		4: "SERVER_EVENT_TYPE_PLAYER_SWITCH_WORLD",
-		5: "SERVER_EVENT_TYPE_PLAYER_CHAT",
-		6: "SERVER_EVENT_TYPE_PLAYER_KICK",
-		7: "SERVER_EVENT_TYPE_PLAYER_DEATH",
-		8: "SERVER_EVENT_TYPE_PLAYER_GROUP_CHANGE",
 	}
 	ServerEventType_value = map[string]int32{
-		"SERVER_EVENT_TYPE_UNSPECIFIED":         0,
-		"SERVER_EVENT_TYPE_HEARTBEAT":           1,
-		"SERVER_EVENT_TYPE_PLAYER_JOIN":         2,
-		"SERVER_EVENT_TYPE_PLAYER_QUIT":         3,
-		"SERVER_EVENT_TYPE_PLAYER_SWITCH_WORLD": 4,
-		"SERVER_EVENT_TYPE_PLAYER_CHAT":         5,
-		"SERVER_EVENT_TYPE_PLAYER_KICK":         6,
-		"SERVER_EVENT_TYPE_PLAYER_DEATH":        7,
-		"SERVER_EVENT_TYPE_PLAYER_GROUP_CHANGE": 8,
+		"SERVER_EVENT_TYPE_UNSPECIFIED": 0,
+		"SERVER_EVENT_TYPE_HEARTBEAT":   1,
 	}
 )
 
@@ -90,62 +69,6 @@ func (ServerEventType) EnumDescriptor() ([]byte, []int) {
 	return file_status_v1_status_proto_rawDescGZIP(), []int{0}
 }
 
-// QueryEvent 查询事件类型（保留用于参考）
-type QueryEvent int32
-
-const (
-	QueryEvent_QUERY_EVENT_UNSPECIFIED       QueryEvent = 0
-	QueryEvent_QUERY_EVENT_GET_PLAYER_STATUS QueryEvent = 1
-	QueryEvent_QUERY_EVENT_GET_SERVER_STATUS QueryEvent = 2
-	QueryEvent_QUERY_EVENT_CHECK_PERMISSION  QueryEvent = 3
-	QueryEvent_QUERY_EVENT_GET_PLAYER_GROUPS QueryEvent = 4
-)
-
-// Enum value maps for QueryEvent.
-var (
-	QueryEvent_name = map[int32]string{
-		0: "QUERY_EVENT_UNSPECIFIED",
-		1: "QUERY_EVENT_GET_PLAYER_STATUS",
-		2: "QUERY_EVENT_GET_SERVER_STATUS",
-		3: "QUERY_EVENT_CHECK_PERMISSION",
-		4: "QUERY_EVENT_GET_PLAYER_GROUPS",
-	}
-	QueryEvent_value = map[string]int32{
-		"QUERY_EVENT_UNSPECIFIED":       0,
-		"QUERY_EVENT_GET_PLAYER_STATUS": 1,
-		"QUERY_EVENT_GET_SERVER_STATUS": 2,
-		"QUERY_EVENT_CHECK_PERMISSION":  3,
-		"QUERY_EVENT_GET_PLAYER_GROUPS": 4,
-	}
-)
-
-func (x QueryEvent) Enum() *QueryEvent {
-	p := new(QueryEvent)
-	*p = x
-	return p
-}
-
-func (x QueryEvent) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (QueryEvent) Descriptor() protoreflect.EnumDescriptor {
-	return file_status_v1_status_proto_enumTypes[1].Descriptor()
-}
-
-func (QueryEvent) Type() protoreflect.EnumType {
-	return &file_status_v1_status_proto_enumTypes[1]
-}
-
-func (x QueryEvent) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use QueryEvent.Descriptor instead.
-func (QueryEvent) EnumDescriptor() ([]byte, []int) {
-	return file_status_v1_status_proto_rawDescGZIP(), []int{1}
-}
-
 // ServerEventStreamRequest 服务器事件流请求
 type ServerEventStreamRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -156,13 +79,6 @@ type ServerEventStreamRequest struct {
 	// Types that are valid to be assigned to Event:
 	//
 	//	*ServerEventStreamRequest_HeartbeatEvent
-	//	*ServerEventStreamRequest_PlayerJoinEvent
-	//	*ServerEventStreamRequest_PlayerQuitEvent
-	//	*ServerEventStreamRequest_PlayerSwitchWorldEvent
-	//	*ServerEventStreamRequest_PlayerChatEvent
-	//	*ServerEventStreamRequest_PlayerKickEvent
-	//	*ServerEventStreamRequest_PlayerDeathEvent
-	//	*ServerEventStreamRequest_PlayerGroupChangeEvent
 	Event         isServerEventStreamRequest_Event `protobuf_oneof:"event"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -221,69 +137,6 @@ func (x *ServerEventStreamRequest) GetHeartbeatEvent() *HeartbeatEvent {
 	return nil
 }
 
-func (x *ServerEventStreamRequest) GetPlayerJoinEvent() *PlayerJoinEvent {
-	if x != nil {
-		if x, ok := x.Event.(*ServerEventStreamRequest_PlayerJoinEvent); ok {
-			return x.PlayerJoinEvent
-		}
-	}
-	return nil
-}
-
-func (x *ServerEventStreamRequest) GetPlayerQuitEvent() *PlayerQuitEvent {
-	if x != nil {
-		if x, ok := x.Event.(*ServerEventStreamRequest_PlayerQuitEvent); ok {
-			return x.PlayerQuitEvent
-		}
-	}
-	return nil
-}
-
-func (x *ServerEventStreamRequest) GetPlayerSwitchWorldEvent() *PlayerSwitchWorldEvent {
-	if x != nil {
-		if x, ok := x.Event.(*ServerEventStreamRequest_PlayerSwitchWorldEvent); ok {
-			return x.PlayerSwitchWorldEvent
-		}
-	}
-	return nil
-}
-
-func (x *ServerEventStreamRequest) GetPlayerChatEvent() *PlayerChatEvent {
-	if x != nil {
-		if x, ok := x.Event.(*ServerEventStreamRequest_PlayerChatEvent); ok {
-			return x.PlayerChatEvent
-		}
-	}
-	return nil
-}
-
-func (x *ServerEventStreamRequest) GetPlayerKickEvent() *PlayerKickEvent {
-	if x != nil {
-		if x, ok := x.Event.(*ServerEventStreamRequest_PlayerKickEvent); ok {
-			return x.PlayerKickEvent
-		}
-	}
-	return nil
-}
-
-func (x *ServerEventStreamRequest) GetPlayerDeathEvent() *PlayerDeathEvent {
-	if x != nil {
-		if x, ok := x.Event.(*ServerEventStreamRequest_PlayerDeathEvent); ok {
-			return x.PlayerDeathEvent
-		}
-	}
-	return nil
-}
-
-func (x *ServerEventStreamRequest) GetPlayerGroupChangeEvent() *PlayerGroupChangeEvent {
-	if x != nil {
-		if x, ok := x.Event.(*ServerEventStreamRequest_PlayerGroupChangeEvent); ok {
-			return x.PlayerGroupChangeEvent
-		}
-	}
-	return nil
-}
-
 type isServerEventStreamRequest_Event interface {
 	isServerEventStreamRequest_Event()
 }
@@ -293,56 +146,7 @@ type ServerEventStreamRequest_HeartbeatEvent struct {
 	HeartbeatEvent *HeartbeatEvent `protobuf:"bytes,11,opt,name=heartbeat_event,json=heartbeatEvent,proto3,oneof"`
 }
 
-type ServerEventStreamRequest_PlayerJoinEvent struct {
-	// 玩家加入事件
-	PlayerJoinEvent *PlayerJoinEvent `protobuf:"bytes,12,opt,name=player_join_event,json=playerJoinEvent,proto3,oneof"`
-}
-
-type ServerEventStreamRequest_PlayerQuitEvent struct {
-	// 玩家离开事件
-	PlayerQuitEvent *PlayerQuitEvent `protobuf:"bytes,13,opt,name=player_quit_event,json=playerQuitEvent,proto3,oneof"`
-}
-
-type ServerEventStreamRequest_PlayerSwitchWorldEvent struct {
-	// 玩家切换世界事件
-	PlayerSwitchWorldEvent *PlayerSwitchWorldEvent `protobuf:"bytes,14,opt,name=player_switch_world_event,json=playerSwitchWorldEvent,proto3,oneof"`
-}
-
-type ServerEventStreamRequest_PlayerChatEvent struct {
-	// 玩家聊天事件
-	PlayerChatEvent *PlayerChatEvent `protobuf:"bytes,15,opt,name=player_chat_event,json=playerChatEvent,proto3,oneof"`
-}
-
-type ServerEventStreamRequest_PlayerKickEvent struct {
-	// 玩家被踢出事件
-	PlayerKickEvent *PlayerKickEvent `protobuf:"bytes,16,opt,name=player_kick_event,json=playerKickEvent,proto3,oneof"`
-}
-
-type ServerEventStreamRequest_PlayerDeathEvent struct {
-	// 玩家死亡事件
-	PlayerDeathEvent *PlayerDeathEvent `protobuf:"bytes,17,opt,name=player_death_event,json=playerDeathEvent,proto3,oneof"`
-}
-
-type ServerEventStreamRequest_PlayerGroupChangeEvent struct {
-	// 玩家权限组变更事件
-	PlayerGroupChangeEvent *PlayerGroupChangeEvent `protobuf:"bytes,18,opt,name=player_group_change_event,json=playerGroupChangeEvent,proto3,oneof"`
-}
-
 func (*ServerEventStreamRequest_HeartbeatEvent) isServerEventStreamRequest_Event() {}
-
-func (*ServerEventStreamRequest_PlayerJoinEvent) isServerEventStreamRequest_Event() {}
-
-func (*ServerEventStreamRequest_PlayerQuitEvent) isServerEventStreamRequest_Event() {}
-
-func (*ServerEventStreamRequest_PlayerSwitchWorldEvent) isServerEventStreamRequest_Event() {}
-
-func (*ServerEventStreamRequest_PlayerChatEvent) isServerEventStreamRequest_Event() {}
-
-func (*ServerEventStreamRequest_PlayerKickEvent) isServerEventStreamRequest_Event() {}
-
-func (*ServerEventStreamRequest_PlayerDeathEvent) isServerEventStreamRequest_Event() {}
-
-func (*ServerEventStreamRequest_PlayerGroupChangeEvent) isServerEventStreamRequest_Event() {}
 
 // ServerEventStreamResponse 服务器事件流响应
 type ServerEventStreamResponse struct {
@@ -398,8 +202,18 @@ type HeartbeatEvent struct {
 	Tps float64 `protobuf:"fixed64,2,opt,name=tps,proto3" json:"tps,omitempty"`
 	// 在线玩家数量
 	OnlinePlayer int32 `protobuf:"varint,3,opt,name=online_player,json=onlinePlayer,proto3" json:"online_player,omitempty"`
-	// 在线玩家列表
-	Players       []*PlayerStatus `protobuf:"bytes,4,rep,name=players,proto3" json:"players,omitempty"`
+	// CPU 信息
+	CpuInfo *CpuInfo `protobuf:"bytes,5,opt,name=cpu_info,json=cpuInfo,proto3" json:"cpu_info,omitempty"`
+	// 内存信息
+	MemoryInfo *MemoryInfo `protobuf:"bytes,6,opt,name=memory_info,json=memoryInfo,proto3" json:"memory_info,omitempty"`
+	// 磁盘信息
+	DiskInfo *DiskInfo `protobuf:"bytes,7,opt,name=disk_info,json=diskInfo,proto3" json:"disk_info,omitempty"`
+	// JVM 信息
+	JvmInfo *JvmInfo `protobuf:"bytes,8,opt,name=jvm_info,json=jvmInfo,proto3" json:"jvm_info,omitempty"`
+	// 版本信息
+	VersionInfo *ServerVersionInfo `protobuf:"bytes,9,opt,name=version_info,json=versionInfo,proto3" json:"version_info,omitempty"`
+	// 世界列表
+	Worlds        []*WorldInfo `protobuf:"bytes,10,rep,name=worlds,proto3" json:"worlds,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -455,44 +269,73 @@ func (x *HeartbeatEvent) GetOnlinePlayer() int32 {
 	return 0
 }
 
-func (x *HeartbeatEvent) GetPlayers() []*PlayerStatus {
+func (x *HeartbeatEvent) GetCpuInfo() *CpuInfo {
 	if x != nil {
-		return x.Players
+		return x.CpuInfo
 	}
 	return nil
 }
 
-// PlayerJoinEvent 玩家加入事件
-type PlayerJoinEvent struct {
+func (x *HeartbeatEvent) GetMemoryInfo() *MemoryInfo {
+	if x != nil {
+		return x.MemoryInfo
+	}
+	return nil
+}
+
+func (x *HeartbeatEvent) GetDiskInfo() *DiskInfo {
+	if x != nil {
+		return x.DiskInfo
+	}
+	return nil
+}
+
+func (x *HeartbeatEvent) GetJvmInfo() *JvmInfo {
+	if x != nil {
+		return x.JvmInfo
+	}
+	return nil
+}
+
+func (x *HeartbeatEvent) GetVersionInfo() *ServerVersionInfo {
+	if x != nil {
+		return x.VersionInfo
+	}
+	return nil
+}
+
+func (x *HeartbeatEvent) GetWorlds() []*WorldInfo {
+	if x != nil {
+		return x.Worlds
+	}
+	return nil
+}
+
+// CpuInfo CPU 信息
+type CpuInfo struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// 玩家 UUID
-	PlayerUuid string `protobuf:"bytes,1,opt,name=player_uuid,json=playerUuid,proto3" json:"player_uuid,omitempty"`
-	// 玩家用户名
-	PlayerName string `protobuf:"bytes,2,opt,name=player_name,json=playerName,proto3" json:"player_name,omitempty"`
-	// 服务器名称
-	ServerName string `protobuf:"bytes,3,opt,name=server_name,json=serverName,proto3" json:"server_name,omitempty"`
-	// 世界名称
-	WorldName string `protobuf:"bytes,4,opt,name=world_name,json=worldName,proto3" json:"world_name,omitempty"`
-	// 权限组名称
-	GroupName     string `protobuf:"bytes,5,opt,name=group_name,json=groupName,proto3" json:"group_name,omitempty"`
+	// CPU 核心数
+	Cores int32 `protobuf:"varint,1,opt,name=cores,proto3" json:"cores,omitempty"`
+	// CPU 使用率（百分比）
+	UsagePercent  float64 `protobuf:"fixed64,2,opt,name=usage_percent,json=usagePercent,proto3" json:"usage_percent,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *PlayerJoinEvent) Reset() {
-	*x = PlayerJoinEvent{}
+func (x *CpuInfo) Reset() {
+	*x = CpuInfo{}
 	mi := &file_status_v1_status_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *PlayerJoinEvent) String() string {
+func (x *CpuInfo) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PlayerJoinEvent) ProtoMessage() {}
+func (*CpuInfo) ProtoMessage() {}
 
-func (x *PlayerJoinEvent) ProtoReflect() protoreflect.Message {
+func (x *CpuInfo) ProtoReflect() protoreflect.Message {
 	mi := &file_status_v1_status_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -504,73 +347,52 @@ func (x *PlayerJoinEvent) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PlayerJoinEvent.ProtoReflect.Descriptor instead.
-func (*PlayerJoinEvent) Descriptor() ([]byte, []int) {
+// Deprecated: Use CpuInfo.ProtoReflect.Descriptor instead.
+func (*CpuInfo) Descriptor() ([]byte, []int) {
 	return file_status_v1_status_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *PlayerJoinEvent) GetPlayerUuid() string {
+func (x *CpuInfo) GetCores() int32 {
 	if x != nil {
-		return x.PlayerUuid
+		return x.Cores
 	}
-	return ""
+	return 0
 }
 
-func (x *PlayerJoinEvent) GetPlayerName() string {
+func (x *CpuInfo) GetUsagePercent() float64 {
 	if x != nil {
-		return x.PlayerName
+		return x.UsagePercent
 	}
-	return ""
+	return 0
 }
 
-func (x *PlayerJoinEvent) GetServerName() string {
-	if x != nil {
-		return x.ServerName
-	}
-	return ""
-}
-
-func (x *PlayerJoinEvent) GetWorldName() string {
-	if x != nil {
-		return x.WorldName
-	}
-	return ""
-}
-
-func (x *PlayerJoinEvent) GetGroupName() string {
-	if x != nil {
-		return x.GroupName
-	}
-	return ""
-}
-
-// PlayerQuitEvent 玩家离开事件
-type PlayerQuitEvent struct {
+// MemoryInfo 内存信息
+type MemoryInfo struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// 玩家 UUID
-	PlayerUuid string `protobuf:"bytes,1,opt,name=player_uuid,json=playerUuid,proto3" json:"player_uuid,omitempty"`
-	// 玩家用户名
-	PlayerName string `protobuf:"bytes,2,opt,name=player_name,json=playerName,proto3" json:"player_name,omitempty"`
-	// 服务器名称
-	ServerName    string `protobuf:"bytes,3,opt,name=server_name,json=serverName,proto3" json:"server_name,omitempty"`
+	// 总内存（字节）
+	TotalBytes int64 `protobuf:"varint,1,opt,name=total_bytes,json=totalBytes,proto3" json:"total_bytes,omitempty"`
+	// 已用内存（字节）
+	UsedBytes int64 `protobuf:"varint,2,opt,name=used_bytes,json=usedBytes,proto3" json:"used_bytes,omitempty"`
+	// 空闲内存（字节）
+	FreeBytes     int64 `protobuf:"varint,3,opt,name=free_bytes,json=freeBytes,proto3" json:"free_bytes,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *PlayerQuitEvent) Reset() {
-	*x = PlayerQuitEvent{}
+func (x *MemoryInfo) Reset() {
+	*x = MemoryInfo{}
 	mi := &file_status_v1_status_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *PlayerQuitEvent) String() string {
+func (x *MemoryInfo) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PlayerQuitEvent) ProtoMessage() {}
+func (*MemoryInfo) ProtoMessage() {}
 
-func (x *PlayerQuitEvent) ProtoReflect() protoreflect.Message {
+func (x *MemoryInfo) ProtoReflect() protoreflect.Message {
 	mi := &file_status_v1_status_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -582,59 +404,57 @@ func (x *PlayerQuitEvent) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PlayerQuitEvent.ProtoReflect.Descriptor instead.
-func (*PlayerQuitEvent) Descriptor() ([]byte, []int) {
+// Deprecated: Use MemoryInfo.ProtoReflect.Descriptor instead.
+func (*MemoryInfo) Descriptor() ([]byte, []int) {
 	return file_status_v1_status_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *PlayerQuitEvent) GetPlayerUuid() string {
+func (x *MemoryInfo) GetTotalBytes() int64 {
 	if x != nil {
-		return x.PlayerUuid
+		return x.TotalBytes
 	}
-	return ""
+	return 0
 }
 
-func (x *PlayerQuitEvent) GetPlayerName() string {
+func (x *MemoryInfo) GetUsedBytes() int64 {
 	if x != nil {
-		return x.PlayerName
+		return x.UsedBytes
 	}
-	return ""
+	return 0
 }
 
-func (x *PlayerQuitEvent) GetServerName() string {
+func (x *MemoryInfo) GetFreeBytes() int64 {
 	if x != nil {
-		return x.ServerName
+		return x.FreeBytes
 	}
-	return ""
+	return 0
 }
 
-// PlayerSwitchWorldEvent 玩家切换世界事件
-type PlayerSwitchWorldEvent struct {
+// DiskInfo 磁盘信息
+type DiskInfo struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// 玩家 UUID
-	PlayerUuid string `protobuf:"bytes,1,opt,name=player_uuid,json=playerUuid,proto3" json:"player_uuid,omitempty"`
-	// 新世界名称
-	NewWorldName string `protobuf:"bytes,2,opt,name=new_world_name,json=newWorldName,proto3" json:"new_world_name,omitempty"`
-	// 服务器名称
-	ServerName    string `protobuf:"bytes,3,opt,name=server_name,json=serverName,proto3" json:"server_name,omitempty"`
+	// 总磁盘空间（字节）
+	TotalBytes int64 `protobuf:"varint,1,opt,name=total_bytes,json=totalBytes,proto3" json:"total_bytes,omitempty"`
+	// 已用磁盘空间（字节）
+	UsedBytes     int64 `protobuf:"varint,2,opt,name=used_bytes,json=usedBytes,proto3" json:"used_bytes,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *PlayerSwitchWorldEvent) Reset() {
-	*x = PlayerSwitchWorldEvent{}
+func (x *DiskInfo) Reset() {
+	*x = DiskInfo{}
 	mi := &file_status_v1_status_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *PlayerSwitchWorldEvent) String() string {
+func (x *DiskInfo) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PlayerSwitchWorldEvent) ProtoMessage() {}
+func (*DiskInfo) ProtoMessage() {}
 
-func (x *PlayerSwitchWorldEvent) ProtoReflect() protoreflect.Message {
+func (x *DiskInfo) ProtoReflect() protoreflect.Message {
 	mi := &file_status_v1_status_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -646,63 +466,50 @@ func (x *PlayerSwitchWorldEvent) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PlayerSwitchWorldEvent.ProtoReflect.Descriptor instead.
-func (*PlayerSwitchWorldEvent) Descriptor() ([]byte, []int) {
+// Deprecated: Use DiskInfo.ProtoReflect.Descriptor instead.
+func (*DiskInfo) Descriptor() ([]byte, []int) {
 	return file_status_v1_status_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *PlayerSwitchWorldEvent) GetPlayerUuid() string {
+func (x *DiskInfo) GetTotalBytes() int64 {
 	if x != nil {
-		return x.PlayerUuid
+		return x.TotalBytes
 	}
-	return ""
+	return 0
 }
 
-func (x *PlayerSwitchWorldEvent) GetNewWorldName() string {
+func (x *DiskInfo) GetUsedBytes() int64 {
 	if x != nil {
-		return x.NewWorldName
+		return x.UsedBytes
 	}
-	return ""
+	return 0
 }
 
-func (x *PlayerSwitchWorldEvent) GetServerName() string {
-	if x != nil {
-		return x.ServerName
-	}
-	return ""
-}
-
-// PlayerChatEvent 玩家聊天事件
-type PlayerChatEvent struct {
+// JvmInfo JVM 信息
+type JvmInfo struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// 玩家 UUID
-	PlayerUuid string `protobuf:"bytes,1,opt,name=player_uuid,json=playerUuid,proto3" json:"player_uuid,omitempty"`
-	// 玩家用户名
-	PlayerName string `protobuf:"bytes,2,opt,name=player_name,json=playerName,proto3" json:"player_name,omitempty"`
-	// 服务器名称
-	ServerName string `protobuf:"bytes,3,opt,name=server_name,json=serverName,proto3" json:"server_name,omitempty"`
-	// 世界名称
-	WorldName string `protobuf:"bytes,4,opt,name=world_name,json=worldName,proto3" json:"world_name,omitempty"`
-	// 聊天消息内容
-	Message       string `protobuf:"bytes,5,opt,name=message,proto3" json:"message,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	// JVM 最大内存（字节）
+	MaxMemoryBytes int64 `protobuf:"varint,1,opt,name=max_memory_bytes,json=maxMemoryBytes,proto3" json:"max_memory_bytes,omitempty"`
+	// JVM 已用内存（字节）
+	UsedMemoryBytes int64 `protobuf:"varint,2,opt,name=used_memory_bytes,json=usedMemoryBytes,proto3" json:"used_memory_bytes,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
-func (x *PlayerChatEvent) Reset() {
-	*x = PlayerChatEvent{}
+func (x *JvmInfo) Reset() {
+	*x = JvmInfo{}
 	mi := &file_status_v1_status_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *PlayerChatEvent) String() string {
+func (x *JvmInfo) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PlayerChatEvent) ProtoMessage() {}
+func (*JvmInfo) ProtoMessage() {}
 
-func (x *PlayerChatEvent) ProtoReflect() protoreflect.Message {
+func (x *JvmInfo) ProtoReflect() protoreflect.Message {
 	mi := &file_status_v1_status_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -714,77 +521,50 @@ func (x *PlayerChatEvent) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PlayerChatEvent.ProtoReflect.Descriptor instead.
-func (*PlayerChatEvent) Descriptor() ([]byte, []int) {
+// Deprecated: Use JvmInfo.ProtoReflect.Descriptor instead.
+func (*JvmInfo) Descriptor() ([]byte, []int) {
 	return file_status_v1_status_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *PlayerChatEvent) GetPlayerUuid() string {
+func (x *JvmInfo) GetMaxMemoryBytes() int64 {
 	if x != nil {
-		return x.PlayerUuid
+		return x.MaxMemoryBytes
 	}
-	return ""
+	return 0
 }
 
-func (x *PlayerChatEvent) GetPlayerName() string {
+func (x *JvmInfo) GetUsedMemoryBytes() int64 {
 	if x != nil {
-		return x.PlayerName
+		return x.UsedMemoryBytes
 	}
-	return ""
+	return 0
 }
 
-func (x *PlayerChatEvent) GetServerName() string {
-	if x != nil {
-		return x.ServerName
-	}
-	return ""
-}
-
-func (x *PlayerChatEvent) GetWorldName() string {
-	if x != nil {
-		return x.WorldName
-	}
-	return ""
-}
-
-func (x *PlayerChatEvent) GetMessage() string {
-	if x != nil {
-		return x.Message
-	}
-	return ""
-}
-
-// PlayerKickEvent 玩家被踢出事件
-type PlayerKickEvent struct {
+// ServerVersionInfo 服务器版本信息
+type ServerVersionInfo struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// 玩家 UUID
-	PlayerUuid string `protobuf:"bytes,1,opt,name=player_uuid,json=playerUuid,proto3" json:"player_uuid,omitempty"`
-	// 玩家用户名
-	PlayerName string `protobuf:"bytes,2,opt,name=player_name,json=playerName,proto3" json:"player_name,omitempty"`
-	// 服务器名称
-	ServerName string `protobuf:"bytes,3,opt,name=server_name,json=serverName,proto3" json:"server_name,omitempty"`
-	// 世界名称
-	WorldName string `protobuf:"bytes,4,opt,name=world_name,json=worldName,proto3" json:"world_name,omitempty"`
-	// 踢出原因
-	Reason        string `protobuf:"bytes,5,opt,name=reason,proto3" json:"reason,omitempty"`
+	// 服务器版本
+	ServerVersion string `protobuf:"bytes,1,opt,name=server_version,json=serverVersion,proto3" json:"server_version,omitempty"`
+	// Minecraft 版本
+	McVersion     string `protobuf:"bytes,2,opt,name=mc_version,json=mcVersion,proto3" json:"mc_version,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *PlayerKickEvent) Reset() {
-	*x = PlayerKickEvent{}
+func (x *ServerVersionInfo) Reset() {
+	*x = ServerVersionInfo{}
 	mi := &file_status_v1_status_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *PlayerKickEvent) String() string {
+func (x *ServerVersionInfo) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PlayerKickEvent) ProtoMessage() {}
+func (*ServerVersionInfo) ProtoMessage() {}
 
-func (x *PlayerKickEvent) ProtoReflect() protoreflect.Message {
+func (x *ServerVersionInfo) ProtoReflect() protoreflect.Message {
 	mi := &file_status_v1_status_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -796,77 +576,54 @@ func (x *PlayerKickEvent) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PlayerKickEvent.ProtoReflect.Descriptor instead.
-func (*PlayerKickEvent) Descriptor() ([]byte, []int) {
+// Deprecated: Use ServerVersionInfo.ProtoReflect.Descriptor instead.
+func (*ServerVersionInfo) Descriptor() ([]byte, []int) {
 	return file_status_v1_status_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *PlayerKickEvent) GetPlayerUuid() string {
+func (x *ServerVersionInfo) GetServerVersion() string {
 	if x != nil {
-		return x.PlayerUuid
+		return x.ServerVersion
 	}
 	return ""
 }
 
-func (x *PlayerKickEvent) GetPlayerName() string {
+func (x *ServerVersionInfo) GetMcVersion() string {
 	if x != nil {
-		return x.PlayerName
+		return x.McVersion
 	}
 	return ""
 }
 
-func (x *PlayerKickEvent) GetServerName() string {
-	if x != nil {
-		return x.ServerName
-	}
-	return ""
-}
-
-func (x *PlayerKickEvent) GetWorldName() string {
-	if x != nil {
-		return x.WorldName
-	}
-	return ""
-}
-
-func (x *PlayerKickEvent) GetReason() string {
-	if x != nil {
-		return x.Reason
-	}
-	return ""
-}
-
-// PlayerDeathEvent 玩家死亡事件
-type PlayerDeathEvent struct {
+// WorldInfo 世界信息
+type WorldInfo struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// 玩家 UUID
-	PlayerUuid string `protobuf:"bytes,1,opt,name=player_uuid,json=playerUuid,proto3" json:"player_uuid,omitempty"`
-	// 玩家用户名
-	PlayerName string `protobuf:"bytes,2,opt,name=player_name,json=playerName,proto3" json:"player_name,omitempty"`
-	// 服务器名称
-	ServerName string `protobuf:"bytes,3,opt,name=server_name,json=serverName,proto3" json:"server_name,omitempty"`
 	// 世界名称
-	WorldName string `protobuf:"bytes,4,opt,name=world_name,json=worldName,proto3" json:"world_name,omitempty"`
-	// 死亡消息
-	DeathMessage  string `protobuf:"bytes,5,opt,name=death_message,json=deathMessage,proto3" json:"death_message,omitempty"`
+	WorldName string `protobuf:"bytes,1,opt,name=world_name,json=worldName,proto3" json:"world_name,omitempty"`
+	// 玩家数量
+	PlayerCount int32 `protobuf:"varint,2,opt,name=player_count,json=playerCount,proto3" json:"player_count,omitempty"`
+	// 实体数量
+	EntityCount int32 `protobuf:"varint,3,opt,name=entity_count,json=entityCount,proto3" json:"entity_count,omitempty"`
+	// 已加载区块数
+	LoadedChunks  int32 `protobuf:"varint,4,opt,name=loaded_chunks,json=loadedChunks,proto3" json:"loaded_chunks,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *PlayerDeathEvent) Reset() {
-	*x = PlayerDeathEvent{}
+func (x *WorldInfo) Reset() {
+	*x = WorldInfo{}
 	mi := &file_status_v1_status_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *PlayerDeathEvent) String() string {
+func (x *WorldInfo) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PlayerDeathEvent) ProtoMessage() {}
+func (*WorldInfo) ProtoMessage() {}
 
-func (x *PlayerDeathEvent) ProtoReflect() protoreflect.Message {
+func (x *WorldInfo) ProtoReflect() protoreflect.Message {
 	mi := &file_status_v1_status_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -878,1065 +635,98 @@ func (x *PlayerDeathEvent) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PlayerDeathEvent.ProtoReflect.Descriptor instead.
-func (*PlayerDeathEvent) Descriptor() ([]byte, []int) {
+// Deprecated: Use WorldInfo.ProtoReflect.Descriptor instead.
+func (*WorldInfo) Descriptor() ([]byte, []int) {
 	return file_status_v1_status_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *PlayerDeathEvent) GetPlayerUuid() string {
-	if x != nil {
-		return x.PlayerUuid
-	}
-	return ""
-}
-
-func (x *PlayerDeathEvent) GetPlayerName() string {
-	if x != nil {
-		return x.PlayerName
-	}
-	return ""
-}
-
-func (x *PlayerDeathEvent) GetServerName() string {
-	if x != nil {
-		return x.ServerName
-	}
-	return ""
-}
-
-func (x *PlayerDeathEvent) GetWorldName() string {
+func (x *WorldInfo) GetWorldName() string {
 	if x != nil {
 		return x.WorldName
 	}
 	return ""
 }
 
-func (x *PlayerDeathEvent) GetDeathMessage() string {
+func (x *WorldInfo) GetPlayerCount() int32 {
 	if x != nil {
-		return x.DeathMessage
-	}
-	return ""
-}
-
-// PlayerGroupChangeEvent 玩家权限组变更事件
-type PlayerGroupChangeEvent struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 玩家 UUID
-	PlayerUuid string `protobuf:"bytes,1,opt,name=player_uuid,json=playerUuid,proto3" json:"player_uuid,omitempty"`
-	// 玩家用户名
-	PlayerName string `protobuf:"bytes,2,opt,name=player_name,json=playerName,proto3" json:"player_name,omitempty"`
-	// 新权限组名称
-	GroupName string `protobuf:"bytes,3,opt,name=group_name,json=groupName,proto3" json:"group_name,omitempty"`
-	// 原权限组名称
-	OldGroupName  string `protobuf:"bytes,4,opt,name=old_group_name,json=oldGroupName,proto3" json:"old_group_name,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PlayerGroupChangeEvent) Reset() {
-	*x = PlayerGroupChangeEvent{}
-	mi := &file_status_v1_status_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PlayerGroupChangeEvent) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PlayerGroupChangeEvent) ProtoMessage() {}
-
-func (x *PlayerGroupChangeEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_status_v1_status_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PlayerGroupChangeEvent.ProtoReflect.Descriptor instead.
-func (*PlayerGroupChangeEvent) Descriptor() ([]byte, []int) {
-	return file_status_v1_status_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *PlayerGroupChangeEvent) GetPlayerUuid() string {
-	if x != nil {
-		return x.PlayerUuid
-	}
-	return ""
-}
-
-func (x *PlayerGroupChangeEvent) GetPlayerName() string {
-	if x != nil {
-		return x.PlayerName
-	}
-	return ""
-}
-
-func (x *PlayerGroupChangeEvent) GetGroupName() string {
-	if x != nil {
-		return x.GroupName
-	}
-	return ""
-}
-
-func (x *PlayerGroupChangeEvent) GetOldGroupName() string {
-	if x != nil {
-		return x.OldGroupName
-	}
-	return ""
-}
-
-// ServerQueryRequest 服务器查询请求 (Java→Go direction)
-// Java 插件通过此消息返回查询结果给 Go 服务端
-type ServerQueryRequest struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 请求追踪标识
-	RequestId string `protobuf:"bytes,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
-	// 查询结果
-	//
-	// Types that are valid to be assigned to Result:
-	//
-	//	*ServerQueryRequest_PlayerStatusResult
-	//	*ServerQueryRequest_ServerStatusResult
-	//	*ServerQueryRequest_CheckPermissionResult
-	//	*ServerQueryRequest_PlayerGroupsResult
-	Result        isServerQueryRequest_Result `protobuf_oneof:"result"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ServerQueryRequest) Reset() {
-	*x = ServerQueryRequest{}
-	mi := &file_status_v1_status_proto_msgTypes[10]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ServerQueryRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ServerQueryRequest) ProtoMessage() {}
-
-func (x *ServerQueryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_status_v1_status_proto_msgTypes[10]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ServerQueryRequest.ProtoReflect.Descriptor instead.
-func (*ServerQueryRequest) Descriptor() ([]byte, []int) {
-	return file_status_v1_status_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *ServerQueryRequest) GetRequestId() string {
-	if x != nil {
-		return x.RequestId
-	}
-	return ""
-}
-
-func (x *ServerQueryRequest) GetResult() isServerQueryRequest_Result {
-	if x != nil {
-		return x.Result
-	}
-	return nil
-}
-
-func (x *ServerQueryRequest) GetPlayerStatusResult() *QueryPlayerStatusResult {
-	if x != nil {
-		if x, ok := x.Result.(*ServerQueryRequest_PlayerStatusResult); ok {
-			return x.PlayerStatusResult
-		}
-	}
-	return nil
-}
-
-func (x *ServerQueryRequest) GetServerStatusResult() *QueryServerStatusResult {
-	if x != nil {
-		if x, ok := x.Result.(*ServerQueryRequest_ServerStatusResult); ok {
-			return x.ServerStatusResult
-		}
-	}
-	return nil
-}
-
-func (x *ServerQueryRequest) GetCheckPermissionResult() *QueryCheckPermissionResult {
-	if x != nil {
-		if x, ok := x.Result.(*ServerQueryRequest_CheckPermissionResult); ok {
-			return x.CheckPermissionResult
-		}
-	}
-	return nil
-}
-
-func (x *ServerQueryRequest) GetPlayerGroupsResult() *QueryPlayerGroupsResult {
-	if x != nil {
-		if x, ok := x.Result.(*ServerQueryRequest_PlayerGroupsResult); ok {
-			return x.PlayerGroupsResult
-		}
-	}
-	return nil
-}
-
-type isServerQueryRequest_Result interface {
-	isServerQueryRequest_Result()
-}
-
-type ServerQueryRequest_PlayerStatusResult struct {
-	// 玩家在线状态结果
-	PlayerStatusResult *QueryPlayerStatusResult `protobuf:"bytes,11,opt,name=player_status_result,json=playerStatusResult,proto3,oneof"`
-}
-
-type ServerQueryRequest_ServerStatusResult struct {
-	// 服务器状态结果
-	ServerStatusResult *QueryServerStatusResult `protobuf:"bytes,12,opt,name=server_status_result,json=serverStatusResult,proto3,oneof"`
-}
-
-type ServerQueryRequest_CheckPermissionResult struct {
-	// 权限检查结果
-	CheckPermissionResult *QueryCheckPermissionResult `protobuf:"bytes,13,opt,name=check_permission_result,json=checkPermissionResult,proto3,oneof"`
-}
-
-type ServerQueryRequest_PlayerGroupsResult struct {
-	// 玩家权限组结果
-	PlayerGroupsResult *QueryPlayerGroupsResult `protobuf:"bytes,14,opt,name=player_groups_result,json=playerGroupsResult,proto3,oneof"`
-}
-
-func (*ServerQueryRequest_PlayerStatusResult) isServerQueryRequest_Result() {}
-
-func (*ServerQueryRequest_ServerStatusResult) isServerQueryRequest_Result() {}
-
-func (*ServerQueryRequest_CheckPermissionResult) isServerQueryRequest_Result() {}
-
-func (*ServerQueryRequest_PlayerGroupsResult) isServerQueryRequest_Result() {}
-
-// ServerQueryResponse 服务器查询响应 (Go→Java direction)
-// Go 服务端通过此消息向 Java 插件发送查询请求
-type ServerQueryResponse struct {
-	state        protoimpl.MessageState `protogen:"open.v1"`
-	BaseResponse *generate.BaseResponse `protobuf:"bytes,1,opt,name=base_response,json=baseResponse,proto3" json:"base_response,omitempty"`
-	// 请求追踪标识
-	RequestId string `protobuf:"bytes,2,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
-	// 查询请求参数
-	//
-	// Types that are valid to be assigned to Query:
-	//
-	//	*ServerQueryResponse_PlayerStatusQuery
-	//	*ServerQueryResponse_ServerStatusQuery
-	//	*ServerQueryResponse_CheckPermissionQuery
-	//	*ServerQueryResponse_PlayerGroupsQuery
-	Query         isServerQueryResponse_Query `protobuf_oneof:"query"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ServerQueryResponse) Reset() {
-	*x = ServerQueryResponse{}
-	mi := &file_status_v1_status_proto_msgTypes[11]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ServerQueryResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ServerQueryResponse) ProtoMessage() {}
-
-func (x *ServerQueryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_status_v1_status_proto_msgTypes[11]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ServerQueryResponse.ProtoReflect.Descriptor instead.
-func (*ServerQueryResponse) Descriptor() ([]byte, []int) {
-	return file_status_v1_status_proto_rawDescGZIP(), []int{11}
-}
-
-func (x *ServerQueryResponse) GetBaseResponse() *generate.BaseResponse {
-	if x != nil {
-		return x.BaseResponse
-	}
-	return nil
-}
-
-func (x *ServerQueryResponse) GetRequestId() string {
-	if x != nil {
-		return x.RequestId
-	}
-	return ""
-}
-
-func (x *ServerQueryResponse) GetQuery() isServerQueryResponse_Query {
-	if x != nil {
-		return x.Query
-	}
-	return nil
-}
-
-func (x *ServerQueryResponse) GetPlayerStatusQuery() *QueryPlayerStatusQuery {
-	if x != nil {
-		if x, ok := x.Query.(*ServerQueryResponse_PlayerStatusQuery); ok {
-			return x.PlayerStatusQuery
-		}
-	}
-	return nil
-}
-
-func (x *ServerQueryResponse) GetServerStatusQuery() *QueryServerStatusQuery {
-	if x != nil {
-		if x, ok := x.Query.(*ServerQueryResponse_ServerStatusQuery); ok {
-			return x.ServerStatusQuery
-		}
-	}
-	return nil
-}
-
-func (x *ServerQueryResponse) GetCheckPermissionQuery() *QueryCheckPermissionQuery {
-	if x != nil {
-		if x, ok := x.Query.(*ServerQueryResponse_CheckPermissionQuery); ok {
-			return x.CheckPermissionQuery
-		}
-	}
-	return nil
-}
-
-func (x *ServerQueryResponse) GetPlayerGroupsQuery() *QueryPlayerGroupsQuery {
-	if x != nil {
-		if x, ok := x.Query.(*ServerQueryResponse_PlayerGroupsQuery); ok {
-			return x.PlayerGroupsQuery
-		}
-	}
-	return nil
-}
-
-type isServerQueryResponse_Query interface {
-	isServerQueryResponse_Query()
-}
-
-type ServerQueryResponse_PlayerStatusQuery struct {
-	// 查询玩家在线状态
-	PlayerStatusQuery *QueryPlayerStatusQuery `protobuf:"bytes,11,opt,name=player_status_query,json=playerStatusQuery,proto3,oneof"`
-}
-
-type ServerQueryResponse_ServerStatusQuery struct {
-	// 查询服务器状态
-	ServerStatusQuery *QueryServerStatusQuery `protobuf:"bytes,12,opt,name=server_status_query,json=serverStatusQuery,proto3,oneof"`
-}
-
-type ServerQueryResponse_CheckPermissionQuery struct {
-	// 检查权限
-	CheckPermissionQuery *QueryCheckPermissionQuery `protobuf:"bytes,13,opt,name=check_permission_query,json=checkPermissionQuery,proto3,oneof"`
-}
-
-type ServerQueryResponse_PlayerGroupsQuery struct {
-	// 查询玩家权限组
-	PlayerGroupsQuery *QueryPlayerGroupsQuery `protobuf:"bytes,14,opt,name=player_groups_query,json=playerGroupsQuery,proto3,oneof"`
-}
-
-func (*ServerQueryResponse_PlayerStatusQuery) isServerQueryResponse_Query() {}
-
-func (*ServerQueryResponse_ServerStatusQuery) isServerQueryResponse_Query() {}
-
-func (*ServerQueryResponse_CheckPermissionQuery) isServerQueryResponse_Query() {}
-
-func (*ServerQueryResponse_PlayerGroupsQuery) isServerQueryResponse_Query() {}
-
-// QueryPlayerStatusQuery 查询玩家在线状态请求参数
-type QueryPlayerStatusQuery struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 玩家 UUID
-	PlayerUuid    string `protobuf:"bytes,1,opt,name=player_uuid,json=playerUuid,proto3" json:"player_uuid,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *QueryPlayerStatusQuery) Reset() {
-	*x = QueryPlayerStatusQuery{}
-	mi := &file_status_v1_status_proto_msgTypes[12]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *QueryPlayerStatusQuery) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*QueryPlayerStatusQuery) ProtoMessage() {}
-
-func (x *QueryPlayerStatusQuery) ProtoReflect() protoreflect.Message {
-	mi := &file_status_v1_status_proto_msgTypes[12]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use QueryPlayerStatusQuery.ProtoReflect.Descriptor instead.
-func (*QueryPlayerStatusQuery) Descriptor() ([]byte, []int) {
-	return file_status_v1_status_proto_rawDescGZIP(), []int{12}
-}
-
-func (x *QueryPlayerStatusQuery) GetPlayerUuid() string {
-	if x != nil {
-		return x.PlayerUuid
-	}
-	return ""
-}
-
-// QueryServerStatusQuery 查询服务器状态请求参数
-type QueryServerStatusQuery struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 服务器名称
-	ServerName    string `protobuf:"bytes,1,opt,name=server_name,json=serverName,proto3" json:"server_name,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *QueryServerStatusQuery) Reset() {
-	*x = QueryServerStatusQuery{}
-	mi := &file_status_v1_status_proto_msgTypes[13]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *QueryServerStatusQuery) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*QueryServerStatusQuery) ProtoMessage() {}
-
-func (x *QueryServerStatusQuery) ProtoReflect() protoreflect.Message {
-	mi := &file_status_v1_status_proto_msgTypes[13]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use QueryServerStatusQuery.ProtoReflect.Descriptor instead.
-func (*QueryServerStatusQuery) Descriptor() ([]byte, []int) {
-	return file_status_v1_status_proto_rawDescGZIP(), []int{13}
-}
-
-func (x *QueryServerStatusQuery) GetServerName() string {
-	if x != nil {
-		return x.ServerName
-	}
-	return ""
-}
-
-// QueryCheckPermissionQuery 检查权限请求参数
-type QueryCheckPermissionQuery struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 玩家 UUID
-	PlayerUuid string `protobuf:"bytes,1,opt,name=player_uuid,json=playerUuid,proto3" json:"player_uuid,omitempty"`
-	// 权限节点
-	PermissionNode string `protobuf:"bytes,2,opt,name=permission_node,json=permissionNode,proto3" json:"permission_node,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
-}
-
-func (x *QueryCheckPermissionQuery) Reset() {
-	*x = QueryCheckPermissionQuery{}
-	mi := &file_status_v1_status_proto_msgTypes[14]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *QueryCheckPermissionQuery) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*QueryCheckPermissionQuery) ProtoMessage() {}
-
-func (x *QueryCheckPermissionQuery) ProtoReflect() protoreflect.Message {
-	mi := &file_status_v1_status_proto_msgTypes[14]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use QueryCheckPermissionQuery.ProtoReflect.Descriptor instead.
-func (*QueryCheckPermissionQuery) Descriptor() ([]byte, []int) {
-	return file_status_v1_status_proto_rawDescGZIP(), []int{14}
-}
-
-func (x *QueryCheckPermissionQuery) GetPlayerUuid() string {
-	if x != nil {
-		return x.PlayerUuid
-	}
-	return ""
-}
-
-func (x *QueryCheckPermissionQuery) GetPermissionNode() string {
-	if x != nil {
-		return x.PermissionNode
-	}
-	return ""
-}
-
-// QueryPlayerGroupsQuery 查询玩家权限组请求参数
-type QueryPlayerGroupsQuery struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 玩家 UUID
-	PlayerUuid    string `protobuf:"bytes,1,opt,name=player_uuid,json=playerUuid,proto3" json:"player_uuid,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *QueryPlayerGroupsQuery) Reset() {
-	*x = QueryPlayerGroupsQuery{}
-	mi := &file_status_v1_status_proto_msgTypes[15]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *QueryPlayerGroupsQuery) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*QueryPlayerGroupsQuery) ProtoMessage() {}
-
-func (x *QueryPlayerGroupsQuery) ProtoReflect() protoreflect.Message {
-	mi := &file_status_v1_status_proto_msgTypes[15]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use QueryPlayerGroupsQuery.ProtoReflect.Descriptor instead.
-func (*QueryPlayerGroupsQuery) Descriptor() ([]byte, []int) {
-	return file_status_v1_status_proto_rawDescGZIP(), []int{15}
-}
-
-func (x *QueryPlayerGroupsQuery) GetPlayerUuid() string {
-	if x != nil {
-		return x.PlayerUuid
-	}
-	return ""
-}
-
-// QueryPlayerStatusResult 玩家在线状态查询结果
-type QueryPlayerStatusResult struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 是否在线
-	Online bool `protobuf:"varint,1,opt,name=online,proto3" json:"online,omitempty"`
-	// 所在服务器名称
-	ServerName string `protobuf:"bytes,2,opt,name=server_name,json=serverName,proto3" json:"server_name,omitempty"`
-	// 所在世界名称
-	WorldName string `protobuf:"bytes,3,opt,name=world_name,json=worldName,proto3" json:"world_name,omitempty"`
-	// 玩家用户名
-	PlayerName string `protobuf:"bytes,4,opt,name=player_name,json=playerName,proto3" json:"player_name,omitempty"`
-	// 最后在线时间
-	LastSeen      int64 `protobuf:"varint,5,opt,name=last_seen,json=lastSeen,proto3" json:"last_seen,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *QueryPlayerStatusResult) Reset() {
-	*x = QueryPlayerStatusResult{}
-	mi := &file_status_v1_status_proto_msgTypes[16]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *QueryPlayerStatusResult) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*QueryPlayerStatusResult) ProtoMessage() {}
-
-func (x *QueryPlayerStatusResult) ProtoReflect() protoreflect.Message {
-	mi := &file_status_v1_status_proto_msgTypes[16]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use QueryPlayerStatusResult.ProtoReflect.Descriptor instead.
-func (*QueryPlayerStatusResult) Descriptor() ([]byte, []int) {
-	return file_status_v1_status_proto_rawDescGZIP(), []int{16}
-}
-
-func (x *QueryPlayerStatusResult) GetOnline() bool {
-	if x != nil {
-		return x.Online
-	}
-	return false
-}
-
-func (x *QueryPlayerStatusResult) GetServerName() string {
-	if x != nil {
-		return x.ServerName
-	}
-	return ""
-}
-
-func (x *QueryPlayerStatusResult) GetWorldName() string {
-	if x != nil {
-		return x.WorldName
-	}
-	return ""
-}
-
-func (x *QueryPlayerStatusResult) GetPlayerName() string {
-	if x != nil {
-		return x.PlayerName
-	}
-	return ""
-}
-
-func (x *QueryPlayerStatusResult) GetLastSeen() int64 {
-	if x != nil {
-		return x.LastSeen
+		return x.PlayerCount
 	}
 	return 0
 }
 
-// QueryServerStatusResult 服务器状态查询结果
-type QueryServerStatusResult struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 在线玩家列表
-	Players []*PlayerStatus `protobuf:"bytes,1,rep,name=players,proto3" json:"players,omitempty"`
-	// 在线玩家数
-	OnlinePlayers int32 `protobuf:"varint,2,opt,name=online_players,json=onlinePlayers,proto3" json:"online_players,omitempty"`
-	// 服务器 TPS
-	Tps float64 `protobuf:"fixed64,3,opt,name=tps,proto3" json:"tps,omitempty"`
-	// 最后心跳时间
-	LastHeartbeat int64 `protobuf:"varint,4,opt,name=last_heartbeat,json=lastHeartbeat,proto3" json:"last_heartbeat,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *QueryServerStatusResult) Reset() {
-	*x = QueryServerStatusResult{}
-	mi := &file_status_v1_status_proto_msgTypes[17]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *QueryServerStatusResult) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*QueryServerStatusResult) ProtoMessage() {}
-
-func (x *QueryServerStatusResult) ProtoReflect() protoreflect.Message {
-	mi := &file_status_v1_status_proto_msgTypes[17]
+func (x *WorldInfo) GetEntityCount() int32 {
 	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use QueryServerStatusResult.ProtoReflect.Descriptor instead.
-func (*QueryServerStatusResult) Descriptor() ([]byte, []int) {
-	return file_status_v1_status_proto_rawDescGZIP(), []int{17}
-}
-
-func (x *QueryServerStatusResult) GetPlayers() []*PlayerStatus {
-	if x != nil {
-		return x.Players
-	}
-	return nil
-}
-
-func (x *QueryServerStatusResult) GetOnlinePlayers() int32 {
-	if x != nil {
-		return x.OnlinePlayers
+		return x.EntityCount
 	}
 	return 0
 }
 
-func (x *QueryServerStatusResult) GetTps() float64 {
+func (x *WorldInfo) GetLoadedChunks() int32 {
 	if x != nil {
-		return x.Tps
+		return x.LoadedChunks
 	}
 	return 0
-}
-
-func (x *QueryServerStatusResult) GetLastHeartbeat() int64 {
-	if x != nil {
-		return x.LastHeartbeat
-	}
-	return 0
-}
-
-// QueryCheckPermissionResult 权限检查结果
-type QueryCheckPermissionResult struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 是否拥有权限
-	HasPermission bool `protobuf:"varint,1,opt,name=has_permission,json=hasPermission,proto3" json:"has_permission,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *QueryCheckPermissionResult) Reset() {
-	*x = QueryCheckPermissionResult{}
-	mi := &file_status_v1_status_proto_msgTypes[18]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *QueryCheckPermissionResult) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*QueryCheckPermissionResult) ProtoMessage() {}
-
-func (x *QueryCheckPermissionResult) ProtoReflect() protoreflect.Message {
-	mi := &file_status_v1_status_proto_msgTypes[18]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use QueryCheckPermissionResult.ProtoReflect.Descriptor instead.
-func (*QueryCheckPermissionResult) Descriptor() ([]byte, []int) {
-	return file_status_v1_status_proto_rawDescGZIP(), []int{18}
-}
-
-func (x *QueryCheckPermissionResult) GetHasPermission() bool {
-	if x != nil {
-		return x.HasPermission
-	}
-	return false
-}
-
-// QueryPlayerGroupsResult 玩家权限组查询结果
-type QueryPlayerGroupsResult struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 主权限组
-	PrimaryGroup string `protobuf:"bytes,1,opt,name=primary_group,json=primaryGroup,proto3" json:"primary_group,omitempty"`
-	// 权限组列表
-	Groups        []string `protobuf:"bytes,2,rep,name=groups,proto3" json:"groups,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *QueryPlayerGroupsResult) Reset() {
-	*x = QueryPlayerGroupsResult{}
-	mi := &file_status_v1_status_proto_msgTypes[19]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *QueryPlayerGroupsResult) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*QueryPlayerGroupsResult) ProtoMessage() {}
-
-func (x *QueryPlayerGroupsResult) ProtoReflect() protoreflect.Message {
-	mi := &file_status_v1_status_proto_msgTypes[19]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use QueryPlayerGroupsResult.ProtoReflect.Descriptor instead.
-func (*QueryPlayerGroupsResult) Descriptor() ([]byte, []int) {
-	return file_status_v1_status_proto_rawDescGZIP(), []int{19}
-}
-
-func (x *QueryPlayerGroupsResult) GetPrimaryGroup() string {
-	if x != nil {
-		return x.PrimaryGroup
-	}
-	return ""
-}
-
-func (x *QueryPlayerGroupsResult) GetGroups() []string {
-	if x != nil {
-		return x.Groups
-	}
-	return nil
-}
-
-// PlayerStatus 玩家状态信息
-type PlayerStatus struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 玩家 UUID
-	PlayerUuid string `protobuf:"bytes,1,opt,name=player_uuid,json=playerUuid,proto3" json:"player_uuid,omitempty"`
-	// 玩家用户名
-	PlayerName string `protobuf:"bytes,2,opt,name=player_name,json=playerName,proto3" json:"player_name,omitempty"`
-	// 所在世界名称
-	WorldName     string `protobuf:"bytes,3,opt,name=world_name,json=worldName,proto3" json:"world_name,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PlayerStatus) Reset() {
-	*x = PlayerStatus{}
-	mi := &file_status_v1_status_proto_msgTypes[20]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PlayerStatus) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PlayerStatus) ProtoMessage() {}
-
-func (x *PlayerStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_status_v1_status_proto_msgTypes[20]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PlayerStatus.ProtoReflect.Descriptor instead.
-func (*PlayerStatus) Descriptor() ([]byte, []int) {
-	return file_status_v1_status_proto_rawDescGZIP(), []int{20}
-}
-
-func (x *PlayerStatus) GetPlayerUuid() string {
-	if x != nil {
-		return x.PlayerUuid
-	}
-	return ""
-}
-
-func (x *PlayerStatus) GetPlayerName() string {
-	if x != nil {
-		return x.PlayerName
-	}
-	return ""
-}
-
-func (x *PlayerStatus) GetWorldName() string {
-	if x != nil {
-		return x.WorldName
-	}
-	return ""
 }
 
 var File_status_v1_status_proto protoreflect.FileDescriptor
 
 const file_status_v1_status_proto_rawDesc = "" +
 	"\n" +
-	"\x16status/v1/status.proto\x12\x15frontleaves.status.v1\x1a\x0flink/base.proto\"\xc5\x06\n" +
+	"\x16status/v1/status.proto\x12\x15frontleaves.status.v1\x1a\x0flink/base.proto\"\xbc\x01\n" +
 	"\x18ServerEventStreamRequest\x12E\n" +
 	"\n" +
 	"event_type\x18\x01 \x01(\x0e2&.frontleaves.status.v1.ServerEventTypeR\teventType\x12P\n" +
-	"\x0fheartbeat_event\x18\v \x01(\v2%.frontleaves.status.v1.HeartbeatEventH\x00R\x0eheartbeatEvent\x12T\n" +
-	"\x11player_join_event\x18\f \x01(\v2&.frontleaves.status.v1.PlayerJoinEventH\x00R\x0fplayerJoinEvent\x12T\n" +
-	"\x11player_quit_event\x18\r \x01(\v2&.frontleaves.status.v1.PlayerQuitEventH\x00R\x0fplayerQuitEvent\x12j\n" +
-	"\x19player_switch_world_event\x18\x0e \x01(\v2-.frontleaves.status.v1.PlayerSwitchWorldEventH\x00R\x16playerSwitchWorldEvent\x12T\n" +
-	"\x11player_chat_event\x18\x0f \x01(\v2&.frontleaves.status.v1.PlayerChatEventH\x00R\x0fplayerChatEvent\x12T\n" +
-	"\x11player_kick_event\x18\x10 \x01(\v2&.frontleaves.status.v1.PlayerKickEventH\x00R\x0fplayerKickEvent\x12W\n" +
-	"\x12player_death_event\x18\x11 \x01(\v2'.frontleaves.status.v1.PlayerDeathEventH\x00R\x10playerDeathEvent\x12j\n" +
-	"\x19player_group_change_event\x18\x12 \x01(\v2-.frontleaves.status.v1.PlayerGroupChangeEventH\x00R\x16playerGroupChangeEventB\a\n" +
+	"\x0fheartbeat_event\x18\v \x01(\v2%.frontleaves.status.v1.HeartbeatEventH\x00R\x0eheartbeatEventB\a\n" +
 	"\x05event\"U\n" +
 	"\x19ServerEventStreamResponse\x128\n" +
-	"\rbase_response\x18\x01 \x01(\v2\x13.xBase.BaseResponseR\fbaseResponse\"\xa7\x01\n" +
+	"\rbase_response\x18\x01 \x01(\v2\x13.xBase.BaseResponseR\fbaseResponse\"\xe7\x03\n" +
 	"\x0eHeartbeatEvent\x12\x1f\n" +
 	"\vserver_name\x18\x01 \x01(\tR\n" +
 	"serverName\x12\x10\n" +
 	"\x03tps\x18\x02 \x01(\x01R\x03tps\x12#\n" +
-	"\ronline_player\x18\x03 \x01(\x05R\fonlinePlayer\x12=\n" +
-	"\aplayers\x18\x04 \x03(\v2#.frontleaves.status.v1.PlayerStatusR\aplayers\"\xb2\x01\n" +
-	"\x0fPlayerJoinEvent\x12\x1f\n" +
-	"\vplayer_uuid\x18\x01 \x01(\tR\n" +
-	"playerUuid\x12\x1f\n" +
-	"\vplayer_name\x18\x02 \x01(\tR\n" +
-	"playerName\x12\x1f\n" +
-	"\vserver_name\x18\x03 \x01(\tR\n" +
-	"serverName\x12\x1d\n" +
+	"\ronline_player\x18\x03 \x01(\x05R\fonlinePlayer\x129\n" +
+	"\bcpu_info\x18\x05 \x01(\v2\x1e.frontleaves.status.v1.CpuInfoR\acpuInfo\x12B\n" +
+	"\vmemory_info\x18\x06 \x01(\v2!.frontleaves.status.v1.MemoryInfoR\n" +
+	"memoryInfo\x12<\n" +
+	"\tdisk_info\x18\a \x01(\v2\x1f.frontleaves.status.v1.DiskInfoR\bdiskInfo\x129\n" +
+	"\bjvm_info\x18\b \x01(\v2\x1e.frontleaves.status.v1.JvmInfoR\ajvmInfo\x12K\n" +
+	"\fversion_info\x18\t \x01(\v2(.frontleaves.status.v1.ServerVersionInfoR\vversionInfo\x128\n" +
+	"\x06worlds\x18\n" +
+	" \x03(\v2 .frontleaves.status.v1.WorldInfoR\x06worlds\"D\n" +
+	"\aCpuInfo\x12\x14\n" +
+	"\x05cores\x18\x01 \x01(\x05R\x05cores\x12#\n" +
+	"\rusage_percent\x18\x02 \x01(\x01R\fusagePercent\"k\n" +
 	"\n" +
-	"world_name\x18\x04 \x01(\tR\tworldName\x12\x1d\n" +
+	"MemoryInfo\x12\x1f\n" +
+	"\vtotal_bytes\x18\x01 \x01(\x03R\n" +
+	"totalBytes\x12\x1d\n" +
 	"\n" +
-	"group_name\x18\x05 \x01(\tR\tgroupName\"t\n" +
-	"\x0fPlayerQuitEvent\x12\x1f\n" +
-	"\vplayer_uuid\x18\x01 \x01(\tR\n" +
-	"playerUuid\x12\x1f\n" +
-	"\vplayer_name\x18\x02 \x01(\tR\n" +
-	"playerName\x12\x1f\n" +
-	"\vserver_name\x18\x03 \x01(\tR\n" +
-	"serverName\"\x80\x01\n" +
-	"\x16PlayerSwitchWorldEvent\x12\x1f\n" +
-	"\vplayer_uuid\x18\x01 \x01(\tR\n" +
-	"playerUuid\x12$\n" +
-	"\x0enew_world_name\x18\x02 \x01(\tR\fnewWorldName\x12\x1f\n" +
-	"\vserver_name\x18\x03 \x01(\tR\n" +
-	"serverName\"\xad\x01\n" +
-	"\x0fPlayerChatEvent\x12\x1f\n" +
-	"\vplayer_uuid\x18\x01 \x01(\tR\n" +
-	"playerUuid\x12\x1f\n" +
-	"\vplayer_name\x18\x02 \x01(\tR\n" +
-	"playerName\x12\x1f\n" +
-	"\vserver_name\x18\x03 \x01(\tR\n" +
-	"serverName\x12\x1d\n" +
+	"used_bytes\x18\x02 \x01(\x03R\tusedBytes\x12\x1d\n" +
 	"\n" +
-	"world_name\x18\x04 \x01(\tR\tworldName\x12\x18\n" +
-	"\amessage\x18\x05 \x01(\tR\amessage\"\xab\x01\n" +
-	"\x0fPlayerKickEvent\x12\x1f\n" +
-	"\vplayer_uuid\x18\x01 \x01(\tR\n" +
-	"playerUuid\x12\x1f\n" +
-	"\vplayer_name\x18\x02 \x01(\tR\n" +
-	"playerName\x12\x1f\n" +
-	"\vserver_name\x18\x03 \x01(\tR\n" +
-	"serverName\x12\x1d\n" +
+	"free_bytes\x18\x03 \x01(\x03R\tfreeBytes\"J\n" +
+	"\bDiskInfo\x12\x1f\n" +
+	"\vtotal_bytes\x18\x01 \x01(\x03R\n" +
+	"totalBytes\x12\x1d\n" +
 	"\n" +
-	"world_name\x18\x04 \x01(\tR\tworldName\x12\x16\n" +
-	"\x06reason\x18\x05 \x01(\tR\x06reason\"\xb9\x01\n" +
-	"\x10PlayerDeathEvent\x12\x1f\n" +
-	"\vplayer_uuid\x18\x01 \x01(\tR\n" +
-	"playerUuid\x12\x1f\n" +
-	"\vplayer_name\x18\x02 \x01(\tR\n" +
-	"playerName\x12\x1f\n" +
-	"\vserver_name\x18\x03 \x01(\tR\n" +
-	"serverName\x12\x1d\n" +
+	"used_bytes\x18\x02 \x01(\x03R\tusedBytes\"_\n" +
+	"\aJvmInfo\x12(\n" +
+	"\x10max_memory_bytes\x18\x01 \x01(\x03R\x0emaxMemoryBytes\x12*\n" +
+	"\x11used_memory_bytes\x18\x02 \x01(\x03R\x0fusedMemoryBytes\"Y\n" +
+	"\x11ServerVersionInfo\x12%\n" +
+	"\x0eserver_version\x18\x01 \x01(\tR\rserverVersion\x12\x1d\n" +
 	"\n" +
-	"world_name\x18\x04 \x01(\tR\tworldName\x12#\n" +
-	"\rdeath_message\x18\x05 \x01(\tR\fdeathMessage\"\x9f\x01\n" +
-	"\x16PlayerGroupChangeEvent\x12\x1f\n" +
-	"\vplayer_uuid\x18\x01 \x01(\tR\n" +
-	"playerUuid\x12\x1f\n" +
-	"\vplayer_name\x18\x02 \x01(\tR\n" +
-	"playerName\x12\x1d\n" +
+	"mc_version\x18\x02 \x01(\tR\tmcVersion\"\x95\x01\n" +
+	"\tWorldInfo\x12\x1d\n" +
 	"\n" +
-	"group_name\x18\x03 \x01(\tR\tgroupName\x12$\n" +
-	"\x0eold_group_name\x18\x04 \x01(\tR\foldGroupName\"\xd6\x03\n" +
-	"\x12ServerQueryRequest\x12\x1d\n" +
-	"\n" +
-	"request_id\x18\x01 \x01(\tR\trequestId\x12b\n" +
-	"\x14player_status_result\x18\v \x01(\v2..frontleaves.status.v1.QueryPlayerStatusResultH\x00R\x12playerStatusResult\x12b\n" +
-	"\x14server_status_result\x18\f \x01(\v2..frontleaves.status.v1.QueryServerStatusResultH\x00R\x12serverStatusResult\x12k\n" +
-	"\x17check_permission_result\x18\r \x01(\v21.frontleaves.status.v1.QueryCheckPermissionResultH\x00R\x15checkPermissionResult\x12b\n" +
-	"\x14player_groups_result\x18\x0e \x01(\v2..frontleaves.status.v1.QueryPlayerGroupsResultH\x00R\x12playerGroupsResultB\b\n" +
-	"\x06result\"\x84\x04\n" +
-	"\x13ServerQueryResponse\x128\n" +
-	"\rbase_response\x18\x01 \x01(\v2\x13.xBase.BaseResponseR\fbaseResponse\x12\x1d\n" +
-	"\n" +
-	"request_id\x18\x02 \x01(\tR\trequestId\x12_\n" +
-	"\x13player_status_query\x18\v \x01(\v2-.frontleaves.status.v1.QueryPlayerStatusQueryH\x00R\x11playerStatusQuery\x12_\n" +
-	"\x13server_status_query\x18\f \x01(\v2-.frontleaves.status.v1.QueryServerStatusQueryH\x00R\x11serverStatusQuery\x12h\n" +
-	"\x16check_permission_query\x18\r \x01(\v20.frontleaves.status.v1.QueryCheckPermissionQueryH\x00R\x14checkPermissionQuery\x12_\n" +
-	"\x13player_groups_query\x18\x0e \x01(\v2-.frontleaves.status.v1.QueryPlayerGroupsQueryH\x00R\x11playerGroupsQueryB\a\n" +
-	"\x05query\"9\n" +
-	"\x16QueryPlayerStatusQuery\x12\x1f\n" +
-	"\vplayer_uuid\x18\x01 \x01(\tR\n" +
-	"playerUuid\"9\n" +
-	"\x16QueryServerStatusQuery\x12\x1f\n" +
-	"\vserver_name\x18\x01 \x01(\tR\n" +
-	"serverName\"e\n" +
-	"\x19QueryCheckPermissionQuery\x12\x1f\n" +
-	"\vplayer_uuid\x18\x01 \x01(\tR\n" +
-	"playerUuid\x12'\n" +
-	"\x0fpermission_node\x18\x02 \x01(\tR\x0epermissionNode\"9\n" +
-	"\x16QueryPlayerGroupsQuery\x12\x1f\n" +
-	"\vplayer_uuid\x18\x01 \x01(\tR\n" +
-	"playerUuid\"\xaf\x01\n" +
-	"\x17QueryPlayerStatusResult\x12\x16\n" +
-	"\x06online\x18\x01 \x01(\bR\x06online\x12\x1f\n" +
-	"\vserver_name\x18\x02 \x01(\tR\n" +
-	"serverName\x12\x1d\n" +
-	"\n" +
-	"world_name\x18\x03 \x01(\tR\tworldName\x12\x1f\n" +
-	"\vplayer_name\x18\x04 \x01(\tR\n" +
-	"playerName\x12\x1b\n" +
-	"\tlast_seen\x18\x05 \x01(\x03R\blastSeen\"\xb8\x01\n" +
-	"\x17QueryServerStatusResult\x12=\n" +
-	"\aplayers\x18\x01 \x03(\v2#.frontleaves.status.v1.PlayerStatusR\aplayers\x12%\n" +
-	"\x0eonline_players\x18\x02 \x01(\x05R\ronlinePlayers\x12\x10\n" +
-	"\x03tps\x18\x03 \x01(\x01R\x03tps\x12%\n" +
-	"\x0elast_heartbeat\x18\x04 \x01(\x03R\rlastHeartbeat\"C\n" +
-	"\x1aQueryCheckPermissionResult\x12%\n" +
-	"\x0ehas_permission\x18\x01 \x01(\bR\rhasPermission\"V\n" +
-	"\x17QueryPlayerGroupsResult\x12#\n" +
-	"\rprimary_group\x18\x01 \x01(\tR\fprimaryGroup\x12\x16\n" +
-	"\x06groups\x18\x02 \x03(\tR\x06groups\"o\n" +
-	"\fPlayerStatus\x12\x1f\n" +
-	"\vplayer_uuid\x18\x01 \x01(\tR\n" +
-	"playerUuid\x12\x1f\n" +
-	"\vplayer_name\x18\x02 \x01(\tR\n" +
-	"playerName\x12\x1d\n" +
-	"\n" +
-	"world_name\x18\x03 \x01(\tR\tworldName*\xdb\x02\n" +
+	"world_name\x18\x01 \x01(\tR\tworldName\x12!\n" +
+	"\fplayer_count\x18\x02 \x01(\x05R\vplayerCount\x12!\n" +
+	"\fentity_count\x18\x03 \x01(\x05R\ventityCount\x12#\n" +
+	"\rloaded_chunks\x18\x04 \x01(\x05R\floadedChunks*U\n" +
 	"\x0fServerEventType\x12!\n" +
 	"\x1dSERVER_EVENT_TYPE_UNSPECIFIED\x10\x00\x12\x1f\n" +
-	"\x1bSERVER_EVENT_TYPE_HEARTBEAT\x10\x01\x12!\n" +
-	"\x1dSERVER_EVENT_TYPE_PLAYER_JOIN\x10\x02\x12!\n" +
-	"\x1dSERVER_EVENT_TYPE_PLAYER_QUIT\x10\x03\x12)\n" +
-	"%SERVER_EVENT_TYPE_PLAYER_SWITCH_WORLD\x10\x04\x12!\n" +
-	"\x1dSERVER_EVENT_TYPE_PLAYER_CHAT\x10\x05\x12!\n" +
-	"\x1dSERVER_EVENT_TYPE_PLAYER_KICK\x10\x06\x12\"\n" +
-	"\x1eSERVER_EVENT_TYPE_PLAYER_DEATH\x10\a\x12)\n" +
-	"%SERVER_EVENT_TYPE_PLAYER_GROUP_CHANGE\x10\b*\xb4\x01\n" +
-	"\n" +
-	"QueryEvent\x12\x1b\n" +
-	"\x17QUERY_EVENT_UNSPECIFIED\x10\x00\x12!\n" +
-	"\x1dQUERY_EVENT_GET_PLAYER_STATUS\x10\x01\x12!\n" +
-	"\x1dQUERY_EVENT_GET_SERVER_STATUS\x10\x02\x12 \n" +
-	"\x1cQUERY_EVENT_CHECK_PERMISSION\x10\x03\x12!\n" +
-	"\x1dQUERY_EVENT_GET_PLAYER_GROUPS\x10\x042\xf9\x01\n" +
+	"\x1bSERVER_EVENT_TYPE_HEARTBEAT\x10\x012\x8f\x01\n" +
 	"\x13ServerStatusService\x12x\n" +
-	"\x11ServerEventStream\x12/.frontleaves.status.v1.ServerEventStreamRequest\x1a0.frontleaves.status.v1.ServerEventStreamResponse(\x01\x12h\n" +
-	"\vServerQuery\x12).frontleaves.status.v1.ServerQueryRequest\x1a*.frontleaves.status.v1.ServerQueryResponse(\x010\x01BSZQgithub.com/frontleaves-mc/frontleaves-plugin/internal/grpc/gen/status/v1;statuspbb\x06proto3"
+	"\x11ServerEventStream\x12/.frontleaves.status.v1.ServerEventStreamRequest\x1a0.frontleaves.status.v1.ServerEventStreamResponse(\x01BSZQgithub.com/frontleaves-mc/frontleaves-plugin/internal/grpc/gen/status/v1;statuspbb\x06proto3"
 
 var (
 	file_status_v1_status_proto_rawDescOnce sync.Once
@@ -1950,65 +740,38 @@ func file_status_v1_status_proto_rawDescGZIP() []byte {
 	return file_status_v1_status_proto_rawDescData
 }
 
-var file_status_v1_status_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_status_v1_status_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
+var file_status_v1_status_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_status_v1_status_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_status_v1_status_proto_goTypes = []any{
-	(ServerEventType)(0),               // 0: frontleaves.status.v1.ServerEventType
-	(QueryEvent)(0),                    // 1: frontleaves.status.v1.QueryEvent
-	(*ServerEventStreamRequest)(nil),   // 2: frontleaves.status.v1.ServerEventStreamRequest
-	(*ServerEventStreamResponse)(nil),  // 3: frontleaves.status.v1.ServerEventStreamResponse
-	(*HeartbeatEvent)(nil),             // 4: frontleaves.status.v1.HeartbeatEvent
-	(*PlayerJoinEvent)(nil),            // 5: frontleaves.status.v1.PlayerJoinEvent
-	(*PlayerQuitEvent)(nil),            // 6: frontleaves.status.v1.PlayerQuitEvent
-	(*PlayerSwitchWorldEvent)(nil),     // 7: frontleaves.status.v1.PlayerSwitchWorldEvent
-	(*PlayerChatEvent)(nil),            // 8: frontleaves.status.v1.PlayerChatEvent
-	(*PlayerKickEvent)(nil),            // 9: frontleaves.status.v1.PlayerKickEvent
-	(*PlayerDeathEvent)(nil),           // 10: frontleaves.status.v1.PlayerDeathEvent
-	(*PlayerGroupChangeEvent)(nil),     // 11: frontleaves.status.v1.PlayerGroupChangeEvent
-	(*ServerQueryRequest)(nil),         // 12: frontleaves.status.v1.ServerQueryRequest
-	(*ServerQueryResponse)(nil),        // 13: frontleaves.status.v1.ServerQueryResponse
-	(*QueryPlayerStatusQuery)(nil),     // 14: frontleaves.status.v1.QueryPlayerStatusQuery
-	(*QueryServerStatusQuery)(nil),     // 15: frontleaves.status.v1.QueryServerStatusQuery
-	(*QueryCheckPermissionQuery)(nil),  // 16: frontleaves.status.v1.QueryCheckPermissionQuery
-	(*QueryPlayerGroupsQuery)(nil),     // 17: frontleaves.status.v1.QueryPlayerGroupsQuery
-	(*QueryPlayerStatusResult)(nil),    // 18: frontleaves.status.v1.QueryPlayerStatusResult
-	(*QueryServerStatusResult)(nil),    // 19: frontleaves.status.v1.QueryServerStatusResult
-	(*QueryCheckPermissionResult)(nil), // 20: frontleaves.status.v1.QueryCheckPermissionResult
-	(*QueryPlayerGroupsResult)(nil),    // 21: frontleaves.status.v1.QueryPlayerGroupsResult
-	(*PlayerStatus)(nil),               // 22: frontleaves.status.v1.PlayerStatus
-	(*generate.BaseResponse)(nil),      // 23: xBase.BaseResponse
+	(ServerEventType)(0),              // 0: frontleaves.status.v1.ServerEventType
+	(*ServerEventStreamRequest)(nil),  // 1: frontleaves.status.v1.ServerEventStreamRequest
+	(*ServerEventStreamResponse)(nil), // 2: frontleaves.status.v1.ServerEventStreamResponse
+	(*HeartbeatEvent)(nil),            // 3: frontleaves.status.v1.HeartbeatEvent
+	(*CpuInfo)(nil),                   // 4: frontleaves.status.v1.CpuInfo
+	(*MemoryInfo)(nil),                // 5: frontleaves.status.v1.MemoryInfo
+	(*DiskInfo)(nil),                  // 6: frontleaves.status.v1.DiskInfo
+	(*JvmInfo)(nil),                   // 7: frontleaves.status.v1.JvmInfo
+	(*ServerVersionInfo)(nil),         // 8: frontleaves.status.v1.ServerVersionInfo
+	(*WorldInfo)(nil),                 // 9: frontleaves.status.v1.WorldInfo
+	(*generate.BaseResponse)(nil),     // 10: xBase.BaseResponse
 }
 var file_status_v1_status_proto_depIdxs = []int32{
 	0,  // 0: frontleaves.status.v1.ServerEventStreamRequest.event_type:type_name -> frontleaves.status.v1.ServerEventType
-	4,  // 1: frontleaves.status.v1.ServerEventStreamRequest.heartbeat_event:type_name -> frontleaves.status.v1.HeartbeatEvent
-	5,  // 2: frontleaves.status.v1.ServerEventStreamRequest.player_join_event:type_name -> frontleaves.status.v1.PlayerJoinEvent
-	6,  // 3: frontleaves.status.v1.ServerEventStreamRequest.player_quit_event:type_name -> frontleaves.status.v1.PlayerQuitEvent
-	7,  // 4: frontleaves.status.v1.ServerEventStreamRequest.player_switch_world_event:type_name -> frontleaves.status.v1.PlayerSwitchWorldEvent
-	8,  // 5: frontleaves.status.v1.ServerEventStreamRequest.player_chat_event:type_name -> frontleaves.status.v1.PlayerChatEvent
-	9,  // 6: frontleaves.status.v1.ServerEventStreamRequest.player_kick_event:type_name -> frontleaves.status.v1.PlayerKickEvent
-	10, // 7: frontleaves.status.v1.ServerEventStreamRequest.player_death_event:type_name -> frontleaves.status.v1.PlayerDeathEvent
-	11, // 8: frontleaves.status.v1.ServerEventStreamRequest.player_group_change_event:type_name -> frontleaves.status.v1.PlayerGroupChangeEvent
-	23, // 9: frontleaves.status.v1.ServerEventStreamResponse.base_response:type_name -> xBase.BaseResponse
-	22, // 10: frontleaves.status.v1.HeartbeatEvent.players:type_name -> frontleaves.status.v1.PlayerStatus
-	18, // 11: frontleaves.status.v1.ServerQueryRequest.player_status_result:type_name -> frontleaves.status.v1.QueryPlayerStatusResult
-	19, // 12: frontleaves.status.v1.ServerQueryRequest.server_status_result:type_name -> frontleaves.status.v1.QueryServerStatusResult
-	20, // 13: frontleaves.status.v1.ServerQueryRequest.check_permission_result:type_name -> frontleaves.status.v1.QueryCheckPermissionResult
-	21, // 14: frontleaves.status.v1.ServerQueryRequest.player_groups_result:type_name -> frontleaves.status.v1.QueryPlayerGroupsResult
-	23, // 15: frontleaves.status.v1.ServerQueryResponse.base_response:type_name -> xBase.BaseResponse
-	14, // 16: frontleaves.status.v1.ServerQueryResponse.player_status_query:type_name -> frontleaves.status.v1.QueryPlayerStatusQuery
-	15, // 17: frontleaves.status.v1.ServerQueryResponse.server_status_query:type_name -> frontleaves.status.v1.QueryServerStatusQuery
-	16, // 18: frontleaves.status.v1.ServerQueryResponse.check_permission_query:type_name -> frontleaves.status.v1.QueryCheckPermissionQuery
-	17, // 19: frontleaves.status.v1.ServerQueryResponse.player_groups_query:type_name -> frontleaves.status.v1.QueryPlayerGroupsQuery
-	22, // 20: frontleaves.status.v1.QueryServerStatusResult.players:type_name -> frontleaves.status.v1.PlayerStatus
-	2,  // 21: frontleaves.status.v1.ServerStatusService.ServerEventStream:input_type -> frontleaves.status.v1.ServerEventStreamRequest
-	12, // 22: frontleaves.status.v1.ServerStatusService.ServerQuery:input_type -> frontleaves.status.v1.ServerQueryRequest
-	3,  // 23: frontleaves.status.v1.ServerStatusService.ServerEventStream:output_type -> frontleaves.status.v1.ServerEventStreamResponse
-	13, // 24: frontleaves.status.v1.ServerStatusService.ServerQuery:output_type -> frontleaves.status.v1.ServerQueryResponse
-	23, // [23:25] is the sub-list for method output_type
-	21, // [21:23] is the sub-list for method input_type
-	21, // [21:21] is the sub-list for extension type_name
-	21, // [21:21] is the sub-list for extension extendee
-	0,  // [0:21] is the sub-list for field type_name
+	3,  // 1: frontleaves.status.v1.ServerEventStreamRequest.heartbeat_event:type_name -> frontleaves.status.v1.HeartbeatEvent
+	10, // 2: frontleaves.status.v1.ServerEventStreamResponse.base_response:type_name -> xBase.BaseResponse
+	4,  // 3: frontleaves.status.v1.HeartbeatEvent.cpu_info:type_name -> frontleaves.status.v1.CpuInfo
+	5,  // 4: frontleaves.status.v1.HeartbeatEvent.memory_info:type_name -> frontleaves.status.v1.MemoryInfo
+	6,  // 5: frontleaves.status.v1.HeartbeatEvent.disk_info:type_name -> frontleaves.status.v1.DiskInfo
+	7,  // 6: frontleaves.status.v1.HeartbeatEvent.jvm_info:type_name -> frontleaves.status.v1.JvmInfo
+	8,  // 7: frontleaves.status.v1.HeartbeatEvent.version_info:type_name -> frontleaves.status.v1.ServerVersionInfo
+	9,  // 8: frontleaves.status.v1.HeartbeatEvent.worlds:type_name -> frontleaves.status.v1.WorldInfo
+	1,  // 9: frontleaves.status.v1.ServerStatusService.ServerEventStream:input_type -> frontleaves.status.v1.ServerEventStreamRequest
+	2,  // 10: frontleaves.status.v1.ServerStatusService.ServerEventStream:output_type -> frontleaves.status.v1.ServerEventStreamResponse
+	10, // [10:11] is the sub-list for method output_type
+	9,  // [9:10] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_status_v1_status_proto_init() }
@@ -2018,33 +781,14 @@ func file_status_v1_status_proto_init() {
 	}
 	file_status_v1_status_proto_msgTypes[0].OneofWrappers = []any{
 		(*ServerEventStreamRequest_HeartbeatEvent)(nil),
-		(*ServerEventStreamRequest_PlayerJoinEvent)(nil),
-		(*ServerEventStreamRequest_PlayerQuitEvent)(nil),
-		(*ServerEventStreamRequest_PlayerSwitchWorldEvent)(nil),
-		(*ServerEventStreamRequest_PlayerChatEvent)(nil),
-		(*ServerEventStreamRequest_PlayerKickEvent)(nil),
-		(*ServerEventStreamRequest_PlayerDeathEvent)(nil),
-		(*ServerEventStreamRequest_PlayerGroupChangeEvent)(nil),
-	}
-	file_status_v1_status_proto_msgTypes[10].OneofWrappers = []any{
-		(*ServerQueryRequest_PlayerStatusResult)(nil),
-		(*ServerQueryRequest_ServerStatusResult)(nil),
-		(*ServerQueryRequest_CheckPermissionResult)(nil),
-		(*ServerQueryRequest_PlayerGroupsResult)(nil),
-	}
-	file_status_v1_status_proto_msgTypes[11].OneofWrappers = []any{
-		(*ServerQueryResponse_PlayerStatusQuery)(nil),
-		(*ServerQueryResponse_ServerStatusQuery)(nil),
-		(*ServerQueryResponse_CheckPermissionQuery)(nil),
-		(*ServerQueryResponse_PlayerGroupsQuery)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_status_v1_status_proto_rawDesc), len(file_status_v1_status_proto_rawDesc)),
-			NumEnums:      2,
-			NumMessages:   21,
+			NumEnums:      1,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

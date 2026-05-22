@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
@@ -10,8 +11,6 @@ import (
 	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
 	statuspb "github.com/frontleaves-mc/frontleaves-plugin/internal/grpc/gen/status/v1"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/grpc/middleware"
-	"github.com/frontleaves-mc/frontleaves-plugin/internal/logic"
-	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -21,12 +20,16 @@ const statusTTL = 5 * time.Minute
 
 type ServerStatusHandler struct {
 	grpcHandler
+	*statusService
 	statuspb.UnimplementedServerStatusServiceServer
 }
 
 func NewServerStatusHandler(ctx context.Context, server grpc.ServiceRegistrar) *ServerStatusHandler {
 	base := NewGRPCHandler[grpcHandler](ctx, "ServerStatusHandler")
-	h := &ServerStatusHandler{grpcHandler: *base}
+	h := &ServerStatusHandler{
+		grpcHandler:   *base,
+		statusService: newStatusService(ctx),
+	}
 
 	statuspb.RegisterServerStatusServiceServer(server, h)
 	xGrpcMiddle.UseUnary(statuspb.ServerStatusService_ServiceDesc, middleware.UnaryPluginVerify(ctx))
@@ -35,7 +38,6 @@ func NewServerStatusHandler(ctx context.Context, server grpc.ServiceRegistrar) *
 	return h
 }
 
-// ServerEventStream 实现服务器事件客户端流式 RPC
 func (h *ServerStatusHandler) ServerEventStream(
 	stream grpc.ClientStreamingServer[statuspb.ServerEventStreamRequest, statuspb.ServerEventStreamResponse],
 ) error {
@@ -63,89 +65,37 @@ func (h *ServerStatusHandler) ServerEventStream(
 			return err
 		}
 
-		h.dispatchEvent(ctx, req, &registeredServerName, stream)
+		h.handleHeartbeat(ctx, req, &registeredServerName, stream)
 	}
 }
 
-func (h *ServerStatusHandler) dispatchEvent(
+func (h *ServerStatusHandler) handleHeartbeat(
 	ctx context.Context,
 	req *statuspb.ServerEventStreamRequest,
 	registeredServerName *string,
 	stream grpc.ClientStreamingServer[statuspb.ServerEventStreamRequest, statuspb.ServerEventStreamResponse],
 ) {
-	switch evt := req.Event.(type) {
-	case *statuspb.ServerEventStreamRequest_HeartbeatEvent:
-		heartbeat := evt.HeartbeatEvent
-		serverName := heartbeat.GetServerName()
-		if serverName == "" {
-			h.log.Warn(ctx, "HeartbeatEvent - 收到空服务器名，跳过")
-			return
-		}
-		h.log.Info(ctx, "HeartbeatEvent - 服务器心跳: "+serverName)
+	evt, ok := req.Event.(*statuspb.ServerEventStreamRequest_HeartbeatEvent)
+	if !ok {
+		h.log.Warn(ctx, "收到非心跳事件类型，跳过")
+		return
+	}
 
-		server, xErr := h.service.serverLogic.GetOrCreateByName(ctx, serverName)
-		if xErr != nil {
-			h.log.Warn(ctx, "HeartbeatEvent - 被动创建服务器失败: "+xErr.Error())
-		}
+	heartbeat := evt.HeartbeatEvent
+	serverName := heartbeat.GetServerName()
+	if serverName == "" {
+		h.log.Warn(ctx, "HeartbeatEvent - 收到空服务器名，跳过")
+		return
+	}
+	h.log.Info(ctx, "HeartbeatEvent - 服务器心跳: "+serverName)
 
-		serverKey := string(bConst.CacheStatusServer.Get(serverName))
-		if server == nil || !server.IsEnabled {
-			if *registeredServerName == "" {
-				*registeredServerName = serverName
-				h.setEventStream(serverName, &eventStream{
-					stream:     stream,
-					serverName: serverName,
-					log:        h.log,
-				})
-			}
-			return
-		}
+	server, xErr := h.serverLogic.GetOrCreateByName(ctx, serverName)
+	if xErr != nil {
+		h.log.Warn(ctx, "HeartbeatEvent - 被动创建服务器失败: "+xErr.Error())
+	}
 
-		serverPlayersKey := string(bConst.CacheStatusServerPlayers.Get(serverName))
-		onlineCount := h.rdb.SCard(ctx, serverPlayersKey).Val()
-		h.rdb.HSet(ctx, serverKey, map[string]any{
-			"online_players": strconv.FormatInt(onlineCount, 10),
-			"tps":            fmt.Sprintf("%.2f", heartbeat.GetTps()),
-			"timestamp":      strconv.FormatInt(time.Now().UnixMilli(), 10),
-		})
-		h.rdb.Expire(ctx, serverKey, statusTTL)
-
-		// 心跳对账：同步 DB 玩家在线状态
-		players := heartbeat.GetPlayers()
-		if len(players) > 0 {
-			playerInfos := make([]logic.PlayerInfo, 0, len(players))
-			for _, p := range players {
-				parsedUUID, err := uuid.Parse(p.GetPlayerUuid())
-				if err != nil {
-					h.log.Warn(ctx, "HeartbeatEvent - 玩家 UUID 格式无效: "+p.GetPlayerUuid())
-					continue
-				}
-				playerInfos = append(playerInfos, logic.PlayerInfo{
-					UUID:  parsedUUID,
-					Name:  p.GetPlayerName(),
-					World: p.GetWorldName(),
-				})
-			}
-			if len(playerInfos) > 0 {
-				if err := h.service.serverPlayerLogic.ReconcilePlayers(ctx, server.ID, playerInfos); err != nil {
-					h.log.Warn(ctx, "HeartbeatEvent - 心跳对账失败: "+err.Error())
-				}
-
-				// ReconcilePlayers 成功且非空列表时，刷新 player 相关 key 的 TTL
-				h.rdb.Expire(ctx, serverPlayersKey, statusTTL)
-
-				// Pipeline 批量刷新所有 player hash TTL
-				pipe := h.rdb.Pipeline()
-				for _, info := range playerInfos {
-					playerKey := string(bConst.CacheStatusPlayer.Get(info.UUID.String()))
-					pipe.Expire(ctx, playerKey, statusTTL)
-				}
-				if _, err := pipe.Exec(ctx); err != nil {
-					h.log.Warn(ctx, "HeartbeatEvent - Pipeline 刷新 player TTL 失败: "+err.Error())
-				}
-			}
-		}
-
+	serverKey := string(bConst.CacheStatusServer.Get(serverName))
+	if server == nil || !server.IsEnabled {
 		if *registeredServerName == "" {
 			*registeredServerName = serverName
 			h.setEventStream(serverName, &eventStream{
@@ -154,167 +104,83 @@ func (h *ServerStatusHandler) dispatchEvent(
 				log:        h.log,
 			})
 		}
+		return
+	}
 
-	case *statuspb.ServerEventStreamRequest_PlayerJoinEvent:
-		join := evt.PlayerJoinEvent
-		playerUUID := join.GetPlayerUuid()
-		serverName := join.GetServerName()
-		worldName := join.GetWorldName()
-		playerName := join.GetPlayerName()
-		if playerUUID == "" || playerName == "" {
-			h.log.Warn(ctx, "PlayerJoinEvent - 玩家 UUID 或名称为空，跳过")
-			return
-		}
-		h.log.Info(ctx, "PlayerJoinEvent - 玩家加入: "+playerName)
-		playerKey := string(bConst.CacheStatusPlayer.Get(playerUUID))
-		h.rdb.HSet(ctx, playerKey, map[string]any{
-			"server_name": serverName,
-			"world_name":  worldName,
-			"player_name": playerName,
-			"online":      "true",
-			"last_seen":   strconv.FormatInt(time.Now().UnixMilli(), 10),
+	serverPlayersKey := string(bConst.CacheStatusServerPlayers.Get(serverName))
+	onlineCount := h.rdb.SCard(ctx, serverPlayersKey).Val()
+
+	fields := map[string]any{
+		"online_players": strconv.FormatInt(onlineCount, 10),
+		"tps":            fmt.Sprintf("%.2f", heartbeat.GetTps()),
+		"timestamp":      strconv.FormatInt(time.Now().UnixMilli(), 10),
+	}
+
+	if cpu := heartbeat.GetCpuInfo(); cpu != nil {
+		cpuJSON, _ := json.Marshal(map[string]any{
+			"cores":         cpu.GetCores(),
+			"usage_percent": cpu.GetUsagePercent(),
 		})
-		h.rdb.Expire(ctx, playerKey, statusTTL)
-		serverPlayersKey := string(bConst.CacheStatusServerPlayers.Get(serverName))
-		h.rdb.SAdd(ctx, serverPlayersKey, playerUUID)
-		h.rdb.Expire(ctx, serverPlayersKey, statusTTL)
+		fields["cpu_info"] = string(cpuJSON)
+	}
 
-		serverKey := string(bConst.CacheStatusServer.Get(serverName))
-		onlineCount := h.rdb.SCard(ctx, serverPlayersKey).Val()
-		h.rdb.HSet(ctx, serverKey, "online_players", strconv.FormatInt(onlineCount, 10))
-
-		parsedUUID, err := uuid.Parse(playerUUID)
-		if err == nil {
-			groupName := join.GetGroupName()
-			if groupName == "" {
-				groupName = "PLAYER"
-			}
-			if syncErr := h.service.gameProfileLogic.Upsert(ctx, 0, parsedUUID, playerName, groupName); syncErr != nil {
-				h.log.Warn(ctx, "同步 GameProfile 失败: "+syncErr.Error())
-			}
-
-			// DB 同步玩家加入状态
-			if server, xErr := h.service.serverLogic.GetOrCreateByName(ctx, serverName); xErr == nil && server != nil {
-				if err := h.service.serverPlayerLogic.PlayerJoined(ctx, server.ID, parsedUUID, playerName, worldName); err != nil {
-					h.log.Warn(ctx, "PlayerJoinEvent - DB 同步玩家加入失败: "+err.Error())
-				}
-			}
-		}
-
-	case *statuspb.ServerEventStreamRequest_PlayerQuitEvent:
-		quit := evt.PlayerQuitEvent
-		playerUUID := quit.GetPlayerUuid()
-		serverName := quit.GetServerName()
-		if playerUUID == "" {
-			h.log.Warn(ctx, "PlayerQuitEvent - 玩家 UUID 为空，跳过")
-			return
-		}
-		h.log.Info(ctx, "PlayerQuitEvent - 玩家离开: "+quit.GetPlayerName())
-		playerKey := string(bConst.CacheStatusPlayer.Get(playerUUID))
-		h.rdb.HSet(ctx, playerKey, map[string]any{
-			"online":    "false",
-			"last_seen": strconv.FormatInt(time.Now().UnixMilli(), 10),
+	if mem := heartbeat.GetMemoryInfo(); mem != nil {
+		memJSON, _ := json.Marshal(map[string]any{
+			"total_bytes": mem.GetTotalBytes(),
+			"used_bytes":  mem.GetUsedBytes(),
+			"free_bytes":  mem.GetFreeBytes(),
 		})
-		h.rdb.Expire(ctx, playerKey, statusTTL)
-		serverPlayersKey := string(bConst.CacheStatusServerPlayers.Get(serverName))
-		h.rdb.SRem(ctx, serverPlayersKey, playerUUID)
+		fields["memory_info"] = string(memJSON)
+	}
 
-		serverKey := string(bConst.CacheStatusServer.Get(serverName))
-		onlineCount := h.rdb.SCard(ctx, serverPlayersKey).Val()
-		h.rdb.HSet(ctx, serverKey, "online_players", strconv.FormatInt(onlineCount, 10))
+	if disk := heartbeat.GetDiskInfo(); disk != nil {
+		diskJSON, _ := json.Marshal(map[string]any{
+			"total_bytes": disk.GetTotalBytes(),
+			"used_bytes":  disk.GetUsedBytes(),
+		})
+		fields["disk_info"] = string(diskJSON)
+	}
 
-		// DB 同步玩家离开状态
-		parsedUUID, parseErr := uuid.Parse(playerUUID)
-		if parseErr == nil {
-			if server, xErr := h.service.serverLogic.GetOrCreateByName(ctx, serverName); xErr == nil && server != nil {
-				if err := h.service.serverPlayerLogic.PlayerLeft(ctx, server.ID, parsedUUID); err != nil {
-					h.log.Warn(ctx, "PlayerQuitEvent - DB 同步玩家离开失败: "+err.Error())
-				}
-			}
-		}
+	if jvm := heartbeat.GetJvmInfo(); jvm != nil {
+		jvmJSON, _ := json.Marshal(map[string]any{
+			"max_memory_bytes":  jvm.GetMaxMemoryBytes(),
+			"used_memory_bytes": jvm.GetUsedMemoryBytes(),
+		})
+		fields["jvm_info"] = string(jvmJSON)
+	}
 
-	case *statuspb.ServerEventStreamRequest_PlayerSwitchWorldEvent:
-		sw := evt.PlayerSwitchWorldEvent
-		playerUUID := sw.GetPlayerUuid()
-		if playerUUID == "" {
-			h.log.Warn(ctx, "PlayerSwitchWorldEvent - 玩家 UUID 为空，跳过")
-			return
-		}
-		h.log.Info(ctx, "PlayerSwitchWorldEvent - 玩家切换世界")
-		playerKey := string(bConst.CacheStatusPlayer.Get(playerUUID))
-		h.rdb.HSet(ctx, playerKey, "world_name", sw.GetNewWorldName())
-		h.rdb.Expire(ctx, playerKey, statusTTL)
+	if ver := heartbeat.GetVersionInfo(); ver != nil {
+		verJSON, _ := json.Marshal(map[string]any{
+			"server_version": ver.GetServerVersion(),
+			"mc_version":     ver.GetMcVersion(),
+		})
+		fields["version_info"] = string(verJSON)
+	}
 
-	case *statuspb.ServerEventStreamRequest_PlayerChatEvent:
-		chat := evt.PlayerChatEvent
-		playerName := chat.GetPlayerName()
-		if chat.GetPlayerUuid() == "" {
-			h.log.Warn(ctx, "PlayerChatEvent - player_uuid 为空，跳过")
-			return
+	if worlds := heartbeat.GetWorlds(); len(worlds) > 0 {
+		worldList := make([]map[string]any, 0, len(worlds))
+		for _, w := range worlds {
+			worldList = append(worldList, map[string]any{
+				"world_name":    w.GetWorldName(),
+				"player_count":  w.GetPlayerCount(),
+				"entity_count":  w.GetEntityCount(),
+				"loaded_chunks": w.GetLoadedChunks(),
+			})
 		}
-		h.log.Info(ctx, "PlayerChatEvent - 玩家聊天: "+playerName)
-		parsedUUID, err := uuid.Parse(chat.GetPlayerUuid())
-		if err != nil {
-			h.log.Warn(ctx, "PlayerChatEvent - player_uuid 格式无效: "+err.Error())
-			return
-		}
-		if xErr := h.service.playerChatLogic.RecordChat(ctx, parsedUUID, chat.GetPlayerName(),
-			chat.GetServerName(), chat.GetWorldName(), chat.GetMessage()); xErr != nil {
-			h.log.Warn(ctx, "记录聊天消息失败: "+xErr.Error())
-		}
+		worldsJSON, _ := json.Marshal(worldList)
+		fields["worlds"] = string(worldsJSON)
+	}
 
-	case *statuspb.ServerEventStreamRequest_PlayerKickEvent:
-		kick := evt.PlayerKickEvent
-		if kick.GetPlayerUuid() == "" {
-			h.log.Warn(ctx, "PlayerKickEvent - player_uuid 为空，跳过")
-			return
-		}
-		h.log.Info(ctx, "PlayerKickEvent - 玩家被踢出: "+kick.GetPlayerName())
-		parsedUUID, err := uuid.Parse(kick.GetPlayerUuid())
-		if err != nil {
-			h.log.Warn(ctx, "PlayerKickEvent - player_uuid 格式无效: "+err.Error())
-			return
-		}
-		if xErr := h.service.playerEventLogic.RecordEvent(ctx, parsedUUID, kick.GetPlayerName(),
-			kick.GetServerName(), kick.GetWorldName(), bConst.PlayerEventKick, kick.GetReason()); xErr != nil {
-			h.log.Warn(ctx, "记录踢出事件失败: "+xErr.Error())
-		}
+	h.rdb.HSet(ctx, serverKey, fields)
+	h.rdb.Expire(ctx, serverKey, statusTTL)
 
-	case *statuspb.ServerEventStreamRequest_PlayerDeathEvent:
-		death := evt.PlayerDeathEvent
-		if death.GetPlayerUuid() == "" {
-			h.log.Warn(ctx, "PlayerDeathEvent - player_uuid 为空，跳过")
-			return
-		}
-		h.log.Info(ctx, "PlayerDeathEvent - 玩家死亡: "+death.GetPlayerName())
-		parsedUUID, err := uuid.Parse(death.GetPlayerUuid())
-		if err != nil {
-			h.log.Warn(ctx, "PlayerDeathEvent - player_uuid 格式无效: "+err.Error())
-			return
-		}
-		if xErr := h.service.playerEventLogic.RecordEvent(ctx, parsedUUID, death.GetPlayerName(),
-			death.GetServerName(), death.GetWorldName(), bConst.PlayerEventDeath, death.GetDeathMessage()); xErr != nil {
-			h.log.Warn(ctx, "记录死亡事件失败: "+xErr.Error())
-		}
-
-	case *statuspb.ServerEventStreamRequest_PlayerGroupChangeEvent:
-		gc := evt.PlayerGroupChangeEvent
-		if gc.GetPlayerUuid() == "" {
-			h.log.Warn(ctx, "PlayerGroupChangeEvent - player_uuid 为空，跳过")
-			return
-		}
-		h.log.Info(ctx, "PlayerGroupChangeEvent - 权限组变更: "+gc.GetPlayerName()+" "+gc.GetOldGroupName()+" → "+gc.GetGroupName())
-		parsedUUID, err := uuid.Parse(gc.GetPlayerUuid())
-		if err != nil {
-			h.log.Warn(ctx, "PlayerGroupChangeEvent - player_uuid 格式无效: "+err.Error())
-			return
-		}
-		if updateErr := h.service.gameProfileLogic.UpdateGroupName(ctx, parsedUUID, gc.GetGroupName()); updateErr != nil {
-			h.log.Warn(ctx, "更新 GameProfile 权限组失败: "+updateErr.Error())
-		}
-
-	default:
-		h.log.Warn(ctx, "收到未知事件类型")
+	if *registeredServerName == "" {
+		*registeredServerName = serverName
+		h.setEventStream(serverName, &eventStream{
+			stream:     stream,
+			serverName: serverName,
+			log:        h.log,
+		})
 	}
 }
 
@@ -333,9 +199,8 @@ func (h *ServerStatusHandler) cleanupServerStatus(ctx context.Context, serverNam
 	}
 	h.rdb.Del(ctx, serverPlayersKey)
 
-	// DB 同步标记该服务器所有玩家离线
-	if server, xErr := h.service.serverLogic.GetOrCreateByName(ctx, serverName); xErr == nil && server != nil {
-		if err := h.service.serverPlayerLogic.ServerOffline(ctx, server.ID); err != nil {
+	if server, xErr := h.serverLogic.GetOrCreateByName(ctx, serverName); xErr == nil && server != nil {
+		if err := h.serverPlayerLogic.ServerOffline(ctx, server.ID); err != nil {
 			h.log.Warn(ctx, "cleanupServerStatus - DB 标记服务器玩家离线失败: "+err.Error())
 		}
 	}

@@ -1,0 +1,117 @@
+syntax = "proto3";
+
+package frontleaves.essentials.v1;
+
+option go_package = "github.com/frontleaves-mc/frontleaves-plugin/internal/grpc/gen/essentials/v1;essentialspb";
+
+import "link/base.proto";
+
+// PlayerQueryService 玩家查询服务
+//
+// 提供 Go 服务端向 Minecraft 服务器查询玩家和服务器状态的能力。
+service PlayerQueryService {
+  // PlayerQuery 双向流查询
+  rpc PlayerQuery(stream PlayerQueryRequest) returns (stream PlayerQueryResponse);
+}
+
+// QueryEvent 查询事件类型
+enum QueryEvent {
+  QUERY_EVENT_UNSPECIFIED = 0;
+  QUERY_EVENT_GET_PLAYER_STATUS = 1;
+  QUERY_EVENT_GET_SERVER_STATUS = 2;
+  QUERY_EVENT_CHECK_PERMISSION = 3;
+  QUERY_EVENT_GET_PLAYER_GROUPS = 4;
+}
+
+// PlayerQueryRequest Java→Go direction
+// Java 插件通过此消息返回查询结果给 Go 服务端
+message PlayerQueryRequest {
+  // 请求追踪标识
+  string request_id = 1;
+  // 查询结果
+  oneof result {
+    // 玩家在线状态结果
+    QueryPlayerStatusResult player_status_result = 11;
+    // 服务器状态结果
+    QueryServerStatusResult server_status_result = 12;
+    // 权限检查结果
+    QueryCheckPermissionResult check_permission_result = 13;
+    // 玩家权限组结果
+    QueryPlayerGroupsResult player_groups_result = 14;
+  }
+}
+
+// PlayerQueryResponse Go→Java direction
+// Go 服务端通过此消息向 Java 插件发送查询请求
+message PlayerQueryResponse {
+  xBase.BaseResponse base_response = 1;
+  // 请求追踪标识
+  string request_id = 2;
+  // 查询请求参数
+  oneof query {
+    // 查询玩家在线状态
+    QueryPlayerStatusQuery player_status_query = 11;
+    // 查询服务器状态
+    QueryServerStatusQuery server_status_query = 12;
+    // 检查权限
+    QueryCheckPermissionQuery check_permission_query = 13;
+    // 查询玩家权限组
+    QueryPlayerGroupsQuery player_groups_query = 14;
+  }
+}
+
+// QueryPlayerStatusQuery 查询玩家在线状态请求参数
+message QueryPlayerStatusQuery {
+  string player_uuid = 1;
+}
+
+// QueryServerStatusQuery 查询服务器状态请求参数
+message QueryServerStatusQuery {
+  string server_name = 1;
+}
+
+// QueryCheckPermissionQuery 检查权限请求参数
+message QueryCheckPermissionQuery {
+  string player_uuid = 1;
+  string permission_node = 2;
+}
+
+// QueryPlayerGroupsQuery 查询玩家权限组请求参数
+message QueryPlayerGroupsQuery {
+  string player_uuid = 1;
+}
+
+// QueryPlayerStatusResult 玩家在线状态查询结果
+message QueryPlayerStatusResult {
+  bool online = 1;
+  string server_name = 2;
+  string world_name = 3;
+  string player_name = 4;
+  int64 last_seen = 5;
+}
+
+// QueryServerStatusResult 服务器状态查询结果
+message QueryServerStatusResult {
+  repeated PlayerStatus players = 1;
+  int32 online_players = 2;
+  double tps = 3;
+  int64 last_heartbeat = 4;
+}
+
+// QueryCheckPermissionResult 权限检查结果
+message QueryCheckPermissionResult {
+  bool has_permission = 1;
+}
+
+// QueryPlayerGroupsResult 玩家权限组查询结果
+message QueryPlayerGroupsResult {
+  string primary_group = 1;
+  repeated string groups = 2;
+}
+
+// PlayerStatus 玩家状态信息
+message PlayerStatus {
+  string player_uuid = 1;
+  string player_name = 2;
+  string world_name = 3;
+}

@@ -16,13 +16,17 @@ import (
 // TitleHandler 称号服务 gRPC Handler
 type TitleHandler struct {
 	grpcHandler
+	*titleService
 	titlepb.UnimplementedTitleServiceServer
 }
 
 // NewTitleHandler 创建称号服务 gRPC Handler
 func NewTitleHandler(ctx context.Context, server grpc.ServiceRegistrar) *TitleHandler {
 	base := NewGRPCHandler[grpcHandler](ctx, "TitleHandler")
-	h := &TitleHandler{grpcHandler: *base}
+	h := &TitleHandler{
+		grpcHandler:  *base,
+		titleService: newTitleService(ctx),
+	}
 
 	titlepb.RegisterTitleServiceServer(server, h)
 	xGrpcMiddle.UseUnary(titlepb.TitleService_ServiceDesc, middleware.UnaryPluginVerify(ctx))
@@ -41,7 +45,7 @@ func (h *TitleHandler) GetPlayerTitles(
 		return nil, xError.NewError(ctx, xError.ParameterError, "player_uuid 格式无效", true, err)
 	}
 
-	playerTitles, xErr := h.service.titleLogic.GetPlayerTitles(ctx, playerUUID)
+	playerTitles, xErr := h.titleLogic.GetPlayerTitles(ctx, playerUUID)
 	if xErr != nil {
 		return nil, xErr
 	}
@@ -74,7 +78,7 @@ func (h *TitleHandler) GetEquippedTitle(
 		return nil, xError.NewError(ctx, xError.ParameterError, "player_uuid 格式无效", true, err)
 	}
 
-	equipped, xErr := h.service.titleLogic.GetEquippedTitle(ctx, playerUUID)
+	equipped, xErr := h.titleLogic.GetEquippedTitle(ctx, playerUUID)
 	if xErr != nil {
 		return nil, xErr
 	}
@@ -107,7 +111,7 @@ func (h *TitleHandler) EquipTitle(
 		return nil, xError.NewError(ctx, xError.ParameterError, "title_id 格式无效", true, err)
 	}
 
-	if xErr := h.service.titleLogic.EquipTitle(ctx, playerUUID, titleID); xErr != nil {
+	if xErr := h.titleLogic.EquipTitle(ctx, playerUUID, titleID); xErr != nil {
 		return nil, xErr
 	}
 
@@ -126,7 +130,7 @@ func (h *TitleHandler) UnequipTitle(
 		return nil, xError.NewError(ctx, xError.ParameterError, "player_uuid 格式无效", true, err)
 	}
 
-	if xErr := h.service.titleLogic.UnequipTitle(ctx, playerUUID); xErr != nil {
+	if xErr := h.titleLogic.UnequipTitle(ctx, playerUUID); xErr != nil {
 		return nil, xErr
 	}
 

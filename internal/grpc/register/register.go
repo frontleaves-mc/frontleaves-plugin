@@ -17,6 +17,8 @@ var log = xLog.WithName(xLog.NamedGRPC, "Register")
 func RegisterGRPCServices(ctx context.Context, server grpc.ServiceRegistrar) {
 	handler.NewServerStatusHandler(ctx, server)
 	handler.NewTitleHandler(ctx, server)
+	handler.NewEssentialsPlayerEventHandler(ctx, server)
+	handler.NewEssentialsPlayerQueryHandler(ctx, server)
 	announcementHandler := handler.NewAnnouncementHandler(ctx, server)
 
 	// 创建调度引擎并注册为全局单例
