@@ -38,4 +38,8 @@ func RegisterGRPCServices(ctx context.Context, server grpc.ServiceRegistrar) {
 	if xErr := engine.RecoverFromDatabase(ctx); xErr != nil {
 		log.Error(ctx, "RegisterGRPCServices - 调度引擎恢复失败: "+xErr.Error())
 	}
+
+	// 创建负载刷盘引擎并启动
+	flushEngine := logic.NewServerLoadFlushEngine(ctx)
+	flushEngine.Start()
 }

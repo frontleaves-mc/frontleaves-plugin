@@ -26,4 +26,5 @@ const (
 	GeneServer        xSnowflake.Gene = 46 // 服务器
 	GeneServerPlayer  xSnowflake.Gene = 47 // 服务器玩家
 	GenePlayerCommand xSnowflake.Gene = 48 // 玩家指令日志
+	GeneServerLoadLog xSnowflake.Gene = 49 // 服务器负载采样日志
 )

@@ -19,6 +19,7 @@ type service struct {
 	playerChatLogic           *logic.PlayerChatLogic
 	playerCommandLogic        *logic.PlayerCommandLogic
 	gameProfileLogic          *logic.GameProfileLogic
+	serverLoadLogic           *logic.ServerLoadLogic
 }
 
 type handler struct {
@@ -51,6 +52,7 @@ func NewHandler[T IHandler](ctx context.Context, handlerName string) *T {
 			playerChatLogic:           logic.NewPlayerChatLogic(ctx),
 			playerCommandLogic:        logic.NewPlayerCommandLogic(ctx),
 			gameProfileLogic:          logic.NewGameProfileLogic(ctx),
+			serverLoadLogic:           logic.NewServerLoadLogic(ctx),
 		},
 	}
 }

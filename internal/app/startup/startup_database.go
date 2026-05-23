@@ -31,6 +31,7 @@ var migrateTables = []interface{}{
 	&entity.Server{},
 	&entity.ServerPlayer{},
 	&entity.PlayerCommandLog{},
+	&entity.ServerLoadLog{},
 }
 
 func (r *reg) databaseInit(ctx context.Context) (any, error) {

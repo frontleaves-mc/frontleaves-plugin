@@ -542,6 +542,101 @@ definitions:
     required:
     - display_name
     type: object
+  apiServerLoad.CPUInfo:
+    properties:
+      cores:
+        type: integer
+      usage_percent:
+        type: number
+    type: object
+  apiServerLoad.JVMInfo:
+    properties:
+      max_memory_bytes:
+        type: integer
+      used_memory_bytes:
+        type: integer
+    type: object
+  apiServerLoad.LoadHistoryRecord:
+    properties:
+      cpu_usage_avg:
+        type: number
+      jvm_used_avg:
+        type: integer
+      mem_used_avg:
+        type: integer
+      minute_time:
+        type: string
+      samples:
+        items:
+          $ref: '#/definitions/apiServerLoad.LoadSample'
+        type: array
+      tps_avg:
+        type: number
+    type: object
+  apiServerLoad.LoadSample:
+    properties:
+      collected_at:
+        type: integer
+      cpu_cores:
+        type: integer
+      cpu_usage_pct:
+        type: number
+      jvm_max_bytes:
+        type: integer
+      jvm_used_bytes:
+        type: integer
+      mem_free_bytes:
+        type: integer
+      mem_total_bytes:
+        type: integer
+      mem_used_bytes:
+        type: integer
+      tps:
+        type: number
+    type: object
+  apiServerLoad.MemoryInfo:
+    properties:
+      free_bytes:
+        type: integer
+      total_bytes:
+        type: integer
+      used_bytes:
+        type: integer
+    type: object
+  apiServerLoad.ServerLoadHistoryResponse:
+    properties:
+      display_name:
+        type: string
+      records:
+        items:
+          $ref: '#/definitions/apiServerLoad.LoadHistoryRecord'
+        type: array
+      server_id:
+        type: integer
+      server_name:
+        type: string
+    type: object
+  apiServerLoad.ServerRealtimeLoadResponse:
+    properties:
+      cpu_info:
+        $ref: '#/definitions/apiServerLoad.CPUInfo'
+      display_name:
+        type: string
+      jvm_info:
+        $ref: '#/definitions/apiServerLoad.JVMInfo'
+      last_heartbeat:
+        type: integer
+      memory_info:
+        $ref: '#/definitions/apiServerLoad.MemoryInfo'
+      online:
+        type: boolean
+      server_id:
+        type: integer
+      server_name:
+        type: string
+      tps:
+        type: number
+    type: object
   apiServerStatus.PlayerStatusInfo:
     properties:
       player_name:
@@ -1943,6 +2038,122 @@ paths:
       summary: '[超管] 设置服务器公开状态'
       tags:
       - 超管-服务器管理接口
+  /admin/servers/load/{id}/history:
+    get:
+      consumes:
+      - application/json
+      description: 根据服务器 ID 和时间范围查询历史负载数据趋势，支持分页
+      parameters:
+      - description: 服务器ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 开始时间 (RFC3339)
+        in: query
+        name: start
+        required: true
+        type: string
+      - description: 结束时间 (RFC3339)
+        in: query
+        name: end
+        required: true
+        type: string
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiServerLoad.ServerLoadHistoryResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 服务器不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[超管] 查询服务器历史负载趋势'
+      tags:
+      - 超管-服务器负载接口
+  /admin/servers/load/{id}/realtime:
+    get:
+      consumes:
+      - application/json
+      description: 根据服务器 ID 查询单台服务器的实时负载数据
+      parameters:
+      - description: 服务器ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiServerLoad.ServerRealtimeLoadResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 服务器不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[超管] 查询单台服务器实时负载'
+      tags:
+      - 超管-服务器负载接口
+  /admin/servers/load/realtime:
+    get:
+      consumes:
+      - application/json
+      description: 查询所有启用服务器的实时负载数据，包括 TPS、CPU、内存、JVM 等指标
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/apiServerLoad.ServerRealtimeLoadResponse'
+                  type: array
+              type: object
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "403":
+          description: 无权限
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[超管] 批量查询服务器实时负载'
+      tags:
+      - 超管-服务器负载接口
   /admin/titles:
     get:
       consumes:

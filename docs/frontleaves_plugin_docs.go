@@ -1707,6 +1707,194 @@ const docTemplatefrontleaves_plugin = `{
                 }
             }
         },
+        "/admin/servers/load/realtime": {
+            "get": {
+                "description": "查询所有启用服务器的实时负载数据，包括 TPS、CPU、内存、JVM 等指标",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "超管-服务器负载接口"
+                ],
+                "summary": "[超管] 批量查询服务器实时负载",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/apiServerLoad.ServerRealtimeLoadResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "无权限",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/servers/load/{id}/history": {
+            "get": {
+                "description": "根据服务器 ID 和时间范围查询历史负载数据趋势，支持分页",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "超管-服务器负载接口"
+                ],
+                "summary": "[超管] 查询服务器历史负载趋势",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "服务器ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "开始时间 (RFC3339)",
+                        "name": "start",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "结束时间 (RFC3339)",
+                        "name": "end",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiServerLoad.ServerLoadHistoryResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "服务器不存在",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/servers/load/{id}/realtime": {
+            "get": {
+                "description": "根据服务器 ID 查询单台服务器的实时负载数据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "超管-服务器负载接口"
+                ],
+                "summary": "[超管] 查询单台服务器实时负载",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "服务器ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiServerLoad.ServerRealtimeLoadResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "服务器不存在",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/servers/{id}": {
             "get": {
                 "description": "根据服务器 ID 查询详情",
@@ -4023,6 +4211,152 @@ const docTemplatefrontleaves_plugin = `{
                 },
                 "sort_order": {
                     "type": "integer"
+                }
+            }
+        },
+        "apiServerLoad.CPUInfo": {
+            "type": "object",
+            "properties": {
+                "cores": {
+                    "type": "integer"
+                },
+                "usage_percent": {
+                    "type": "number"
+                }
+            }
+        },
+        "apiServerLoad.JVMInfo": {
+            "type": "object",
+            "properties": {
+                "max_memory_bytes": {
+                    "type": "integer"
+                },
+                "used_memory_bytes": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiServerLoad.LoadHistoryRecord": {
+            "type": "object",
+            "properties": {
+                "cpu_usage_avg": {
+                    "type": "number"
+                },
+                "jvm_used_avg": {
+                    "type": "integer"
+                },
+                "mem_used_avg": {
+                    "type": "integer"
+                },
+                "minute_time": {
+                    "type": "string"
+                },
+                "samples": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/apiServerLoad.LoadSample"
+                    }
+                },
+                "tps_avg": {
+                    "type": "number"
+                }
+            }
+        },
+        "apiServerLoad.LoadSample": {
+            "type": "object",
+            "properties": {
+                "collected_at": {
+                    "type": "integer"
+                },
+                "cpu_cores": {
+                    "type": "integer"
+                },
+                "cpu_usage_pct": {
+                    "type": "number"
+                },
+                "jvm_max_bytes": {
+                    "type": "integer"
+                },
+                "jvm_used_bytes": {
+                    "type": "integer"
+                },
+                "mem_free_bytes": {
+                    "type": "integer"
+                },
+                "mem_total_bytes": {
+                    "type": "integer"
+                },
+                "mem_used_bytes": {
+                    "type": "integer"
+                },
+                "tps": {
+                    "type": "number"
+                }
+            }
+        },
+        "apiServerLoad.MemoryInfo": {
+            "type": "object",
+            "properties": {
+                "free_bytes": {
+                    "type": "integer"
+                },
+                "total_bytes": {
+                    "type": "integer"
+                },
+                "used_bytes": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiServerLoad.ServerLoadHistoryResponse": {
+            "type": "object",
+            "properties": {
+                "display_name": {
+                    "type": "string"
+                },
+                "records": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/apiServerLoad.LoadHistoryRecord"
+                    }
+                },
+                "server_id": {
+                    "type": "integer"
+                },
+                "server_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiServerLoad.ServerRealtimeLoadResponse": {
+            "type": "object",
+            "properties": {
+                "cpu_info": {
+                    "$ref": "#/definitions/apiServerLoad.CPUInfo"
+                },
+                "display_name": {
+                    "type": "string"
+                },
+                "jvm_info": {
+                    "$ref": "#/definitions/apiServerLoad.JVMInfo"
+                },
+                "last_heartbeat": {
+                    "type": "integer"
+                },
+                "memory_info": {
+                    "$ref": "#/definitions/apiServerLoad.MemoryInfo"
+                },
+                "online": {
+                    "type": "boolean"
+                },
+                "server_id": {
+                    "type": "integer"
+                },
+                "server_name": {
+                    "type": "string"
+                },
+                "tps": {
+                    "type": "number"
                 }
             }
         },
