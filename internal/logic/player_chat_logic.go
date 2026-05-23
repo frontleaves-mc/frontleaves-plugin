@@ -45,6 +45,7 @@ func (l *PlayerChatLogic) RecordChat(
 	serverName string,
 	worldName string,
 	message string,
+	userID *xSnowflake.SnowflakeID,
 ) error {
 	l.log.Info(ctx, "RecordChat - 记录聊天消息")
 	chatLog := &entity.PlayerChatLog{
@@ -54,6 +55,7 @@ func (l *PlayerChatLogic) RecordChat(
 		WorldName:  worldName,
 		Message:    message,
 		Source:     1,
+		UserID:     userID,
 	}
 	if xErr := l.repo.playerChatLog.Create(ctx, chatLog); xErr != nil {
 		l.log.Warn(ctx, "记录聊天消息失败: "+xErr.Error())
@@ -66,15 +68,18 @@ func (l *PlayerChatLogic) RecordChat(
 func (l *PlayerChatLogic) RecordWebChat(
 	ctx context.Context,
 	senderID xSnowflake.SnowflakeID,
-	senderName string,
+	playerName string,
+	playerUUID uuid.UUID,
 	message string,
 ) (*entity.PlayerChatLog, error) {
 	l.log.Info(ctx, "RecordWebChat - 记录Web聊天消息")
 	chatLog := &entity.PlayerChatLog{
-		PlayerName: senderName,
+		PlayerName: playerName,
+		PlayerUUID: &playerUUID,
 		Message:    message,
 		Source:     2,
 		SenderID:   senderID,
+		UserID:     &senderID,
 	}
 	if xErr := l.repo.playerChatLog.Create(ctx, chatLog); xErr != nil {
 		l.log.Warn(ctx, "记录Web聊天消息失败: "+xErr.Error())
@@ -108,10 +113,10 @@ func (l *PlayerChatLogic) ListRecentChats(ctx context.Context, limit int) ([]api
 
 // ListMyChatHistory 用户端查询自己的聊天记录
 func (l *PlayerChatLogic) ListMyChatHistory(
-	ctx context.Context, page, pageSize int, playerUUIDs []uuid.UUID,
+	ctx context.Context, page, pageSize int, playerUUIDs []uuid.UUID, userID xSnowflake.SnowflakeID,
 ) ([]apiMessage.ChatLogResponse, int64, *xError.Error) {
 	l.log.Info(ctx, "ListMyChatHistory - 用户端查询聊天记录")
-	logs, total, xErr := l.repo.playerChatLog.ListByPlayerUUIDs(ctx, page, pageSize, playerUUIDs)
+	logs, total, xErr := l.repo.playerChatLog.ListByPlayerUUIDsOrUserID(ctx, page, pageSize, playerUUIDs, userID)
 	if xErr != nil {
 		return nil, 0, xErr
 	}
@@ -143,6 +148,10 @@ func (l *PlayerChatLogic) toChatLogResponse(log entity.PlayerChatLog) apiMessage
 	if log.SenderID != 0 {
 		senderIDStr := log.SenderID.String()
 		resp.SenderID = &senderIDStr
+	}
+	if log.UserID != nil && *log.UserID != 0 {
+		userIDStr := log.UserID.String()
+		resp.UserID = &userIDStr
 	}
 	return resp
 }

@@ -5,6 +5,7 @@ import (
 
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
+	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -89,6 +90,33 @@ func (r *PlayerChatLogRepo) ListByPlayerUUIDs(
 	}
 
 	query := r.db.WithContext(ctx).Model(&entity.PlayerChatLog{}).Where("player_uuid IN ?", playerUUIDs)
+
+	var total int64
+	if err := query.Session(&gorm.Session{}).Count(&total).Error; err != nil {
+		return nil, 0, xError.NewError(nil, xError.DatabaseError, "查询聊天记录总数失败", false, err)
+	}
+
+	var logs []entity.PlayerChatLog
+	offset := (page - 1) * pageSize
+	if err := query.Session(&gorm.Session{}).Offset(offset).Limit(pageSize).Order("id DESC").Find(&logs).Error; err != nil {
+		return nil, 0, xError.NewError(nil, xError.DatabaseError, "查询聊天记录失败", false, err)
+	}
+
+	return logs, total, nil
+}
+
+// ListByPlayerUUIDsOrUserID 按玩家 UUID 列表或用户 ID 查询聊天记录（用户端，包含 Web 发送的消息）
+func (r *PlayerChatLogRepo) ListByPlayerUUIDsOrUserID(
+	ctx context.Context, page, pageSize int, playerUUIDs []uuid.UUID, userID xSnowflake.SnowflakeID,
+) ([]entity.PlayerChatLog, int64, *xError.Error) {
+	r.log.Info(ctx, "ListByPlayerUUIDsOrUserID - 按玩家UUID或用户ID查询聊天记录")
+
+	query := r.db.WithContext(ctx).Model(&entity.PlayerChatLog{})
+	if len(playerUUIDs) > 0 {
+		query = query.Where("player_uuid IN ? OR user_id = ?", playerUUIDs, userID)
+	} else {
+		query = query.Where("user_id = ?", userID)
+	}
 
 	var total int64
 	if err := query.Session(&gorm.Session{}).Count(&total).Error; err != nil {

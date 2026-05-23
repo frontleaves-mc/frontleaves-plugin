@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	xGrpcMiddle "github.com/bamboo-services/bamboo-base-go/plugins/grpc/middleware"
 	xGrpcUtil "github.com/bamboo-services/bamboo-base-go/plugins/grpc/utility"
 	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
@@ -274,8 +275,13 @@ func (h *EssentialsPlayerEventHandler) handlePlayerChat(
 	}
 
 	if h.playerChatLogic != nil {
+		// 反查关联 UserID
+		var userID *xSnowflake.SnowflakeID
+		if h.gameProfileLogic != nil {
+			userID, _ = h.gameProfileLogic.GetUserIDByUUID(ctx, parsedUUID)
+		}
 		if xErr := h.playerChatLogic.RecordChat(ctx, parsedUUID, chat.GetPlayerName(),
-			chat.GetServerName(), chat.GetWorldName(), chat.GetMessage()); xErr != nil {
+			chat.GetServerName(), chat.GetWorldName(), chat.GetMessage(), userID); xErr != nil {
 			if h.log != nil {
 				h.log.Warn(ctx, "PlayerChatEvent - 记录聊天消息失败: "+xErr.Error())
 			}
@@ -429,8 +435,13 @@ func (h *EssentialsPlayerEventHandler) handlePlayerCommand(
 	}
 
 	if h.playerCommandLogic != nil {
+		// 反查关联 UserID
+		var userID *xSnowflake.SnowflakeID
+		if h.gameProfileLogic != nil {
+			userID, _ = h.gameProfileLogic.GetUserIDByUUID(ctx, parsedUUID)
+		}
 		if xErr := h.playerCommandLogic.RecordCommand(ctx, parsedUUID, cmd.GetPlayerName(),
-			cmd.GetServerName(), cmd.GetWorldName(), cmd.GetCommand()); xErr != nil {
+			cmd.GetServerName(), cmd.GetWorldName(), cmd.GetCommand(), userID); xErr != nil {
 			if h.log != nil {
 				h.log.Warn(ctx, "PlayerCommandEvent - 记录指令日志失败: "+xErr.Error())
 			}

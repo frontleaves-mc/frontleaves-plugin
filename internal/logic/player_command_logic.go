@@ -5,6 +5,7 @@ import (
 
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
+	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
 	apiMessage "github.com/frontleaves-mc/frontleaves-plugin/api/message"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
@@ -44,6 +45,7 @@ func (l *PlayerCommandLogic) RecordCommand(
 	serverName string,
 	worldName string,
 	command string,
+	userID *xSnowflake.SnowflakeID,
 ) error {
 	l.log.Info(ctx, "RecordCommand - 记录玩家指令")
 	cmdLog := &entity.PlayerCommandLog{
@@ -52,6 +54,7 @@ func (l *PlayerCommandLogic) RecordCommand(
 		ServerName: serverName,
 		WorldName:  worldName,
 		Command:    command,
+		UserID:     userID,
 	}
 	if xErr := l.repo.playerCommandLog.Create(ctx, cmdLog); xErr != nil {
 		l.log.Warn(ctx, "记录玩家指令失败: "+xErr.Error())
@@ -94,7 +97,7 @@ func (l *PlayerCommandLogic) toCommandLogResponseList(logs []entity.PlayerComman
 }
 
 func (l *PlayerCommandLogic) toCommandLogResponse(log entity.PlayerCommandLog) apiMessage.CommandLogResponse {
-	return apiMessage.CommandLogResponse{
+	resp := apiMessage.CommandLogResponse{
 		ID:         log.ID.String(),
 		PlayerUUID: log.PlayerUUID.String(),
 		PlayerName: log.PlayerName,
@@ -102,4 +105,9 @@ func (l *PlayerCommandLogic) toCommandLogResponse(log entity.PlayerCommandLog) a
 		WorldName:  log.WorldName,
 		Command:    log.Command,
 	}
+	if log.UserID != nil && *log.UserID != 0 {
+		userIDStr := log.UserID.String()
+		resp.UserID = &userIDStr
+	}
+	return resp
 }

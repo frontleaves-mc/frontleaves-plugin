@@ -1140,6 +1140,146 @@ const docTemplatefrontleaves_plugin = `{
                 }
             }
         },
+        "/admin/messages/chat": {
+            "get": {
+                "description": "分页查询所有用户的聊天记录，支持按玩家UUID、服务器、来源筛选",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "管理-消息接口"
+                ],
+                "summary": "[管理] 查询所有聊天记录",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "玩家UUID筛选",
+                        "name": "player_uuid",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "服务器名称筛选",
+                        "name": "server_name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "消息来源筛选(1=Game,2=Web)",
+                        "name": "source",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiMessage.ChatHistoryListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/messages/commands": {
+            "get": {
+                "description": "分页查询所有玩家的指令使用日志，支持按玩家UUID、服务器筛选",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "管理-消息接口"
+                ],
+                "summary": "[管理] 查询所有指令记录",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "玩家UUID筛选",
+                        "name": "player_uuid",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "服务器名称筛选",
+                        "name": "server_name",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiMessage.CommandHistoryListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/plugin-credentials": {
             "get": {
                 "description": "分页查询插件凭证列表，所有密钥脱敏展示",
@@ -2898,6 +3038,174 @@ const docTemplatefrontleaves_plugin = `{
                     }
                 }
             }
+        },
+        "/user/messages/chat": {
+            "get": {
+                "description": "分页查询当前用户关联游戏角色的聊天记录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户-消息接口"
+                ],
+                "summary": "[用户] 查询我的聊天记录",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiMessage.ChatHistoryListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Web 端用户选择游戏角色发送聊天消息，转发到游戏内并广播给 SSE 客户端",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户-消息接口"
+                ],
+                "summary": "[用户] 发送聊天消息",
+                "parameters": [
+                    {
+                        "description": "发送消息请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apiMessage.SendChatMessageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/messages/chat/stream": {
+            "get": {
+                "description": "通过 SSE 连接接收实时聊天消息，首次连接推送最近 50 条消息",
+                "produces": [
+                    "text/event-stream"
+                ],
+                "tags": [
+                    "用户-消息接口"
+                ],
+                "summary": "[用户] 实时聊天消息流",
+                "responses": {
+                    "200": {
+                        "description": "SSE 事件流",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/messages/commands": {
+            "get": {
+                "description": "分页查询当前用户关联游戏角色的指令使用记录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户-消息接口"
+                ],
+                "summary": "[用户] 查询我的指令记录",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiMessage.CommandHistoryListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -3379,6 +3687,120 @@ const docTemplatefrontleaves_plugin = `{
                     ]
                 },
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiMessage.ChatHistoryListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/apiMessage.ChatLogResponse"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiMessage.ChatLogResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "player_name": {
+                    "type": "string"
+                },
+                "player_uuid": {
+                    "type": "string"
+                },
+                "sender_id": {
+                    "type": "string"
+                },
+                "server_name": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "world_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiMessage.CommandHistoryListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/apiMessage.CommandLogResponse"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiMessage.CommandLogResponse": {
+            "type": "object",
+            "properties": {
+                "command": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "player_name": {
+                    "type": "string"
+                },
+                "player_uuid": {
+                    "type": "string"
+                },
+                "server_name": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "world_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiMessage.SendChatMessageRequest": {
+            "type": "object",
+            "required": [
+                "message",
+                "profile_uuid"
+            ],
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "profile_uuid": {
                     "type": "string"
                 }
             }

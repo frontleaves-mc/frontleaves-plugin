@@ -23,7 +23,7 @@ func NewChatSendHandler(ctx context.Context) *ChatSendHandler {
 // SendChatMessage 发送聊天消息
 //
 // @Summary     [用户] 发送聊天消息
-// @Description Web 端用户发送聊天消息，转发到游戏内并广播给 SSE 客户端
+// @Description Web 端用户选择游戏角色发送聊天消息，转发到游戏内并广播给 SSE 客户端
 // @Tags        用户-消息接口
 // @Accept      json
 // @Produce     json
@@ -52,21 +52,32 @@ func (h *ChatSendHandler) SendChatMessage(ctx *gin.Context) {
 		return
 	}
 
+	// 校验用户对 GameProfile 的所有权并获取 MC 用户名
+	profile, xErr := h.service.gameProfileLogic.ResolveProfileForUser(ctx.Request.Context(), senderID, req.ProfileUUID)
+	if xErr != nil {
+		_ = ctx.Error(xErr)
+		return
+	}
+
+	gameName := profile.Username
+	playerUUID := profile.UUID
+
 	// 记录到 DB
-	_, recordErr := h.service.playerChatLogic.RecordWebChat(ctx.Request.Context(), senderID, userInfo.Username, req.Message)
+	_, recordErr := h.service.playerChatLogic.RecordWebChat(ctx.Request.Context(), senderID, gameName, playerUUID, req.Message)
 	if recordErr != nil {
 		_ = ctx.Error(xError.NewError(nil, xError.DatabaseError, "记录消息失败", false, recordErr))
 		return
 	}
 
 	// 推送到 MC 插件
-	if pushErr := logic.PushChatToGame(ctx.Request.Context(), userInfo.Username, req.Message); pushErr != nil {
+	if pushErr := logic.PushChatToGame(ctx.Request.Context(), gameName, req.Message); pushErr != nil {
 		h.log.Warn(ctx, "SendChatMessage - 推送到MC插件失败: "+pushErr.Error())
 	}
 
 	// 广播到 SSE 客户端
 	sse.BroadcastChatMessage(apiMessage.SSEChatMessage{
-		PlayerName: userInfo.Username,
+		PlayerName: gameName,
+		PlayerUUID: playerUUID.String(),
 		Message:    req.Message,
 		Source:     2,
 	})

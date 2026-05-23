@@ -13,7 +13,8 @@ type PlayerCommandLog struct {
 	PlayerName string                 `gorm:"type:varchar(64);not null;comment:玩家用户名"`
 	ServerName string                 `gorm:"type:varchar(64);not null;comment:服务器名称"`
 	WorldName  string                 `gorm:"type:varchar(64);not null;comment:世界名称"`
-	Command    string                 `gorm:"type:text;not null;comment:指令内容"`
+	Command    string                  `gorm:"type:text;not null;comment:指令内容"`
+	UserID     *xSnowflake.SnowflakeID `gorm:"index:idx_player_command_log_user_id;comment:关联用户ID"`
 }
 
 func (_ *PlayerCommandLog) GetGene() xSnowflake.Gene {

@@ -41,6 +41,12 @@ func (h *MessageUserHandler) ListMyChatHistory(ctx *gin.Context) {
 		return
 	}
 
+	senderID, err := xSnowflake.ParseSnowflakeID(userInfo.UserID)
+	if err != nil {
+		_ = ctx.Error(xError.NewError(nil, xError.ParameterError, "无效的用户 ID", true, err))
+		return
+	}
+
 	playerUUIDs, xErr := h.resolveUserPlayerUUIDs(ctx, userInfo.UserID)
 	if xErr != nil {
 		_ = ctx.Error(xErr)
@@ -56,7 +62,7 @@ func (h *MessageUserHandler) ListMyChatHistory(ctx *gin.Context) {
 		pageSize = 20
 	}
 
-	chats, total, xErr := h.service.playerChatLogic.ListMyChatHistory(ctx.Request.Context(), page, pageSize, playerUUIDs)
+	chats, total, xErr := h.service.playerChatLogic.ListMyChatHistory(ctx.Request.Context(), page, pageSize, playerUUIDs, senderID)
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return

@@ -323,6 +323,81 @@ definitions:
     - mode
     - name
     type: object
+  apiMessage.ChatHistoryListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/apiMessage.ChatLogResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  apiMessage.ChatLogResponse:
+    properties:
+      id:
+        type: string
+      message:
+        type: string
+      player_name:
+        type: string
+      player_uuid:
+        type: string
+      sender_id:
+        type: string
+      server_name:
+        type: string
+      source:
+        type: integer
+      user_id:
+        type: string
+      world_name:
+        type: string
+    type: object
+  apiMessage.CommandHistoryListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/apiMessage.CommandLogResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  apiMessage.CommandLogResponse:
+    properties:
+      command:
+        type: string
+      id:
+        type: string
+      player_name:
+        type: string
+      player_uuid:
+        type: string
+      server_name:
+        type: string
+      user_id:
+        type: string
+      world_name:
+        type: string
+    type: object
+  apiMessage.SendChatMessageRequest:
+    properties:
+      message:
+        maxLength: 500
+        type: string
+      profile_uuid:
+        type: string
+    required:
+    - message
+    - profile_uuid
+    type: object
   apiPC.CreatePluginCredentialRequest:
     properties:
       description:
@@ -1340,6 +1415,92 @@ paths:
       summary: '[管理] 停用公告调度'
       tags:
       - 管理-公告调度接口
+  /admin/messages/chat:
+    get:
+      consumes:
+      - application/json
+      description: 分页查询所有用户的聊天记录，支持按玩家UUID、服务器、来源筛选
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: 玩家UUID筛选
+        in: query
+        name: player_uuid
+        type: string
+      - description: 服务器名称筛选
+        in: query
+        name: server_name
+        type: string
+      - description: 消息来源筛选(1=Game,2=Web)
+        in: query
+        name: source
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiMessage.ChatHistoryListResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 查询所有聊天记录'
+      tags:
+      - 管理-消息接口
+  /admin/messages/commands:
+    get:
+      consumes:
+      - application/json
+      description: 分页查询所有玩家的指令使用日志，支持按玩家UUID、服务器筛选
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: 玩家UUID筛选
+        in: query
+        name: player_uuid
+        type: string
+      - description: 服务器名称筛选
+        in: query
+        name: server_name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiMessage.CommandHistoryListResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 查询所有指令记录'
+      tags:
+      - 管理-消息接口
   /admin/plugin-credentials:
     get:
       consumes:
@@ -2428,4 +2589,108 @@ paths:
       summary: '[用户] 获取所有服务器状态'
       tags:
       - 服务器状态接口
+  /user/messages/chat:
+    get:
+      consumes:
+      - application/json
+      description: 分页查询当前用户关联游戏角色的聊天记录
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiMessage.ChatHistoryListResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[用户] 查询我的聊天记录'
+      tags:
+      - 用户-消息接口
+    post:
+      consumes:
+      - application/json
+      description: Web 端用户选择游戏角色发送聊天消息，转发到游戏内并广播给 SSE 客户端
+      parameters:
+      - description: 发送消息请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiMessage.SendChatMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[用户] 发送聊天消息'
+      tags:
+      - 用户-消息接口
+  /user/messages/chat/stream:
+    get:
+      description: 通过 SSE 连接接收实时聊天消息，首次连接推送最近 50 条消息
+      produces:
+      - text/event-stream
+      responses:
+        "200":
+          description: SSE 事件流
+          schema:
+            type: string
+      summary: '[用户] 实时聊天消息流'
+      tags:
+      - 用户-消息接口
+  /user/messages/commands:
+    get:
+      consumes:
+      - application/json
+      description: 分页查询当前用户关联游戏角色的指令使用记录
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiMessage.CommandHistoryListResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[用户] 查询我的指令记录'
+      tags:
+      - 用户-消息接口
 swagger: "2.0"

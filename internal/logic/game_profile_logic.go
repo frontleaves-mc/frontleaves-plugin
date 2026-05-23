@@ -121,3 +121,36 @@ func (l *GameProfileLogic) ListByUserID(ctx context.Context, userID xSnowflake.S
 	}
 	return result, nil
 }
+
+// ResolveProfileForUser 校验用户对 GameProfile 的所有权并返回完整实体
+func (l *GameProfileLogic) ResolveProfileForUser(ctx context.Context, userID xSnowflake.SnowflakeID, profileUUIDStr string) (*entity.GameProfile, *xError.Error) {
+	l.log.Info(ctx, "ResolveProfileForUser - 校验用户角色所有权")
+
+	parsedUUID, err := uuid.Parse(profileUUIDStr)
+	if err != nil {
+		return nil, xError.NewError(nil, xError.ParameterError, "无效的角色 UUID", true, err)
+	}
+
+	gp, xErr := l.repo.gameProfile.GetByUUID(ctx, parsedUUID)
+	if xErr != nil {
+		return nil, xErr
+	}
+
+	if gp.UserID != userID {
+		return nil, xError.NewError(nil, xError.Forbidden, "无权使用该游戏角色", false, nil)
+	}
+
+	return gp, nil
+}
+
+// GetUserIDByUUID 通过 PlayerUUID 查询关联的 UserID
+func (l *GameProfileLogic) GetUserIDByUUID(ctx context.Context, playerUUID uuid.UUID) (*xSnowflake.SnowflakeID, error) {
+	gp, xErr := l.repo.gameProfile.GetByUUID(ctx, playerUUID)
+	if xErr != nil {
+		return nil, nil
+	}
+	if gp.UserID == 0 {
+		return nil, nil
+	}
+	return &gp.UserID, nil
+}

@@ -10,16 +10,18 @@ type ChatLogResponse struct {
 	Message    string  `json:"message"`
 	Source     int     `json:"source"`
 	SenderID   *string `json:"sender_id,omitempty"`
+	UserID     *string `json:"user_id,omitempty"`
 }
 
 // CommandLogResponse 指令日志响应
 type CommandLogResponse struct {
-	ID         string `json:"id"`
-	PlayerUUID string `json:"player_uuid"`
-	PlayerName string `json:"player_name"`
-	ServerName string `json:"server_name"`
-	WorldName  string `json:"world_name"`
-	Command    string `json:"command"`
+	ID         string  `json:"id"`
+	PlayerUUID string  `json:"player_uuid"`
+	PlayerName string  `json:"player_name"`
+	ServerName string  `json:"server_name"`
+	WorldName  string  `json:"world_name"`
+	Command    string  `json:"command"`
+	UserID     *string `json:"user_id,omitempty"`
 }
 
 // ChatHistoryListResponse 聊天记录分页列表响应
@@ -41,6 +43,7 @@ type CommandHistoryListResponse struct {
 // SSEChatMessage SSE 聊天消息推送
 type SSEChatMessage struct {
 	PlayerName string `json:"player_name"`
+	PlayerUUID string `json:"player_uuid,omitempty"`
 	ServerName string `json:"server_name"`
 	Message    string `json:"message"`
 	Source     int    `json:"source"`
