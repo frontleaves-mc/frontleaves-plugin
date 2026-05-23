@@ -9,13 +9,15 @@
 | Register new startup node | `startup.go` | Append `xRegNode.RegNodeList` in `Init()` |
 | Add DB init behavior | `startup_database.go` | Keep DSN/env defaults and GORM config centralized |
 | Add Redis init behavior | `startup_redis.go` | Use `xEnv.GetEnv*` defaults |
+| Add gRPC auth client | `startup_grpc_client.go` | yggleaf inter-service client init |
 | Add business seed stage | `startup_prepare.go` + `prepare/*.go` | Seed logic goes to `prepare/` only |
-| Add new migratable model | `startup_database.go` | Append to `migrateTables` in dependency order |
+| Add new migratable model | `startup_database.go` | Append to `migrateTables` in FK dependency order |
 
 ## EXECUTION ORDER (DO NOT BREAK)
 1. `databaseInit` (`xCtx.DatabaseKey`)
 2. `nosqlInit` (`xCtx.RedisClientKey`)
-3. `businessDataPrepare` (`xCtx.Exec`)
+3. `grpcAuthClientInit` (`bConst.CtxAuthClientKey`)
+4. `businessDataPrepare` (`xCtx.Exec`)
 
 `prepare` depends on DB in context (`xCtxUtil.MustGetDB`), so DB node must run first.
 
