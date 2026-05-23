@@ -15,9 +15,8 @@ import (
 
 // UnaryPluginVerify 创建插件认证中间件
 //
-// 从 gRPC metadata 中提取 plugin-name 和 plugin-secret-key，
-// 调用 PluginCredentialLogic 进行验证。
-// 此中间件应作为 per-service 中间件绑定，而非全局拦截器。
+// 从 gRPC metadata 中提取 plugin-secret-key，调用 PluginCredentialLogic 进行验证。
+// plugin-name 仅用于日志标识，不参与认证判断。
 func UnaryPluginVerify(mainCtx context.Context) grpc.UnaryServerInterceptor {
 	log := xLog.WithName(xLog.NamedMIDE, "UnaryPluginVerify")
 
@@ -25,38 +24,34 @@ func UnaryPluginVerify(mainCtx context.Context) grpc.UnaryServerInterceptor {
 		ctx context.Context, req any,
 		info *grpc.UnaryServerInfo, handler grpc.UnaryHandler,
 	) (any, error) {
-		log.Info(ctx, "验证插件身份")
-
-		// 从 metadata 提取插件名称
-		pluginName, xErr := xGrpcUtil.ExtractMetadata(ctx, bConst.MetadataPluginName)
-		if xErr != nil {
-			return nil, xError.NewError(ctx, xError.Unauthorized, "缺少 plugin-name", true)
+		pluginName, _ := xGrpcUtil.ExtractMetadata(ctx, bConst.MetadataPluginName)
+		logCtx := "未知插件"
+		if pluginName != "" {
+			logCtx = pluginName
 		}
+		log.Info(ctx, "验证插件身份: "+logCtx)
 
-		// 从 metadata 提取插件密钥
 		secretKey, xErr := xGrpcUtil.ExtractMetadata(ctx, bConst.MetadataPluginSecretKey)
 		if xErr != nil {
 			return nil, xError.NewError(ctx, xError.Unauthorized, "缺少 plugin-secret-key", true)
 		}
 
-		// 调用 Logic 层认证
 		pluginCredLogic := logic.NewPluginCredentialLogic(mainCtx)
-		_, xErr = pluginCredLogic.Authenticate(ctx, pluginName, secretKey)
+		_, xErr = pluginCredLogic.Authenticate(ctx, secretKey)
 		if xErr != nil {
-			log.Warn(ctx, "插件认证失败: "+pluginName)
+			log.Warn(ctx, "插件认证失败: "+logCtx)
 			return nil, xErr
 		}
 
-		log.Info(ctx, "插件认证通过: "+pluginName)
+		log.Info(ctx, "插件认证通过: "+logCtx)
 		return handler(ctx, req)
 	}
 }
 
 // StreamPluginVerify 创建流式插件认证中间件
 //
-// 从 gRPC stream metadata 中提取 plugin-name 和 plugin-secret-key，
-// 调用 PluginCredentialLogic 进行验证。
-// 流式拦截器直接返回 gRPC status 错误，不使用 xError。
+// 从 gRPC stream metadata 中提取 plugin-secret-key，调用 PluginCredentialLogic 进行验证。
+// plugin-name 仅用于日志标识，不参与认证判断。
 func StreamPluginVerify(mainCtx context.Context) grpc.StreamServerInterceptor {
 	log := xLog.WithName(xLog.NamedMIDE, "StreamPluginVerify")
 
@@ -65,29 +60,27 @@ func StreamPluginVerify(mainCtx context.Context) grpc.StreamServerInterceptor {
 		info *grpc.StreamServerInfo, handler grpc.StreamHandler,
 	) error {
 		ctx := ss.Context()
-		log.Info(ctx, "验证插件身份")
 
-		// 从 metadata 提取插件名称
-		pluginName, xErr := xGrpcUtil.ExtractMetadata(ctx, bConst.MetadataPluginName)
-		if xErr != nil {
-			return status.Error(codes.Unauthenticated, "缺少 plugin-name")
+		pluginName, _ := xGrpcUtil.ExtractMetadata(ctx, bConst.MetadataPluginName)
+		logCtx := "未知插件"
+		if pluginName != "" {
+			logCtx = pluginName
 		}
+		log.Info(ctx, "验证插件身份: "+logCtx)
 
-		// 从 metadata 提取插件密钥
 		secretKey, xErr := xGrpcUtil.ExtractMetadata(ctx, bConst.MetadataPluginSecretKey)
 		if xErr != nil {
 			return status.Error(codes.Unauthenticated, "缺少 plugin-secret-key")
 		}
 
-		// 调用 Logic 层认证
 		pluginCredLogic := logic.NewPluginCredentialLogic(mainCtx)
-		_, xErr = pluginCredLogic.Authenticate(ctx, pluginName, secretKey)
+		_, xErr = pluginCredLogic.Authenticate(ctx, secretKey)
 		if xErr != nil {
-			log.Warn(ctx, "插件认证失败: "+pluginName)
+			log.Warn(ctx, "插件认证失败: "+logCtx)
 			return status.Error(codes.Unauthenticated, "插件认证失败")
 		}
 
-		log.Info(ctx, "插件认证通过: "+pluginName)
+		log.Info(ctx, "插件认证通过: "+logCtx)
 		return handler(srv, ss)
 	}
 }

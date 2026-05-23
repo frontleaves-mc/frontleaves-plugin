@@ -40,4 +40,5 @@ func NewRoute(reg *xReg.Reg) {
 	r.achievementRouter(apiRouter)
 	r.pluginCredentialRouter(apiRouter)
 	r.announcementRouter(apiRouter)
+	r.messageRouter(apiRouter)
 }

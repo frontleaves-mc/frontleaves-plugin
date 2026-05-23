@@ -18,11 +18,12 @@ type grpcHandler struct {
 
 // essentialsService 服务器状态相关业务逻辑（EssentialsPlayerEventHandler/EssentialsPlayerQueryHandler 使用）
 type essentialsService struct {
-	gameProfileLogic  *logic.GameProfileLogic
-	playerEventLogic  *logic.PlayerEventLogic
-	playerChatLogic   *logic.PlayerChatLogic
-	serverLogic       *logic.ServerLogic
-	serverPlayerLogic *logic.ServerPlayerLogic
+	gameProfileLogic    *logic.GameProfileLogic
+	playerEventLogic    *logic.PlayerEventLogic
+	playerChatLogic     *logic.PlayerChatLogic
+	playerCommandLogic  *logic.PlayerCommandLogic
+	serverLogic         *logic.ServerLogic
+	serverPlayerLogic   *logic.ServerPlayerLogic
 }
 
 // statusService 服务器状态相关业务逻辑（ServerStatusHandler 精简版使用）
@@ -67,11 +68,12 @@ func newStatusService(ctx context.Context) *statusService {
 // newEssentialsService 创建服务器状态相关业务逻辑服务组
 func newEssentialsService(ctx context.Context) *essentialsService {
 	return &essentialsService{
-		gameProfileLogic:  logic.NewGameProfileLogic(ctx),
-		playerEventLogic:  logic.NewPlayerEventLogic(ctx),
-		playerChatLogic:   logic.NewPlayerChatLogic(ctx),
-		serverLogic:       logic.NewServerLogic(ctx),
-		serverPlayerLogic: logic.NewServerPlayerLogic(ctx),
+		gameProfileLogic:   logic.NewGameProfileLogic(ctx),
+		playerEventLogic:   logic.NewPlayerEventLogic(ctx),
+		playerChatLogic:    logic.NewPlayerChatLogic(ctx),
+		playerCommandLogic: logic.NewPlayerCommandLogic(ctx),
+		serverLogic:        logic.NewServerLogic(ctx),
+		serverPlayerLogic:  logic.NewServerPlayerLogic(ctx),
 	}
 }
 

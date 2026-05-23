@@ -35,6 +35,19 @@ func (r *PluginCredentialRepo) GetByName(ctx context.Context, name string) (*ent
 	return &cred, nil
 }
 
+func (r *PluginCredentialRepo) GetBySecretKey(ctx context.Context, secretKey string) (*entity.PluginCredential, *xError.Error) {
+	r.log.Info(ctx, "GetBySecretKey - 按密钥查询插件凭证")
+
+	var cred entity.PluginCredential
+	if err := r.db.WithContext(ctx).Where("secret_key = ?", secretKey).First(&cred).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, xError.NewError(ctx, xError.Unauthorized, "插件密钥无效", true, err)
+		}
+		return nil, xError.NewError(ctx, xError.DatabaseError, "查询插件凭证失败", false, err)
+	}
+	return &cred, nil
+}
+
 func (r *PluginCredentialRepo) GetByID(ctx context.Context, id xSnowflake.SnowflakeID) (*entity.PluginCredential, *xError.Error) {
 	r.log.Info(ctx, "GetByID - 查询插件凭证")
 

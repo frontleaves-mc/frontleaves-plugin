@@ -40,17 +40,13 @@ func NewPluginCredentialLogic(ctx context.Context) *PluginCredentialLogic {
 
 // Authenticate 验证插件身份
 //
-// 按插件名称查询凭证，比对密钥。
-func (l *PluginCredentialLogic) Authenticate(ctx context.Context, pluginName, secretKey string) (*entity.PluginCredential, *xError.Error) {
+// 按密钥查询凭证，不依赖插件名称。
+func (l *PluginCredentialLogic) Authenticate(ctx context.Context, secretKey string) (*entity.PluginCredential, *xError.Error) {
 	l.log.Info(ctx, "Authenticate - 验证插件身份")
 
-	cred, xErr := l.repo.pluginCredential.GetByName(ctx, pluginName)
+	cred, xErr := l.repo.pluginCredential.GetBySecretKey(ctx, secretKey)
 	if xErr != nil {
-		return nil, xError.NewError(ctx, xError.Unauthorized, "插件凭证无效", true)
-	}
-
-	if cred.SecretKey != secretKey {
-		return nil, xError.NewError(ctx, xError.Unauthorized, "插件密钥不匹配", true)
+		return nil, xError.NewError(ctx, xError.Unauthorized, "插件密钥无效", true)
 	}
 
 	return cred, nil

@@ -19,6 +19,11 @@ func RegisterGRPCServices(ctx context.Context, server grpc.ServiceRegistrar) {
 	handler.NewTitleHandler(ctx, server)
 	handler.NewEssentialsPlayerEventHandler(ctx, server)
 	handler.NewEssentialsPlayerQueryHandler(ctx, server)
+
+	// Essentials 消息推送服务
+	messageHandler := handler.NewEssentialsPlayerMessageHandler(ctx, server)
+	logic.SetGlobalPushChatFunc(messageHandler.PushChatMessage)
+
 	announcementHandler := handler.NewAnnouncementHandler(ctx, server)
 
 	// 创建调度引擎并注册为全局单例

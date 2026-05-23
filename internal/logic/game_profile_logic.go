@@ -102,3 +102,22 @@ func (l *GameProfileLogic) UpdateGroupName(ctx context.Context, playerUUID uuid.
 	}
 	return nil
 }
+
+// ListByUserID 根据用户 ID 查询关联的游戏角色列表
+func (l *GameProfileLogic) ListByUserID(ctx context.Context, userID xSnowflake.SnowflakeID) ([]apiGameProfile.GameProfileResponse, *xError.Error) {
+	l.log.Info(ctx, "ListByUserID - 按用户ID查询角色列表")
+	profiles, xErr := l.repo.gameProfile.GetByUserID(ctx, userID)
+	if xErr != nil {
+		return nil, xErr
+	}
+	result := make([]apiGameProfile.GameProfileResponse, 0, len(profiles))
+	for _, p := range profiles {
+		result = append(result, apiGameProfile.GameProfileResponse{
+			UUID:       p.UUID.String(),
+			Username:   p.Username,
+			GroupName:  p.GroupName,
+			ReportedAt: p.ReportedAt,
+		})
+	}
+	return result, nil
+}

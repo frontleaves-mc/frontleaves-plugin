@@ -10,6 +10,8 @@ import (
 	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
 	essentialspb "github.com/frontleaves-mc/frontleaves-plugin/internal/grpc/gen/essentials/v1"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/grpc/middleware"
+	apiMessage "github.com/frontleaves-mc/frontleaves-plugin/api/message"
+	"github.com/frontleaves-mc/frontleaves-plugin/internal/sse"
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -47,16 +49,22 @@ func (h *EssentialsPlayerEventHandler) PlayerEventStream(
 	stream grpc.ClientStreamingServer[essentialspb.PlayerEventStreamRequest, essentialspb.PlayerEventStreamResponse],
 ) error {
 	ctx := stream.Context()
-	if h.log != nil { h.log.Info(ctx, "PlayerEventStream - 新的客户端流连接") }
+	if h.log != nil {
+		h.log.Info(ctx, "PlayerEventStream - 新的客户端流连接")
+	}
 
 	for {
 		req, err := stream.Recv()
 		if err != nil {
 			if status.Code(err) == codes.Canceled || status.Code(err) == codes.OK {
-				if h.log != nil { h.log.Info(ctx, "PlayerEventStream - 流正常关闭") }
+				if h.log != nil {
+					h.log.Info(ctx, "PlayerEventStream - 流正常关闭")
+				}
 				return nil
 			}
-			if h.log != nil { h.log.Warn(ctx, "PlayerEventStream - 流读取错误: "+err.Error()) }
+			if h.log != nil {
+				h.log.Warn(ctx, "PlayerEventStream - 流读取错误: "+err.Error())
+			}
 			return err
 		}
 
@@ -88,10 +96,14 @@ func (h *EssentialsPlayerEventHandler) dispatchPlayerEvent(
 	case essentialspb.PlayerEventType_PLAYER_EVENT_TYPE_PLAYER_GROUP_CHANGE:
 		h.handlePlayerGroupChange(ctx, req.GetPlayerGroupChangeEvent())
 
+	case essentialspb.PlayerEventType_PLAYER_EVENT_TYPE_PLAYER_COMMAND:
+		h.handlePlayerCommand(ctx, req.GetPlayerCommandEvent())
+
 	default:
-		// 从 metadata 提取插件名称用于日志
 		pluginName, _ := xGrpcUtil.ExtractMetadata(ctx, bConst.MetadataPluginName)
-		if h.log != nil { h.log.Warn(ctx, "dispatchPlayerEvent - 收到未知事件类型, plugin="+pluginName) }
+		if h.log != nil {
+			h.log.Warn(ctx, "dispatchPlayerEvent - 收到未知事件类型, plugin="+pluginName)
+		}
 	}
 }
 
@@ -113,10 +125,14 @@ func (h *EssentialsPlayerEventHandler) handlePlayerJoin(
 	worldName := join.GetWorldName()
 
 	if playerUUID == "" || playerName == "" {
-		if h.log != nil { h.log.Warn(ctx, "PlayerJoinEvent - 玩家 UUID 或名称为空，跳过") }
+		if h.log != nil {
+			h.log.Warn(ctx, "PlayerJoinEvent - 玩家 UUID 或名称为空，跳过")
+		}
 		return
 	}
-	if h.log != nil { h.log.Info(ctx, "PlayerJoinEvent - 玩家加入: "+playerName) }
+	if h.log != nil {
+		h.log.Info(ctx, "PlayerJoinEvent - 玩家加入: "+playerName)
+	}
 
 	// Redis: 更新玩家在线状态
 	if h.rdb != nil {
@@ -130,21 +146,20 @@ func (h *EssentialsPlayerEventHandler) handlePlayerJoin(
 		})
 		h.rdb.Expire(ctx, playerKey, playerEventTTL)
 
-		// Redis: 加入服务器在线玩家集合
 		serverPlayersKey := string(bConst.CacheStatusServerPlayers.Get(serverName))
 		h.rdb.SAdd(ctx, serverPlayersKey, playerUUID)
 		h.rdb.Expire(ctx, serverPlayersKey, playerEventTTL)
 
-		// Redis: 更新服务器在线人数
 		serverKey := string(bConst.CacheStatusServer.Get(serverName))
 		onlineCount := h.rdb.SCard(ctx, serverPlayersKey).Val()
 		h.rdb.HSet(ctx, serverKey, "online_players", strconv.FormatInt(onlineCount, 10))
 	}
 
-	// DB: Upsert GameProfile + PlayerJoined
 	parsedUUID, err := uuid.Parse(playerUUID)
 	if err != nil {
-		if h.log != nil { h.log.Warn(ctx, "PlayerJoinEvent - 玩家 UUID 格式无效: "+playerUUID) }
+		if h.log != nil {
+			h.log.Warn(ctx, "PlayerJoinEvent - 玩家 UUID 格式无效: "+playerUUID)
+		}
 		return
 	}
 
@@ -154,14 +169,18 @@ func (h *EssentialsPlayerEventHandler) handlePlayerJoin(
 	}
 	if h.gameProfileLogic != nil {
 		if syncErr := h.gameProfileLogic.Upsert(ctx, 0, parsedUUID, playerName, groupName); syncErr != nil {
-			if h.log != nil { h.log.Warn(ctx, "PlayerJoinEvent - 同步 GameProfile 失败: "+syncErr.Error()) }
+			if h.log != nil {
+				h.log.Warn(ctx, "PlayerJoinEvent - 同步 GameProfile 失败: "+syncErr.Error())
+			}
 		}
 	}
 
 	if h.serverLogic != nil && h.serverPlayerLogic != nil {
 		if server, xErr := h.serverLogic.GetOrCreateByName(ctx, serverName); xErr == nil && server != nil {
 			if err := h.serverPlayerLogic.PlayerJoined(ctx, server.ID, parsedUUID, playerName, worldName); err != nil {
-				if h.log != nil { h.log.Warn(ctx, "PlayerJoinEvent - DB 同步玩家加入失败: "+err.Error()) }
+				if h.log != nil {
+					h.log.Warn(ctx, "PlayerJoinEvent - DB 同步玩家加入失败: "+err.Error())
+				}
 			}
 		}
 	}
@@ -183,12 +202,15 @@ func (h *EssentialsPlayerEventHandler) handlePlayerQuit(
 	serverName := quit.GetServerName()
 
 	if playerUUID == "" {
-		if h.log != nil { h.log.Warn(ctx, "PlayerQuitEvent - 玩家 UUID 为空，跳过") }
+		if h.log != nil {
+			h.log.Warn(ctx, "PlayerQuitEvent - 玩家 UUID 为空，跳过")
+		}
 		return
 	}
-	if h.log != nil { h.log.Info(ctx, "PlayerQuitEvent - 玩家离开: "+quit.GetPlayerName()) }
+	if h.log != nil {
+		h.log.Info(ctx, "PlayerQuitEvent - 玩家离开: "+quit.GetPlayerName())
+	}
 
-	// Redis: 更新玩家离线状态
 	if h.rdb != nil {
 		playerKey := string(bConst.CacheStatusPlayer.Get(playerUUID))
 		h.rdb.HSet(ctx, playerKey, map[string]any{
@@ -197,27 +219,28 @@ func (h *EssentialsPlayerEventHandler) handlePlayerQuit(
 		})
 		h.rdb.Expire(ctx, playerKey, playerEventTTL)
 
-		// Redis: 从服务器在线玩家集合移除
 		serverPlayersKey := string(bConst.CacheStatusServerPlayers.Get(serverName))
 		h.rdb.SRem(ctx, serverPlayersKey, playerUUID)
 
-		// Redis: 更新服务器在线人数
 		serverKey := string(bConst.CacheStatusServer.Get(serverName))
 		onlineCount := h.rdb.SCard(ctx, serverPlayersKey).Val()
 		h.rdb.HSet(ctx, serverKey, "online_players", strconv.FormatInt(onlineCount, 10))
 	}
 
-	// DB: PlayerLeft
 	parsedUUID, parseErr := uuid.Parse(playerUUID)
 	if parseErr != nil {
-		if h.log != nil { h.log.Warn(ctx, "PlayerQuitEvent - 玩家 UUID 格式无效: "+playerUUID) }
+		if h.log != nil {
+			h.log.Warn(ctx, "PlayerQuitEvent - 玩家 UUID 格式无效: "+playerUUID)
+		}
 		return
 	}
 
 	if h.serverLogic != nil && h.serverPlayerLogic != nil {
 		if server, xErr := h.serverLogic.GetOrCreateByName(ctx, serverName); xErr == nil && server != nil {
 			if err := h.serverPlayerLogic.PlayerLeft(ctx, server.ID, parsedUUID); err != nil {
-				if h.log != nil { h.log.Warn(ctx, "PlayerQuitEvent - DB 同步玩家离开失败: "+err.Error()) }
+				if h.log != nil {
+					h.log.Warn(ctx, "PlayerQuitEvent - DB 同步玩家离开失败: "+err.Error())
+				}
 			}
 		}
 	}
@@ -233,23 +256,39 @@ func (h *EssentialsPlayerEventHandler) handlePlayerChat(
 	}
 
 	if chat.GetPlayerUuid() == "" {
-		if h.log != nil { h.log.Warn(ctx, "PlayerChatEvent - player_uuid 为空，跳过") }
+		if h.log != nil {
+			h.log.Warn(ctx, "PlayerChatEvent - player_uuid 为空，跳过")
+		}
 		return
 	}
-	if h.log != nil { h.log.Info(ctx, "PlayerChatEvent - 玩家聊天: "+chat.GetPlayerName()) }
+	if h.log != nil {
+		h.log.Info(ctx, "PlayerChatEvent - 玩家聊天: "+chat.GetPlayerName())
+	}
 
 	parsedUUID, err := uuid.Parse(chat.GetPlayerUuid())
 	if err != nil {
-		if h.log != nil { h.log.Warn(ctx, "PlayerChatEvent - player_uuid 格式无效: "+err.Error()) }
+		if h.log != nil {
+			h.log.Warn(ctx, "PlayerChatEvent - player_uuid 格式无效: "+err.Error())
+		}
 		return
 	}
 
 	if h.playerChatLogic != nil {
 		if xErr := h.playerChatLogic.RecordChat(ctx, parsedUUID, chat.GetPlayerName(),
 			chat.GetServerName(), chat.GetWorldName(), chat.GetMessage()); xErr != nil {
-			if h.log != nil { h.log.Warn(ctx, "PlayerChatEvent - 记录聊天消息失败: "+xErr.Error()) }
+			if h.log != nil {
+				h.log.Warn(ctx, "PlayerChatEvent - 记录聊天消息失败: "+xErr.Error())
+			}
 		}
 	}
+
+	// 广播到 SSE 客户端
+	sse.BroadcastChatMessage(apiMessage.SSEChatMessage{
+		PlayerName: chat.GetPlayerName(),
+		ServerName: chat.GetServerName(),
+		Message:    chat.GetMessage(),
+		Source:     1,
+	})
 }
 
 // handlePlayerKick 处理玩家被踢出事件
@@ -262,21 +301,29 @@ func (h *EssentialsPlayerEventHandler) handlePlayerKick(
 	}
 
 	if kick.GetPlayerUuid() == "" {
-		if h.log != nil { h.log.Warn(ctx, "PlayerKickEvent - player_uuid 为空，跳过") }
+		if h.log != nil {
+			h.log.Warn(ctx, "PlayerKickEvent - player_uuid 为空，跳过")
+		}
 		return
 	}
-	if h.log != nil { h.log.Info(ctx, "PlayerKickEvent - 玩家被踢出: "+kick.GetPlayerName()) }
+	if h.log != nil {
+		h.log.Info(ctx, "PlayerKickEvent - 玩家被踢出: "+kick.GetPlayerName())
+	}
 
 	parsedUUID, err := uuid.Parse(kick.GetPlayerUuid())
 	if err != nil {
-		if h.log != nil { h.log.Warn(ctx, "PlayerKickEvent - player_uuid 格式无效: "+err.Error()) }
+		if h.log != nil {
+			h.log.Warn(ctx, "PlayerKickEvent - player_uuid 格式无效: "+err.Error())
+		}
 		return
 	}
 
 	if h.playerEventLogic != nil {
 		if xErr := h.playerEventLogic.RecordEvent(ctx, parsedUUID, kick.GetPlayerName(),
 			kick.GetServerName(), kick.GetWorldName(), bConst.PlayerEventKick, kick.GetReason()); xErr != nil {
-			if h.log != nil { h.log.Warn(ctx, "PlayerKickEvent - 记录踢出事件失败: "+xErr.Error()) }
+			if h.log != nil {
+				h.log.Warn(ctx, "PlayerKickEvent - 记录踢出事件失败: "+xErr.Error())
+			}
 		}
 	}
 }
@@ -291,21 +338,29 @@ func (h *EssentialsPlayerEventHandler) handlePlayerDeath(
 	}
 
 	if death.GetPlayerUuid() == "" {
-		if h.log != nil { h.log.Warn(ctx, "PlayerDeathEvent - player_uuid 为空，跳过") }
+		if h.log != nil {
+			h.log.Warn(ctx, "PlayerDeathEvent - player_uuid 为空，跳过")
+		}
 		return
 	}
-	if h.log != nil { h.log.Info(ctx, "PlayerDeathEvent - 玩家死亡: "+death.GetPlayerName()) }
+	if h.log != nil {
+		h.log.Info(ctx, "PlayerDeathEvent - 玩家死亡: "+death.GetPlayerName())
+	}
 
 	parsedUUID, err := uuid.Parse(death.GetPlayerUuid())
 	if err != nil {
-		if h.log != nil { h.log.Warn(ctx, "PlayerDeathEvent - player_uuid 格式无效: "+err.Error()) }
+		if h.log != nil {
+			h.log.Warn(ctx, "PlayerDeathEvent - player_uuid 格式无效: "+err.Error())
+		}
 		return
 	}
 
 	if h.playerEventLogic != nil {
 		if xErr := h.playerEventLogic.RecordEvent(ctx, parsedUUID, death.GetPlayerName(),
 			death.GetServerName(), death.GetWorldName(), bConst.PlayerEventDeath, death.GetDeathMessage()); xErr != nil {
-			if h.log != nil { h.log.Warn(ctx, "PlayerDeathEvent - 记录死亡事件失败: "+xErr.Error()) }
+			if h.log != nil {
+				h.log.Warn(ctx, "PlayerDeathEvent - 记录死亡事件失败: "+xErr.Error())
+			}
 		}
 	}
 }
@@ -320,20 +375,65 @@ func (h *EssentialsPlayerEventHandler) handlePlayerGroupChange(
 	}
 
 	if gc.GetPlayerUuid() == "" {
-		if h.log != nil { h.log.Warn(ctx, "PlayerGroupChangeEvent - player_uuid 为空，跳过") }
+		if h.log != nil {
+			h.log.Warn(ctx, "PlayerGroupChangeEvent - player_uuid 为空，跳过")
+		}
 		return
 	}
-	if h.log != nil { h.log.Info(ctx, "PlayerGroupChangeEvent - 权限组变更: "+gc.GetPlayerName()+" "+gc.GetOldGroupName()+" → "+gc.GetGroupName()) }
+	if h.log != nil {
+		h.log.Info(ctx, "PlayerGroupChangeEvent - 权限组变更: "+gc.GetPlayerName()+" "+gc.GetOldGroupName()+" → "+gc.GetGroupName())
+	}
 
 	parsedUUID, err := uuid.Parse(gc.GetPlayerUuid())
 	if err != nil {
-		if h.log != nil { h.log.Warn(ctx, "PlayerGroupChangeEvent - player_uuid 格式无效: "+err.Error()) }
+		if h.log != nil {
+			h.log.Warn(ctx, "PlayerGroupChangeEvent - player_uuid 格式无效: "+err.Error())
+		}
 		return
 	}
 
 	if h.gameProfileLogic != nil {
 		if updateErr := h.gameProfileLogic.UpdateGroupName(ctx, parsedUUID, gc.GetGroupName()); updateErr != nil {
-			if h.log != nil { h.log.Warn(ctx, "PlayerGroupChangeEvent - 更新 GameProfile 权限组失败: "+updateErr.Error()) }
+			if h.log != nil {
+				h.log.Warn(ctx, "PlayerGroupChangeEvent - 更新 GameProfile 权限组失败: "+updateErr.Error())
+			}
+		}
+	}
+}
+
+// handlePlayerCommand 处理玩家执行指令事件
+func (h *EssentialsPlayerEventHandler) handlePlayerCommand(
+	ctx context.Context,
+	cmd *essentialspb.PlayerCommandEvent,
+) {
+	if cmd == nil {
+		return
+	}
+
+	if cmd.GetPlayerUuid() == "" {
+		if h.log != nil {
+			h.log.Warn(ctx, "PlayerCommandEvent - player_uuid 为空，跳过")
+		}
+		return
+	}
+	if h.log != nil {
+		h.log.Info(ctx, "PlayerCommandEvent - 玩家指令: "+cmd.GetPlayerName()+" → "+cmd.GetCommand())
+	}
+
+	parsedUUID, err := uuid.Parse(cmd.GetPlayerUuid())
+	if err != nil {
+		if h.log != nil {
+			h.log.Warn(ctx, "PlayerCommandEvent - player_uuid 格式无效: "+err.Error())
+		}
+		return
+	}
+
+	if h.playerCommandLogic != nil {
+		if xErr := h.playerCommandLogic.RecordCommand(ctx, parsedUUID, cmd.GetPlayerName(),
+			cmd.GetServerName(), cmd.GetWorldName(), cmd.GetCommand()); xErr != nil {
+			if h.log != nil {
+				h.log.Warn(ctx, "PlayerCommandEvent - 记录指令日志失败: "+xErr.Error())
+			}
 		}
 	}
 }

@@ -23,6 +23,7 @@ const (
 	GeneAnnouncementScheduleItem xSnowflake.Gene = 45 // 公告调度项
 
 	// 服务器系统
-	GeneServer       xSnowflake.Gene = 46 // 服务器
-	GeneServerPlayer xSnowflake.Gene = 47 // 服务器玩家
+	GeneServer        xSnowflake.Gene = 46 // 服务器
+	GeneServerPlayer  xSnowflake.Gene = 47 // 服务器玩家
+	GenePlayerCommand xSnowflake.Gene = 48 // 玩家指令日志
 )

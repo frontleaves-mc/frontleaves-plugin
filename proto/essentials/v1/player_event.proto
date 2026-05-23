@@ -23,6 +23,7 @@ enum PlayerEventType {
   PLAYER_EVENT_TYPE_PLAYER_KICK = 4;
   PLAYER_EVENT_TYPE_PLAYER_DEATH = 5;
   PLAYER_EVENT_TYPE_PLAYER_GROUP_CHANGE = 6;
+  PLAYER_EVENT_TYPE_PLAYER_COMMAND = 7;
 }
 
 // PlayerEventStreamRequest 玩家事件流请求
@@ -43,6 +44,8 @@ message PlayerEventStreamRequest {
     PlayerDeathEvent player_death_event = 15;
     // 玩家权限组变更事件
     PlayerGroupChangeEvent player_group_change_event = 16;
+    // 玩家执行指令事件
+    PlayerCommandEvent player_command_event = 17;
   }
 }
 
@@ -100,4 +103,13 @@ message PlayerGroupChangeEvent {
   string player_name = 2;
   string group_name = 3;
   string old_group_name = 4;
+}
+
+// PlayerCommandEvent 玩家执行指令事件
+message PlayerCommandEvent {
+  string player_uuid = 1;
+  string player_name = 2;
+  string server_name = 3;
+  string world_name = 4;
+  string command = 5;
 }
