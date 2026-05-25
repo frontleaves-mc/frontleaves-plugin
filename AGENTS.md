@@ -5,8 +5,14 @@
 **Branch:** master
 
 ## OVERVIEW
-`frontleaves-plugin` is the plugin hub for FrontLeaves MC — a Go backend serving both RESTful API (Gin) for web users and gRPC for Minecraft plugins (Bukkit/Java).
-Built on `bamboo-base-go` scaffold with strict layered architecture (`handler -> logic -> repository`) and dual-protocol (HTTP + gRPC) entry points.
+`frontleaves-plugin` 是 FrontLeaves MC 的**外部独立中枢服务**——运行于 Minecraft 服务端进程之外，作为 MC 服务端、玩家与网页端三者之间的统一媒介。
+
+核心定位与解决痛点：
+- **桥接隔离**：MC 服务端（Java/Bukkit）不直接操作数据库，也不承载网页端 API，所有数据交互均通过本服务中转。
+- **计算卸载**：部分原本由 MC 服务端实时处理的高开销计算（调度、统计、数据聚合等）在本服务完成后下发结果，MC 端仅做应用，规避 Java 单线程主线程的性能瓶颈。
+- **网页赋能**：为网页端用户提供 RESTful API，使玩家能在浏览器中完成原本需要进入 MC 客户端才能进行的操作。
+
+技术层面：Go 后端，基于 `bamboo-base-go` 脚手架，严格分层架构（`handler → logic → repository`），双协议入口（Gin HTTP REST + gRPC），通过 gRPC stream 与 MC 插件层保持实时通信。
 
 ## STRUCTURE
 ```text
