@@ -19,6 +19,7 @@ func RegisterGRPCServices(ctx context.Context, server grpc.ServiceRegistrar) {
 	handler.NewTitleHandler(ctx, server)
 	handler.NewEssentialsPlayerEventHandler(ctx, server)
 	handler.NewEssentialsPlayerQueryHandler(ctx, server)
+	handler.NewMatrixTelemetryHandler(ctx, server)
 
 	// Essentials 消息推送服务
 	messageHandler := handler.NewEssentialsPlayerMessageHandler(ctx, server)

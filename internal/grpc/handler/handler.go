@@ -2,11 +2,16 @@ package handler
 
 import (
 	"context"
+	"time"
 
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
 	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/logic"
+	"github.com/frontleaves-mc/frontleaves-plugin/internal/logic/matrix"
+	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository"
+	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository/cache"
 	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
 )
 
 // grpcHandler gRPC Handler 基类 — 仅包含共享字段
@@ -36,6 +41,14 @@ type statusService struct {
 type titleService struct {
 	titleLogic       *logic.TitleLogic
 	gameProfileLogic *logic.GameProfileLogic
+}
+
+// matrixService Matrix 遥测相关业务逻辑（MatrixTelemetryHandler 使用）
+type matrixService struct {
+	sessionManager *matrix.MatrixSessionManager
+	monitorCache   *cache.MatrixMonitorCache
+	statRepo       *repository.MatrixStatisticRepo
+	warningRepo    *repository.MatrixWarningRepo
 }
 
 // IGRPCHandler gRPC Handler 泛型约束接口
@@ -82,5 +95,21 @@ func newTitleService(ctx context.Context) *titleService {
 	return &titleService{
 		titleLogic:       logic.NewTitleLogic(ctx),
 		gameProfileLogic: logic.NewGameProfileLogic(ctx),
+	}
+}
+
+// newMatrixService 创建 Matrix 遥测相关业务逻辑服务组
+func newMatrixService(ctx context.Context, db *gorm.DB, rdb *redis.Client) *matrixService {
+	monitorCache := &cache.MatrixMonitorCache{RDB: rdb, TTL: 5 * time.Minute}
+	statRepo := repository.NewMatrixStatisticRepo(db)
+	warningRepo := repository.NewMatrixWarningRepo(db)
+	sessionManager := matrix.NewMatrixSessionManager(ctx, db, rdb, monitorCache, statRepo, warningRepo)
+	matrix.SetGlobalMatrixSessionManager(sessionManager)
+
+	return &matrixService{
+		sessionManager: sessionManager,
+		monitorCache:   monitorCache,
+		statRepo:       statRepo,
+		warningRepo:    warningRepo,
 	}
 }

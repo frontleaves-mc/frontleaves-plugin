@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
+	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository/cache"
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
@@ -16,22 +17,24 @@ import (
 type MatrixSessionManager struct {
 	mu           sync.RWMutex
 	sessions     map[string]*PlayerSession
-	registry     *MatrixSubRegistry
 	rdb          *redis.Client
 	log          *xLog.LogNamedLogger
 	db           *gorm.DB
 	monitorCache *cache.MatrixMonitorCache
+	statRepo     *repository.MatrixStatisticRepo
+	warningRepo  *repository.MatrixWarningRepo
 }
 
 // NewMatrixSessionManager 创建 MatrixSessionManager 实例
-func NewMatrixSessionManager(ctx context.Context, db *gorm.DB, rdb *redis.Client, registry *MatrixSubRegistry, monitorCache *cache.MatrixMonitorCache) *MatrixSessionManager {
+func NewMatrixSessionManager(ctx context.Context, db *gorm.DB, rdb *redis.Client, monitorCache *cache.MatrixMonitorCache, statRepo *repository.MatrixStatisticRepo, warningRepo *repository.MatrixWarningRepo) *MatrixSessionManager {
 	return &MatrixSessionManager{
 		sessions:     make(map[string]*PlayerSession),
-		registry:     registry,
 		rdb:          rdb,
 		log:          xLog.WithName(xLog.NamedLOGC, "MatrixSessionManager"),
 		db:           db,
 		monitorCache: monitorCache,
+		statRepo:     statRepo,
+		warningRepo:  warningRepo,
 	}
 }
 
@@ -46,7 +49,12 @@ func (m *MatrixSessionManager) GetOrCreate(ctx context.Context, serverName strin
 		return session
 	}
 
-	subs := m.registry.GetAll()
+	// 为每个玩家创建独立的 sub 实例（subs 持有 per-player 状态）
+	subs := []MatrixSub{
+		NewStatisticsSub(playerUUID, playerName, serverName, m.statRepo),
+		NewAntiCheatSub(playerUUID, playerName, serverName, sessionKey, m.warningRepo, m.monitorCache),
+	}
+
 	session := NewPlayerSession(ctx, serverName, playerUUID, playerName, m.rdb, m.log, subs, m.monitorCache)
 	session.Start()
 	m.sessions[sessionKey] = session
