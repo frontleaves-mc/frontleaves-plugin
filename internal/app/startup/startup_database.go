@@ -32,6 +32,10 @@ var migrateTables = []interface{}{
 	&entity.ServerPlayer{},
 	&entity.PlayerCommandLog{},
 	&entity.ServerLoadLog{},
+
+	// Layer 6: Matrix 系统
+	&entity.MatrixPlayerStatistic{},
+	&entity.MatrixPlayerWarning{},
 }
 
 func (r *reg) databaseInit(ctx context.Context) (any, error) {

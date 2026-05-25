@@ -1,0 +1,212 @@
+syntax = "proto3";
+
+package frontleaves.matrix.v1;
+
+option go_package = "github.com/frontleaves-mc/frontleaves-plugin/internal/grpc/gen/matrix/v1;matrixpb";
+
+import "link/base.proto";
+
+// MatrixTelemetryService Matrix 遥测服务
+//
+// 处理 Minecraft 服务器上报的玩家行为遥测数据。
+service MatrixTelemetryService {
+  // TelemetryStream 遥测数据客户端流
+  rpc TelemetryStream(stream MatrixTelemetryRequest) returns (MatrixTelemetryResponse);
+}
+
+// MatrixTelemetryRequest 遥测数据流请求
+message MatrixTelemetryRequest {
+  string server_name = 1;
+
+  oneof payload {
+    // 连接事件 (11-12)
+    PlayerJoinEvent     player_join     = 11;
+    PlayerQuitEvent     player_quit     = 12;
+    // 心跳快照 (13)
+    TelemetryTick       telemetry_tick  = 13;
+    // 方块事件 (14-15)
+    BlockBreakEvent     block_break     = 14;
+    BlockPlaceEvent     block_place     = 15;
+    // 实体/战斗事件 (16-19)
+    EntityKillEvent     entity_kill     = 16;
+    EntityDamageEvent   entity_damage   = 17;
+    PlayerDamageEvent   player_damage   = 18;
+    PlayerDeathEvent    player_death    = 19;
+    // 物品/背包事件 (20-22)
+    ItemDropEvent       item_drop       = 20;
+    ItemPickupEvent     item_pickup     = 21;
+    InventoryActionEvent inventory_action = 22;
+    // 玩家行为事件 (23-28)
+    PlayerChatEvent     player_chat     = 23;
+    PlayerCommandEvent  player_command  = 24;
+    PlayerToggleEvent   player_toggle   = 25;
+    PlayerTeleportEvent teleport        = 26;
+    PlayerRespawnEvent  respawn         = 27;
+    GameModeChangeEvent game_mode_change = 28;
+  }
+}
+
+// MatrixTelemetryResponse 遥测数据流响应
+message MatrixTelemetryResponse {
+  xBase.BaseResponse base = 1;
+}
+
+// --- 连接事件 ---
+
+message PlayerJoinEvent {
+  string player_uuid = 1;
+  string player_name = 2;
+  string world_name  = 3;
+  string ip_address  = 4;
+  int64  timestamp   = 5;
+}
+
+message PlayerQuitEvent {
+  string player_uuid = 1;
+  string player_name = 2;
+  string quit_reason = 3;
+  int64  timestamp   = 4;
+}
+
+// --- 心跳快照 ---
+
+message TelemetryTick {
+  string player_uuid = 1;
+  string player_name = 2;
+  string world_name  = 3;
+  double pos_x = 4; double pos_y = 5; double pos_z = 6;
+  float  yaw = 7; float pitch = 8;
+  float  health = 9; float max_health = 10;
+  int32  food_level = 11; float saturation = 12;
+  int32  exp_level = 13; float exp_progress = 14;
+  string main_hand_item = 15; string off_hand_item = 16;
+  bool is_sneaking = 17; bool is_sprinting = 18;
+  bool is_flying = 19; bool is_on_ground = 20;
+  bool is_in_water = 21; bool is_in_lava = 22;
+  bool is_blocking = 23; bool is_climbing = 24;
+  repeated string active_effects = 25;
+  double velocity_x = 26; double velocity_y = 27; double velocity_z = 28;
+  int64 tick_time = 29;
+  int64 timestamp = 30;
+}
+
+// --- 方块事件 ---
+
+message BlockBreakEvent {
+  string player_uuid = 1; string player_name = 2;
+  string material = 3; string world_name = 4;
+  int32 x = 5; int32 y = 6; int32 z = 7;
+  bool is_insta_break = 8; string tool_used = 9;
+  int64 timestamp = 10;
+}
+
+message BlockPlaceEvent {
+  string player_uuid = 1; string player_name = 2;
+  string material = 3; string world_name = 4;
+  int32 x = 5; int32 y = 6; int32 z = 7;
+  string hand = 8; string replaced = 9;
+  int64 timestamp = 10;
+}
+
+// --- 实体/战斗事件 ---
+
+message EntityKillEvent {
+  string player_uuid = 1; string player_name = 2;
+  string entity_type = 3; string entity_name = 4;
+  string world_name = 5;
+  double entity_x = 6; double entity_y = 7; double entity_z = 8;
+  int32 exp_dropped = 9; int64 timestamp = 10;
+}
+
+message EntityDamageEvent {
+  string player_uuid = 1; string player_name = 2;
+  string entity_type = 3;
+  double damage = 4; double final_damage = 5;
+  string damage_cause = 6;
+  double entity_x = 7; double entity_y = 8; double entity_z = 9;
+  double player_x = 10; double player_y = 11; double player_z = 12;
+  float player_yaw = 13; float player_pitch = 14;
+  int64 timestamp = 15;
+}
+
+message PlayerDamageEvent {
+  string player_uuid = 1; string player_name = 2;
+  double damage = 3; double final_damage = 4;
+  string damage_cause = 5;
+  string damager_type = 6; string damager_name = 7;
+  double health_remaining = 8;
+  int64 timestamp = 9;
+}
+
+message PlayerDeathEvent {
+  string player_uuid = 1; string player_name = 2;
+  string death_message = 3; string death_cause = 4;
+  string killer_name = 5;
+  double pos_x = 6; double pos_y = 7; double pos_z = 8;
+  bool keep_inventory = 9; int32 dropped_exp = 10;
+  int64 timestamp = 11;
+}
+
+// --- 物品/背包事件 ---
+
+message ItemDropEvent {
+  string player_uuid = 1; string player_name = 2;
+  string material = 3; int32 amount = 4;
+  double pos_x = 5; double pos_y = 6; double pos_z = 7;
+  int64 timestamp = 8;
+}
+
+message ItemPickupEvent {
+  string player_uuid = 1; string player_name = 2;
+  string material = 3; int32 amount = 4;
+  int64 timestamp = 5;
+}
+
+message InventoryActionEvent {
+  string player_uuid = 1; string player_name = 2;
+  string action_type = 3;
+  string window_type = 4;
+  int32 slot = 5; string item_type = 6; int32 item_amount = 7;
+  int64 timestamp = 8;
+}
+
+// --- 玩家行为事件 ---
+
+message PlayerChatEvent {
+  string player_uuid = 1; string player_name = 2;
+  string message = 3; int64 timestamp = 4;
+}
+
+message PlayerCommandEvent {
+  string player_uuid = 1; string player_name = 2;
+  string command = 3; int64 timestamp = 4;
+}
+
+message PlayerToggleEvent {
+  string player_uuid = 1; string player_name = 2;
+  string toggle_type = 3;
+  bool is_enabled = 4; int64 timestamp = 5;
+}
+
+message PlayerTeleportEvent {
+  string player_uuid = 1; string player_name = 2;
+  string cause = 3;
+  string from_world = 4;
+  double from_x = 5; double from_y = 6; double from_z = 7;
+  string to_world = 8;
+  double to_x = 9; double to_y = 10; double to_z = 11;
+  int64 timestamp = 12;
+}
+
+message PlayerRespawnEvent {
+  string player_uuid = 1; string player_name = 2;
+  string world_name = 3;
+  double pos_x = 4; double pos_y = 5; double pos_z = 6;
+  string respawn_reason = 7; int64 timestamp = 8;
+}
+
+message GameModeChangeEvent {
+  string player_uuid = 1; string player_name = 2;
+  string old_game_mode = 3; string new_game_mode = 4;
+  int64 timestamp = 5;
+}

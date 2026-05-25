@@ -14,6 +14,8 @@ const (
 	CacheStatusPlayer        RedisKey = "status:player:%s"         // 玩家在线状态
 	CacheStatusServer        RedisKey = "status:server:%s"         // 服务器状态
 	CacheStatusServerPlayers RedisKey = "status:server:%s:players" // 服务器在线玩家集合
+	CacheMatrixPlayerBuffer  RedisKey = "matrix:session:%s:buffer"  // Matrix 原始数据缓冲（List）
+	CacheMatrixPlayerMonitor RedisKey = "matrix:session:%s:monitor" // Matrix 反作弊监控快照（Hash）
 )
 
 func (k RedisKey) Get(args ...interface{}) RedisKey {
