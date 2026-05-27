@@ -2,7 +2,7 @@
 
 > **版本**: 1.0.0
 > **适用读者**: Java 插件开发者、Go 后端维护者
-> **前置阅读**: 本文档聚焦 Go 后端架构；Java 插件对接请参阅 [Java Integration](../matrix-telemetry-java-integration.md)
+> **前置阅读**: 本文档聚焦 Go 后端架构；Java 插件对接请参阅 [Java Integration](./java-integration.md)
 
 ---
 
