@@ -42,7 +42,7 @@ Matrix 采用**工业级混淆**，评级为"严重"：
 1. **字符串常量驱动** — 定位 Bukkit API 调用（如 `getWalkSpeed()`, `isFlying()`）和 PacketEvents 类型名
 2. **控制流模式识别** — 通过数学运算模式（距离公式、摩擦力模型）推断检测逻辑
 3. **HackType 枚举映射** — `api/HackType` 未混淆，15 种检测类型为分析提供骨架
-4. **数值常量提取** — 硬编码的 double 常量（0.135, 0.91, 3.1 等）未被加密
+4. **数值常量提取** — 硬编码的 double 常量（0.135, 0.91, 3.15 等）未被加密
 5. **交叉验证** — 多个检测器之间的共享状态验证分析推断
 
 ---
@@ -136,9 +136,9 @@ decompile/matrix-src/
 | **Phase** (`90`) | PHASE | AABB 射线碰撞检测，沿移动路径检测不可穿透方块 | 距离上限 16.0 blocks，严重距离 0.3/0.4 | 高 |
 | **NoClip** (`bg`) | PHASE | 连续 tick 水平速度恒定 >0.11 检测，排除地面/梯子/液体 | 速度阈值 0.11，连续 ≥2 tick | 中 |
 | **Velocity** (`9T` + `6B`) | VELOCITY | 速度包队列追踪 + tick 窗口验证消耗 | Y 速度 0.1~0.75，验证窗口可配置 | 高 |
-| **Reach** (`6e_0`) | HITBOX | 射线-包围盒碰撞检测（非欧氏距离），多眼高偏移 | 基础 3.1 blocks，创造 +3.0，快速拒绝 5.0 | 高 |
+| **Reach** (`6e_0`) | HITBOX | 射线-包围盒碰撞检测（非欧氏距离），多眼高偏移 | 基础 3.15 blocks，创造 +3.0，快速拒绝 5.0 | 高 |
 | **KillAura** (`ci`) | KILLAURA | PacketEvents 包监听 + 多目标射线分析 | 目标范围 ≤3.0 blocks，射线范围 0~10.0 | 高 |
-| **AutoClicker** (`9s_0`/`6V`) | CLICK | ANIMATION 包时序分析，统计 CPS | 阈值加密，推断 >16-20 CPS | 中 |
+| **AutoClicker** (`9s_0`/`6V`) | CLICK | ANIMATION 包时序分析，统计 CPS | 配置阈值 18 CPS（checks.yml: max_cps: 18），启用动态 VL 权重 | 高 |
 | **Aimbot** (`ug`/`el`) | AUTOBOT | 朝向变化模式分析 + 角度偏差检测 | 角度偏差阈值推断 >3.0° | 中 |
 | **FastBreak** (`9i_0`) | BLOCK | 滑动窗口跟踪 DIGGING 包时间间隔 | 窗口大小 4，时间阈值加密 | 高 |
 | **FastPlace** (`9y_0` + `62`) | BLOCK | 时间窗口内放置计数 + 重置周期 | 阈值推断 >5 次/窗口 | 高 |
@@ -304,7 +304,7 @@ NoFall 不是独立模块，嵌入 Fly 检测的 `ground_spoof` 标记中。
 
 | 场景 | 阈值 | 说明 |
 |------|------|------|
-| 生存模式基础 | 3.1 blocks | 略大于 MC 标准 3.0 |
+| 生存模式基础 | 3.15 blocks | 略大于 MC 标准 3.0 |
 | 创造模式 | 6.1 blocks | 基础 + 3.0 offset |
 | 快速拒绝 | 5.0 / 6.0 blocks | 简单欧氏距离前置检查 |
 | VL 计算 | `(距离 − 阈值) × 倍率` | clamp(3, 5) |
@@ -346,7 +346,7 @@ NoFall 不是独立模块，嵌入 Fly 检测的 `ground_spoof` 标记中。
 
 通过 `PlayerAnimationEvent` 中的 `ARM_SWING` 事件和 PacketEvents 的 `ANIMATION` 包监听点击。基于包到达时间间隔统计 CPS。
 
-**推断阈值**: 正常玩家 6~12 CPS，可疑阈值推断为 >16~20 CPS。具体阈值因 DES 加密无法确认。
+**配置阈值**: `checks.yml` 中 `max_cps: 18`，即 CPS 上限 18 次/秒。同时启用 `dynamic_cps_vl_weight: true`（动态 VL 权重），缓冲区大小 `buffer_size: 20`。
 
 ### 5.4 Aimbot 检测
 
@@ -600,7 +600,7 @@ Matrix 使用多层混淆保护：
 
 ### 8.2 可提取的内容
 
-- 硬编码 double 常量（0.135, 0.91, 3.1 等）
+- 硬编码 double 常量（0.135, 0.91, 3.15 等）
 - Bukkit API 调用（`getWalkSpeed()`, `isFlying()` 等）
 - PacketEvents 类型名（`INTERACT_ENTITY`, `ANIMATION` 等）
 - 枚举字段名（`speed`, `height`, `margin`, `threshold` 等，来自 `b.java`）
@@ -613,7 +613,7 @@ Matrix 使用多层混淆保护：
 - **定时器/超时值** — 通过 `9T.e("y", int, long)` 加密
 - **完整惩罚矩阵** — VL 累积到多少触发何种惩罚
 - **多版本适配逻辑** — `y.g()` 版本判断的分支目标
-- **AutoClicker CPS 阈值** — 统计逻辑可见但阈值加密
+- **AutoClicker CPS 阈值** — 统计逻辑可见，配置文件校准为 max_cps: 18
 
 ### 8.4 分析可信度总评
 
@@ -623,9 +623,9 @@ Matrix 使用多层混淆保护：
 | Fly 算法 | 高 | 多维度交叉验证，大量标记和字符串可见 |
 | NoFall 算法 | 中 | 嵌入 Fly 中，逻辑可见但部分阈值加密 |
 | Phase 算法 | 高 | AABB 射线检测逻辑清晰 |
-| Reach 算法 | 高 | 射线-包围盒 API 调用清晰，3.1 阈值可读 |
+| Reach 算法 | 高 | 射线-包围盒 API 调用清晰，3.15 阈值可读 |
 | KillAura 算法 | 高 | PacketEvents API 调用清晰 |
-| AutoClicker | 中 | ANIMATION 包监听确认，CPS 阈值加密 |
+| AutoClicker | 高 | ANIMATION 包监听确认，CPS 阈值由配置文件校准为 18 |
 | Aimbot | 中 | 基于碎片推断，角度偏差阈值无法确认 |
 | World 检测 | 高 | Scaffold/FastBreak/Tower 算法可见 |
 | Timer 检测 | 高 | 分散模式清晰，具体阈值加密 |
@@ -633,7 +633,79 @@ Matrix 使用多层混淆保护：
 
 ---
 
-## 9 与已有文档的关系声明
+## 9 配置文件校准
+
+通过 Matrix 实际运行配置文件（config.yml + checks.yml）校准反编译分析中的估算值：
+
+### 9.1 已启用检测
+
+| 检测 | 配置状态 | 关键参数 |
+|------|---------|---------|
+| KillAura | ✅ 启用 | flaw(type_a-e, VL:5), rotation(type_a/b, VL:5), aimbot(vl_weight:10), npc(vl_weight:10), critical(vl_weight:5), strafe(vl_weight:10) |
+| HitBox/Reach | ✅ 启用 | max_reach: 3.15, trace_back_length: 8, strict_mode: false, raycast: false, cancel_way: none |
+| Click/AutoClicker | ✅ 启用 | max_cps: 18, dynamic_cps_vl_weight: true, buffer_size: 20 |
+| Move/Speed | ✅ 启用 | cancel_vl: 100, check_noslow: true, check_nofall: true, check_flying_players: false |
+| BadPackets | ✅ 启用 | cancel_vl: 20, check_air_place: false |
+| Scaffold | ✅ 启用 | cancel_vl: 15, 但子模块 place/delay/right_cps/tower 均已禁用 |
+| Jesus | ✅ 启用 | cancel_vl: 20 |
+| Velocity | ✅ 启用 | wait_time: 120 tick, modules: respond(4), analyser(3), vertical(3) |
+| AutoBot | ✅ 启用 | — |
+| Elytra | ✅ 启用 | 但 ely.mvy/me/grd/ace/re 已通过 disabled_components 禁用 |
+| Vehicle | ✅ 启用 | 但 vehicle.speed 已通过 disabled_components 禁用 |
+
+### 9.2 已禁用检测
+
+| 检测 | 配置状态 | 说明 |
+|------|---------|------|
+| Delay | ❌ enable: false | 快速食用/快速恢复/自动图腾等检测全部关闭 |
+| Block | ❌ enable: false | FastBreak/FastPlace/NoSwing/Abort 全部关闭 |
+| Interact | ❌ enable: false | 非法交互检测关闭 |
+| Phase | ❌ enable: false | 穿墙检测关闭 |
+
+### 9.3 通过 disabled_components 禁用的子检测
+
+| 组件 | 所属检测 | 说明 |
+|------|---------|------|
+| bp.pe | BadPackets | 包频率检测子模块 |
+| bp.freecam | BadPackets | 自由视角检测 |
+| bp.badpacket.a/b | BadPackets | 异常包子类型 |
+| ka.consume | KillAura | 消耗品检测 |
+| hb.mis | HitBox | 未命中检测 |
+| move.sprint | Move | 疾跑检测 |
+| move.gf | Move | 地面伪造检测 |
+| ely.mvy/me/grd/ace/re | Elytra | 全部鞘翅子检测 |
+| vehicle.speed | Vehicle | 载具速度检测 |
+
+### 9.4 TPS 保护机制
+
+Matrix 内置 TPS 保护（config.yml: tps_protection）：
+
+- **启用状态**: true
+- **触发条件**: 服务器 TPS < 17.0 或卡顿峰值 > 1000ms
+- **保护行为**: 自动禁用部分检测以防止误判
+
+### 9.5 VL 衰减系统
+
+每项检测配备独立的 VL 衰减配置：
+
+| 检测 | 衰减间隔(秒) | 衰减步长 |
+|------|-------------|---------|
+| KillAura | 15 | 5 |
+| HitBox | 15 | 5 |
+| Click | 15 | 5 |
+| Move | 1 | 10 |
+| BadPackets | 1 | 10 |
+| Delay | 5 | 2 |
+| Block | 15 | 8 |
+| Scaffold | 15 | 5 |
+| Jesus | 10 | 10 |
+| Velocity | 1 | 1 |
+
+> 注意：Move 和 BadPackets 的衰减速度远快于其他检测（间隔1秒/步长10），意味着这两项检测的 VL 累积需要更高的持续作弊频率才能触发惩罚。
+
+---
+
+## 10 与已有文档的关系声明
 
 本文是 `docs/matrix/` 目录下的第 5 份文档，定位如下：
 
@@ -651,7 +723,7 @@ Matrix 使用多层混淆保护：
 |------|---------------------|---------------|
 | Speed 算法 | 简单 `speed = Δd/Δt`, 阈值 12.0 b/s | 摩擦力模型 + 加速度追踪 + 药水补偿 + 1.4x 容差 |
 | 检测维度 | 2 个 (Speed, Reach) | 25+ 种检测模块 |
-| Reach 算法 | 欧氏距离 > 3.5 | 射线-包围盒碰撞检测，阈值 3.1 |
+| Reach 算法 | 欧氏距离 > 3.5 | 射线-包围盒碰撞检测，阈值 3.15 |
 | 延迟补偿 | 无 | 位置历史队列 + tick 回溯 |
 | 多目标分析 | 无 | 3.0 blocks 范围内遍历 |
 | 误报规避 | 未提及 | 15+ 种豁免场景 |

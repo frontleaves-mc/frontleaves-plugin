@@ -28,6 +28,8 @@ FrontLeaves 的 Matrix 子系统采用**外部进程检测架构**（模式 C）
 
 当前检测能力有限：Speed 使用固定阈值 12.0 blocks/s，Reach 使用欧氏距离 3.5 blocks。两者均为最基础的检测手段，与 Matrix（闭源）和 GrimAC（开源）等专业反作弊方案差距显著。
 
+> **配置校准说明**: 以下 Matrix 参数均来自 Matrix 7.19.4 实际运行配置文件（`config.yml` + `checks.yml`），非反编译推断值。部分检测在实际部署中被禁用（Delay、Block、Interact、Phase: `enable: false`），多个子检测通过 `disabled_components` 禁用（包括 bp.pe、bp.freecam、bp.badpacket.a/b、ka.consume、hb.mis、move.sprint、move.gf、ely.*、vehicle.speed）。Matrix 还内置 TPS 保护（min_tps: 17.0, lag_threshold: 1000ms），在服务器卡顿时自动放宽检测。
+
 ### 1.2 研究方法
 
 本次研究通过对 Matrix 7.19.4（CFR 反编译）和 GrimAC（GPL-3.0 源码阅读）进行 5 维度源码级对比分析，提取可直接在外部进程中实现的检测技术，形成本方案。
@@ -95,7 +97,7 @@ FrontLeaves 的 Matrix 子系统采用**外部进程检测架构**（模式 C）
 |------|------|
 | **检测算法** | Matrix/GrimAC 的射线-AABB 碰撞检测。从攻击者眼高发射射线到目标方向，检测射线与目标 AABB 的交点距离。替代当前欧氏距离 |
 | **数据来源** | EntityDamageEvent（player_x/y/z, player_yaw/pitch, entity_x/y/z, entity_type） |
-| **关键参数** | 基础攻击距离 3.1 blocks（Matrix 阈值，MC 标准 3.0），碰撞箱扩展 0.1（容错），眼高 1.62，AABB 宽 0.6 × 高 1.8（玩家） |
+| **关键参数** | 基础攻击距离 3.15 blocks（Matrix checks.yml 配置，MC 标准 3.0），碰撞箱扩展 0.1（容错），眼高 1.62，AABB 宽 0.6 × 高 1.8（玩家），cancel_way: none（不取消攻击，仅通知），dynamic_vl: disable（未启用动态 VL），max_burst_vl: 12（5秒内 VL 最大增幅），trace_back_length: 8（回溯 tick 长度） |
 | **实现难度** | 中 |
 | **预期效果** | 精度从"±0.5 格误差"提升到"±0.1 格误差"。可检测 3.0-3.5 格之间的可疑攻击，减少 3.0 格内的误报 |
 | **适用性** | **外部可实现** |
@@ -155,9 +157,9 @@ FrontLeaves 的 Matrix 子系统采用**外部进程检测架构**（模式 C）
 |------|------|
 | **检测算法** | Matrix CPS 时序分析 + 统计分布检验。统计攻击事件的 CPS（Clicks Per Second），分析间隔分布的标准差和自相关系数。AutoClicker 的间隔分布过于均匀或过于高频 |
 | **数据来源** | EntityDamageEvent（timestamp, player_uuid） |
-| **关键参数** | CPS 上限 16，滑动窗口 30 秒，标准差下限 0.02（过于均匀即可疑） |
+| **关键参数** | CPS 上限 18（Matrix checks.yml: max_cps: 18），滑动窗口 30 秒，标准差下限 0.02（过于均匀即可疑） |
 | **实现难度** | 低 |
-| **预期效果** | 检测高频 AutoClicker（>16 CPS）和低频均匀分布的 AutoClicker（"jitter" 类） |
+| **预期效果** | 检测高频 AutoClicker（>18 CPS）和低频均匀分布的 AutoClicker（"jitter" 类） |
 | **适用性** | **外部可实现** |
 | **Proto 支撑** | `EntityDamageEvent.timestamp` 提供攻击时间序列 |
 
@@ -362,6 +364,8 @@ PROCEDURE detectNoFall(tick):
 
 #### 3.2.1 Reach — Raycast 射线-AABB 碰撞检测
 
+**注意**: Matrix 的 HitBox 检测当前配置为 `cancel_way: none`（不取消攻击，仅记录 VL），`cancel_vl: -1`（永不自动取消）。这意味着检测主要依赖 VL 累积触发命令（通知/踢出），而非实时阻止攻击。
+
 这是本次升级的**核心算法**，参考 Matrix `6e_0.java` 和 GrimAC `Reach.java`。
 
 ```
@@ -434,7 +438,7 @@ PROCEDURE detectReach(event):
     distance = rayAABBIntersect(origin, direction, targetBox)
 
     // 判定
-    maxReach = 3.1  // Matrix 阈值（MC 标准 3.0，Matrix 使用 3.1 作为容差基准）
+    maxReach = 3.15  // Matrix checks.yml: max_reach（MC 标准 3.0，Matrix 配置 3.15 作为容差基准）
     IF distance != null AND distance > maxReach:
         reachVL += (distance - maxReach) * 2
         IF reachVL > 3.0:
@@ -533,9 +537,9 @@ PROCEDURE detectAutoClicker(event):
     stdDevInterval = standardDeviation(intervals)
 
     // 3. 判定
-    IF cps > 16:
+    IF cps > 18:
         // 高频 AutoClicker
-        autoClickerVL += (cps - 16) * 0.5
+        autoClickerVL += (cps - 18) * 0.5
         FLAG_IF_VL("AUTOCLICKER_HIGH_CPS", cps)
 
     IF stdDevInterval < 2.0 AND len(intervals) > 20:
