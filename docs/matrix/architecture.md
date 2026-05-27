@@ -152,7 +152,7 @@ LTRIM bufferKey 0 4999
 
 #### manage 协程
 
-负责**消费和处理**。每 500ms 触发一次：
+负责**消费和处理**。每 5s 触发一次（默认值，可通过 `MATRIX_MANAGE_INTERVAL` 环境变量配置为其他值如 500ms）：
 
 1. `LPOP count=100` 批量弹出 Redis List 中的消息
 2. 反序列化为 protobuf 对象
@@ -170,7 +170,7 @@ manage 协程还负责排水逻辑：context 取消后，循环消费直到 Redi
 
 运行中
   → Send(msg): 非阻塞写入 inputCh
-  → manage 每 500ms 消费一批 → subs 处理
+  → manage 每 5s（默认）消费一批 → subs 处理
 
 离线 (PlayerQuit)
   → MarkOffline(): isOnline=false, isDraining=true, close(inputCh)
@@ -242,7 +242,7 @@ type MatrixSub interface {
    → protojson.Marshal()
    → Redis Pipeline: RPUSH + LTRIM(bufferKey, 0, 4999)
        │
-5. PlayerSession.manage 协程（500ms ticker）
+5. PlayerSession.manage 协程（5s ticker，默认）
    → LPOP(bufferKey, 100) 批量弹出
    → protojson.Unmarshal() 反序列化
        │
@@ -283,7 +283,7 @@ pipe.Exec(ctx)
 results, _ := rdb.LPopCount(ctx, bufferKey, 100).Result()
 ```
 
-每 500ms 弹出最多 100 条，反序列化后广播给 Sub 处理。
+每 5s（默认）弹出最多 100 条，反序列化后广播给 Sub 处理。
 
 ### 5.3 排水（Drain）
 
@@ -330,7 +330,7 @@ Redis Hash `monitorKey` 中存储的字段：
 | 参数 | 值 | 可配置 | 说明 |
 |------|-----|--------|------|
 | `inputChSize` | 5000 | 否 | inputCh 缓冲区大小，控制内存中最多缓存的消息数 |
-| `manageInterval` | 500ms | 否 | manage 协程消费间隔，越小消费越快但 Redis 压力越大 |
+| `manageInterval` | 5s（默认，环境变量 `MATRIX_MANAGE_INTERVAL` 可配置） | 是（`MATRIX_MANAGE_INTERVAL` 环境变量） | manage 协程消费间隔，越小消费越快但 Redis 压力越大 |
 | `popBatchSize` | 100 | 否 | 每次 LPOP 的最大条数 |
 | `drainTimeout` | 5s | 否 | 排水超时时间，超时后强制退出 |
 
