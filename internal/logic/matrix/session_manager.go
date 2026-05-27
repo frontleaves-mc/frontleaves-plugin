@@ -5,7 +5,11 @@ import (
 	"fmt"
 	"sync"
 
+	xEnv "github.com/bamboo-services/bamboo-base-go/defined/env"
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
+	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
+	"github.com/frontleaves-mc/frontleaves-plugin/internal/logic/matrix/checker"
+	"github.com/frontleaves-mc/frontleaves-plugin/internal/logic/matrix/components"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository/cache"
 	"github.com/google/uuid"
@@ -52,7 +56,24 @@ func (m *MatrixSessionManager) GetOrCreate(ctx context.Context, serverName strin
 	// 为每个玩家创建独立的 sub 实例（subs 持有 per-player 状态）
 	subs := []MatrixSub{
 		NewStatisticsSub(playerUUID, playerName, serverName, m.statRepo),
-		NewAntiCheatSub(playerUUID, playerName, serverName, sessionKey, m.warningRepo, m.monitorCache),
+	}
+
+	// Matrix 反作弊检测：共享 AntiCheatWarning 实例，各 checker Sub 独立持有 VLTracker
+	if xEnv.GetEnvBool(bConst.EnvMatrixAcEnabled, true) {
+		warner := components.NewAntiCheatWarning(playerUUID, playerName, serverName, sessionKey, m.warningRepo, m.monitorCache)
+		antiCheatSubs := []MatrixSub{
+			checker.NewSpeedSub(warner),
+			checker.NewReachSub(warner),
+			checker.NewTimerSub(warner),
+			checker.NewFlySub(warner),
+			checker.NewXRaySub(warner),
+			checker.NewKillAuraSub(warner),
+			checker.NewAimbotSub(warner),
+			checker.NewAutoClickerSub(warner),
+			checker.NewFastBreakSub(warner),
+			checker.NewNoFallSub(warner),
+		}
+		subs = append(subs, antiCheatSubs...)
 	}
 
 	session := NewPlayerSession(ctx, serverName, playerUUID, playerName, m.rdb, m.log, subs, m.monitorCache)

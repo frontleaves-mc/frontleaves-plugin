@@ -127,6 +127,7 @@ message EntityDamageEvent {
   double player_x = 10; double player_y = 11; double player_z = 12;
   float player_yaw = 13; float player_pitch = 14;
   int64 timestamp = 15;
+  int32 entity_id = 16;
 }
 
 message PlayerDamageEvent {

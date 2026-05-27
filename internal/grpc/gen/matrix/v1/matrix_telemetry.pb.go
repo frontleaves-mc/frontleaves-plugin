@@ -1205,6 +1205,7 @@ type EntityDamageEvent struct {
 	PlayerYaw     float32                `protobuf:"fixed32,13,opt,name=player_yaw,json=playerYaw,proto3" json:"player_yaw,omitempty"`
 	PlayerPitch   float32                `protobuf:"fixed32,14,opt,name=player_pitch,json=playerPitch,proto3" json:"player_pitch,omitempty"`
 	Timestamp     int64                  `protobuf:"varint,15,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	EntityId      int32                  `protobuf:"varint,16,opt,name=entity_id,json=entityId,proto3" json:"entity_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1340,6 +1341,13 @@ func (x *EntityDamageEvent) GetPlayerPitch() float32 {
 func (x *EntityDamageEvent) GetTimestamp() int64 {
 	if x != nil {
 		return x.Timestamp
+	}
+	return 0
+}
+
+func (x *EntityDamageEvent) GetEntityId() int32 {
+	if x != nil {
+		return x.EntityId
 	}
 	return 0
 }
@@ -2520,7 +2528,7 @@ const file_matrix_v1_matrix_telemetry_proto_rawDesc = "" +
 	"\vexp_dropped\x18\t \x01(\x05R\n" +
 	"expDropped\x12\x1c\n" +
 	"\ttimestamp\x18\n" +
-	" \x01(\x03R\ttimestamp\"\xd6\x03\n" +
+	" \x01(\x03R\ttimestamp\"\xf3\x03\n" +
 	"\x11EntityDamageEvent\x12\x1f\n" +
 	"\vplayer_uuid\x18\x01 \x01(\tR\n" +
 	"playerUuid\x12\x1f\n" +
@@ -2541,7 +2549,8 @@ const file_matrix_v1_matrix_telemetry_proto_rawDesc = "" +
 	"\n" +
 	"player_yaw\x18\r \x01(\x02R\tplayerYaw\x12!\n" +
 	"\fplayer_pitch\x18\x0e \x01(\x02R\vplayerPitch\x12\x1c\n" +
-	"\ttimestamp\x18\x0f \x01(\x03R\ttimestamp\"\xc2\x02\n" +
+	"\ttimestamp\x18\x0f \x01(\x03R\ttimestamp\x12\x1b\n" +
+	"\tentity_id\x18\x10 \x01(\x05R\bentityId\"\xc2\x02\n" +
 	"\x11PlayerDamageEvent\x12\x1f\n" +
 	"\vplayer_uuid\x18\x01 \x01(\tR\n" +
 	"playerUuid\x12\x1f\n" +
