@@ -323,6 +323,104 @@ definitions:
     - mode
     - name
     type: object
+  apiMatrixStatistic.StatisticResponse:
+    properties:
+      blocks_break:
+        items:
+          type: integer
+        type: array
+      blocks_place:
+        items:
+          type: integer
+        type: array
+      current_session_start:
+        type: string
+      deaths:
+        items:
+          type: integer
+        type: array
+      entities_kill:
+        items:
+          type: integer
+        type: array
+      id:
+        type: string
+      items_used:
+        items:
+          type: integer
+        type: array
+      player_name:
+        type: string
+      player_uuid:
+        type: string
+      total_blocks_broken:
+        type: integer
+      total_blocks_placed:
+        type: integer
+      total_deaths:
+        type: integer
+      total_entities_killed:
+        type: integer
+      total_play_time_ms:
+        type: integer
+      total_sessions:
+        type: integer
+    type: object
+  apiMatrixWarning.WarningDetailResponse:
+    properties:
+      context_data:
+        items:
+          type: integer
+        type: array
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      player_name:
+        type: string
+      player_uuid:
+        type: string
+      risk_score:
+        type: integer
+      server_name:
+        type: string
+      warning_type:
+        type: string
+    type: object
+  apiMatrixWarning.WarningListItemResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      player_name:
+        type: string
+      player_uuid:
+        type: string
+      risk_score:
+        type: integer
+      server_name:
+        type: string
+      warning_type:
+        type: string
+    type: object
+  apiMatrixWarning.WarningListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/apiMatrixWarning.WarningListItemResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
   apiMessage.ChatHistoryListResponse:
     properties:
       list:
@@ -1510,6 +1608,135 @@ paths:
       summary: '[管理] 停用公告调度'
       tags:
       - 管理-公告调度接口
+  /admin/matrix/statistics/:uuid:
+    get:
+      consumes:
+      - application/json
+      description: 根据玩家 UUID 查询统计数据
+      parameters:
+      - description: 玩家UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiMatrixStatistic.StatisticResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 统计数据不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 查询玩家统计数据'
+      tags:
+      - 管理-Matrix统计接口
+  /admin/matrix/warnings:
+    get:
+      consumes:
+      - application/json
+      description: 多条件筛选查询警告列表，支持分页
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: 玩家UUID筛选
+        in: query
+        name: player_uuid
+        type: string
+      - description: 警告类型筛选
+        in: query
+        name: warning_type
+        type: string
+      - description: 最低风险分数
+        in: query
+        name: risk_score_min
+        type: integer
+      - description: 最高风险分数
+        in: query
+        name: risk_score_max
+        type: integer
+      - description: 服务器名称筛选
+        in: query
+        name: server_name
+        type: string
+      - description: 开始时间
+        in: query
+        name: start_time
+        type: string
+      - description: 结束时间
+        in: query
+        name: end_time
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiMatrixWarning.WarningListResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 查询警告列表'
+      tags:
+      - 管理-Matrix警告接口
+  /admin/matrix/warnings/:id:
+    get:
+      consumes:
+      - application/json
+      description: 根据警告 ID 查询警告详情
+      parameters:
+      - description: 警告ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiMatrixWarning.WarningDetailResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 警告不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 查询警告详情'
+      tags:
+      - 管理-Matrix警告接口
   /admin/messages/chat:
     get:
       consumes:
@@ -2685,6 +2912,34 @@ paths:
       summary: '[公共] 健康检查'
       tags:
       - 健康检查接口
+  /matrix/statistics/me:
+    get:
+      consumes:
+      - application/json
+      description: 玩家查询自己的游戏统计数据
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiMatrixStatistic.StatisticResponse'
+              type: object
+        "401":
+          description: 未登录
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 统计数据不存在
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[玩家] 查询自己的统计数据'
+      tags:
+      - 玩家-Matrix统计接口
   /servers/{name}/refresh:
     post:
       consumes:

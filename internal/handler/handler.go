@@ -20,6 +20,8 @@ type service struct {
 	playerCommandLogic        *logic.PlayerCommandLogic
 	gameProfileLogic          *logic.GameProfileLogic
 	serverLoadLogic           *logic.ServerLoadLogic
+	matrixWarningQueryLogic   *logic.WarningQueryLogic
+	matrixStatisticQueryLogic *logic.StatisticQueryLogic
 }
 
 type handler struct {
@@ -53,6 +55,8 @@ func NewHandler[T IHandler](ctx context.Context, handlerName string) *T {
 			playerCommandLogic:        logic.NewPlayerCommandLogic(ctx),
 			gameProfileLogic:          logic.NewGameProfileLogic(ctx),
 			serverLoadLogic:           logic.NewServerLoadLogic(ctx),
+			matrixWarningQueryLogic:   logic.NewWarningQueryLogic(ctx),
+			matrixStatisticQueryLogic: logic.NewStatisticQueryLogic(ctx),
 		},
 	}
 }

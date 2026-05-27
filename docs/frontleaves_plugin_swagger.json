@@ -1129,6 +1129,215 @@
                 }
             }
         },
+        "/admin/matrix/statistics/:uuid": {
+            "get": {
+                "description": "根据玩家 UUID 查询统计数据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "管理-Matrix统计接口"
+                ],
+                "summary": "[管理] 查询玩家统计数据",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "玩家UUID",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiMatrixStatistic.StatisticResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "统计数据不存在",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/matrix/warnings": {
+            "get": {
+                "description": "多条件筛选查询警告列表，支持分页",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "管理-Matrix警告接口"
+                ],
+                "summary": "[管理] 查询警告列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "玩家UUID筛选",
+                        "name": "player_uuid",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "警告类型筛选",
+                        "name": "warning_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "最低风险分数",
+                        "name": "risk_score_min",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "最高风险分数",
+                        "name": "risk_score_max",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "服务器名称筛选",
+                        "name": "server_name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "开始时间",
+                        "name": "start_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "结束时间",
+                        "name": "end_time",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiMatrixWarning.WarningListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/matrix/warnings/:id": {
+            "get": {
+                "description": "根据警告 ID 查询警告详情",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "管理-Matrix警告接口"
+                ],
+                "summary": "[管理] 查询警告详情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "警告ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiMatrixWarning.WarningDetailResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "警告不存在",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/messages/chat": {
             "get": {
                 "description": "分页查询所有用户的聊天记录，支持按玩家UUID、服务器、来源筛选",
@@ -3023,6 +3232,53 @@
                 }
             }
         },
+        "/matrix/statistics/me": {
+            "get": {
+                "description": "玩家查询自己的游戏统计数据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "玩家-Matrix统计接口"
+                ],
+                "summary": "[玩家] 查询自己的统计数据",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiMatrixStatistic.StatisticResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "未登录",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "统计数据不存在",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/servers/game-profiles/online/mine": {
             "get": {
                 "description": "查询当前登录用户所有在线的游戏账号",
@@ -3865,6 +4121,155 @@
                 },
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "apiMatrixStatistic.StatisticResponse": {
+            "type": "object",
+            "properties": {
+                "blocks_break": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "blocks_place": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "current_session_start": {
+                    "type": "string"
+                },
+                "deaths": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "entities_kill": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "items_used": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "player_name": {
+                    "type": "string"
+                },
+                "player_uuid": {
+                    "type": "string"
+                },
+                "total_blocks_broken": {
+                    "type": "integer"
+                },
+                "total_blocks_placed": {
+                    "type": "integer"
+                },
+                "total_deaths": {
+                    "type": "integer"
+                },
+                "total_entities_killed": {
+                    "type": "integer"
+                },
+                "total_play_time_ms": {
+                    "type": "integer"
+                },
+                "total_sessions": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiMatrixWarning.WarningDetailResponse": {
+            "type": "object",
+            "properties": {
+                "context_data": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "player_name": {
+                    "type": "string"
+                },
+                "player_uuid": {
+                    "type": "string"
+                },
+                "risk_score": {
+                    "type": "integer"
+                },
+                "server_name": {
+                    "type": "string"
+                },
+                "warning_type": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiMatrixWarning.WarningListItemResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "player_name": {
+                    "type": "string"
+                },
+                "player_uuid": {
+                    "type": "string"
+                },
+                "risk_score": {
+                    "type": "integer"
+                },
+                "server_name": {
+                    "type": "string"
+                },
+                "warning_type": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiMatrixWarning.WarningListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/apiMatrixWarning.WarningListItemResponse"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },

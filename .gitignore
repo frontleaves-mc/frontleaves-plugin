@@ -35,3 +35,6 @@ bamboo-base-go-template
 .sisyphus/
 .omo/
 docs/superpowers/
+
+### Decompiled ###
+decompile/

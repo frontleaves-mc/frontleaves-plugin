@@ -17,7 +17,7 @@ import (
 
 const (
 	reachThreshold  = 3.5
-	speedThreshold  = 0.6
+	speedThreshold  = 12.0 // blocks/second
 	riskScorePerHit = 20
 	maxRiskScore    = 100
 )
@@ -73,6 +73,18 @@ func (s *AntiCheatSub) Process(ctx context.Context, msg *matrixpb.MatrixTelemetr
 
 	case *matrixpb.MatrixTelemetryRequest_TelemetryTick:
 		s.checkSpeed(ctx, msg.GetTelemetryTick())
+
+	case *matrixpb.MatrixTelemetryRequest_Teleport:
+		s.hasLastPos = false
+		s.lastTimestamp = 0
+
+	case *matrixpb.MatrixTelemetryRequest_GameModeChange:
+		s.hasLastPos = false
+		s.lastTimestamp = 0
+
+	case *matrixpb.MatrixTelemetryRequest_Respawn:
+		s.hasLastPos = false
+		s.lastTimestamp = 0
 	}
 
 	return nil
@@ -137,7 +149,7 @@ func (s *AntiCheatSub) checkSpeed(ctx context.Context, tick *matrixpb.TelemetryT
 
 			if speed > speedThreshold {
 				s.triggerWarning(ctx, "SPEED", fmt.Sprintf(
-					"移动速度 %.2f blocks/tick 超过阈值 %.1f",
+					"移动速度 %.2f blocks/sec 超过阈值 %.1f",
 					speed, speedThreshold,
 				), map[string]any{
 					"speed":     speed,

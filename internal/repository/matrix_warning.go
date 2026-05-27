@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
@@ -46,4 +47,57 @@ func (r *MatrixWarningRepo) ListByUUID(ctx context.Context, playerUUID uuid.UUID
 		return nil, xError.NewError(ctx, xError.DatabaseError, "查询玩家警告记录失败", false, err)
 	}
 	return warnings, nil
+}
+
+// ListWithFilter 多条件筛选查询警告记录
+func (r *MatrixWarningRepo) ListWithFilter(ctx context.Context, playerUUID, warningType, serverName string, riskScoreMin, riskScoreMax *int32, startTime, endTime *time.Time, page, pageSize int) ([]*entity.MatrixPlayerWarning, int64, *xError.Error) {
+	r.log.Info(ctx, "ListWithFilter - 多条件筛选查询警告记录")
+
+	query := r.db.WithContext(ctx).Model(&entity.MatrixPlayerWarning{})
+
+	if playerUUID != "" {
+		parsedUUID, err := uuid.Parse(playerUUID)
+		if err == nil {
+			query = query.Where("player_uuid = ?", parsedUUID)
+		}
+	}
+
+	if warningType != "" {
+		query = query.Where("warning_type = ?", warningType)
+	}
+
+	if riskScoreMin != nil && riskScoreMax != nil {
+		min := *riskScoreMin
+		max := *riskScoreMax
+		if min > max {
+			min, max = max, min
+		}
+		query = query.Where("risk_score BETWEEN ? AND ?", min, max)
+	}
+
+	if serverName != "" {
+		query = query.Where("server_name = ?", serverName)
+	}
+
+	if startTime != nil && endTime != nil {
+		start := *startTime
+		end := *endTime
+		if start.After(end) {
+			start, end = end, start
+		}
+		query = query.Where("created_at BETWEEN ? AND ?", start, end)
+	}
+
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, xError.NewError(ctx, xError.DatabaseError, "查询警告记录失败", false, err)
+	}
+
+	var warnings []*entity.MatrixPlayerWarning
+	offset := (page - 1) * pageSize
+	if err := query.Order("created_at DESC").Offset(offset).Limit(pageSize).Find(&warnings).Error; err != nil {
+		return nil, 0, xError.NewError(ctx, xError.DatabaseError, "查询警告记录失败", false, err)
+	}
+
+	return warnings, total, nil
 }

@@ -6,6 +6,7 @@ import (
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/grpc/handler"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/logic"
+	"github.com/frontleaves-mc/frontleaves-plugin/internal/logic/matrix"
 	"google.golang.org/grpc"
 )
 
@@ -18,7 +19,7 @@ func RegisterGRPCServices(ctx context.Context, server grpc.ServiceRegistrar) {
 	handler.NewServerStatusHandler(ctx, server)
 	handler.NewTitleHandler(ctx, server)
 	handler.NewEssentialsPlayerEventHandler(ctx, server)
-	handler.NewEssentialsPlayerQueryHandler(ctx, server)
+	queryHandler := handler.NewEssentialsPlayerQueryHandler(ctx, server)
 	handler.NewMatrixTelemetryHandler(ctx, server)
 
 	// Essentials 消息推送服务
@@ -43,4 +44,8 @@ func RegisterGRPCServices(ctx context.Context, server grpc.ServiceRegistrar) {
 	// 创建负载刷盘引擎并启动
 	flushEngine := logic.NewServerLoadFlushEngine(ctx)
 	flushEngine.Start()
+
+	// 启动 Session 恢复（异步，不阻塞服务启动）
+	recoveryAdapter := handler.NewServerQuerierAdapter(queryHandler)
+	go matrix.RecoverSessions(ctx, recoveryAdapter)
 }

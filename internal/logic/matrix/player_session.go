@@ -2,25 +2,48 @@ package matrix
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
 
+	"google.golang.org/protobuf/encoding/protojson"
+
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
+	xEnv "github.com/bamboo-services/bamboo-base-go/defined/env"
 	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
-	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository/cache"
 	matrixpb "github.com/frontleaves-mc/frontleaves-plugin/internal/grpc/gen/matrix/v1"
+	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository/cache"
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 )
 
+var playerSessionLog = xLog.WithName(xLog.NamedINIT, "PlayerSession")
+
 const (
 	inputChSize  = 5000
-	manageInterval = 500 * time.Millisecond
-	popBatchSize   = 100
-	drainTimeout   = 5 * time.Second
+	popBatchSize = 100
+	drainTimeout = 5 * time.Second
 )
+
+// manageInterval manageLoop 的轮询间隔，可通过 MATRIX_MANAGE_INTERVAL 环境变量配置
+var manageInterval time.Duration
+
+func init() {
+	raw := xEnv.GetEnvString(bConst.EnvMatrixManageInterval, "5s")
+	manageInterval = parseManageInterval(raw)
+	playerSessionLog.Info(context.Background(), fmt.Sprintf("manageInterval 配置为 %v", manageInterval))
+}
+
+// parseManageInterval 解析 manageInterval 配置值
+// 当 raw 无法解析或解析结果 <= 0 时，返回默认值 5s
+func parseManageInterval(raw string) time.Duration {
+	parsed, err := time.ParseDuration(raw)
+	if err != nil || parsed <= 0 {
+		playerSessionLog.Warn(context.Background(), fmt.Sprintf("manageInterval 配置无效 [%s]，使用默认值 5s", raw))
+		return 5 * time.Second
+	}
+	return parsed
+}
 
 // PlayerSession 玩家会话，per server+player 的隔离处理单元
 type PlayerSession struct {
@@ -136,7 +159,7 @@ func (s *PlayerSession) baseLoop() {
 	}()
 
 	for msg := range s.inputCh {
-		data, err := json.Marshal(msg)
+		data, err := protojson.Marshal(msg)
 		if err != nil {
 			s.log.Warn(s.ctx, "baseLoop - 序列化失败: "+err.Error())
 			continue
@@ -191,7 +214,7 @@ func (s *PlayerSession) popBatch() []*matrixpb.MatrixTelemetryRequest {
 	batch := make([]*matrixpb.MatrixTelemetryRequest, 0, len(results))
 	for _, data := range results {
 		var msg matrixpb.MatrixTelemetryRequest
-		if err := json.Unmarshal([]byte(data), &msg); err != nil {
+		if err := protojson.Unmarshal([]byte(data), &msg); err != nil {
 			s.log.Warn(s.ctx, "popBatch - 反序列化失败: "+err.Error())
 			continue
 		}
