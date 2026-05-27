@@ -24,6 +24,7 @@ enum PlayerEventType {
   PLAYER_EVENT_TYPE_PLAYER_DEATH = 5;
   PLAYER_EVENT_TYPE_PLAYER_GROUP_CHANGE = 6;
   PLAYER_EVENT_TYPE_PLAYER_COMMAND = 7;
+  PLAYER_EVENT_TYPE_PRIVATE_CHAT = 8;
 }
 
 // PlayerEventStreamRequest 玩家事件流请求
@@ -46,6 +47,7 @@ message PlayerEventStreamRequest {
     PlayerGroupChangeEvent player_group_change_event = 16;
     // 玩家执行指令事件
     PlayerCommandEvent player_command_event = 17;
+    PlayerPrivateChatEvent private_chat_event = 18;
   }
 }
 
@@ -112,4 +114,12 @@ message PlayerCommandEvent {
   string server_name = 3;
   string world_name = 4;
   string command = 5;
+}
+
+// PlayerPrivateChatEvent 玩家私聊事件
+message PlayerPrivateChatEvent {
+  string sender_uuid = 1;
+  string sender_name = 2;
+  string receiver_name = 3;
+  string message = 4;
 }

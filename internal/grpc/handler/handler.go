@@ -27,6 +27,7 @@ type essentialsService struct {
 	playerEventLogic    *logic.PlayerEventLogic
 	playerChatLogic     *logic.PlayerChatLogic
 	playerCommandLogic  *logic.PlayerCommandLogic
+	directMessageLogic  *logic.DirectMessageLogic
 	serverLogic         *logic.ServerLogic
 	serverPlayerLogic   *logic.ServerPlayerLogic
 }
@@ -85,6 +86,7 @@ func newEssentialsService(ctx context.Context) *essentialsService {
 		playerEventLogic:   logic.NewPlayerEventLogic(ctx),
 		playerChatLogic:    logic.NewPlayerChatLogic(ctx),
 		playerCommandLogic: logic.NewPlayerCommandLogic(ctx),
+		directMessageLogic: logic.NewDirectMessageLogic(ctx),
 		serverLogic:        logic.NewServerLogic(ctx),
 		serverPlayerLogic:  logic.NewServerPlayerLogic(ctx),
 	}

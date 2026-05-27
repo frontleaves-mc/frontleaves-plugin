@@ -34,6 +34,7 @@ const (
 	PlayerEventType_PLAYER_EVENT_TYPE_PLAYER_DEATH        PlayerEventType = 5
 	PlayerEventType_PLAYER_EVENT_TYPE_PLAYER_GROUP_CHANGE PlayerEventType = 6
 	PlayerEventType_PLAYER_EVENT_TYPE_PLAYER_COMMAND      PlayerEventType = 7
+	PlayerEventType_PLAYER_EVENT_TYPE_PRIVATE_CHAT        PlayerEventType = 8
 )
 
 // Enum value maps for PlayerEventType.
@@ -47,6 +48,7 @@ var (
 		5: "PLAYER_EVENT_TYPE_PLAYER_DEATH",
 		6: "PLAYER_EVENT_TYPE_PLAYER_GROUP_CHANGE",
 		7: "PLAYER_EVENT_TYPE_PLAYER_COMMAND",
+		8: "PLAYER_EVENT_TYPE_PRIVATE_CHAT",
 	}
 	PlayerEventType_value = map[string]int32{
 		"PLAYER_EVENT_TYPE_UNSPECIFIED":         0,
@@ -57,6 +59,7 @@ var (
 		"PLAYER_EVENT_TYPE_PLAYER_DEATH":        5,
 		"PLAYER_EVENT_TYPE_PLAYER_GROUP_CHANGE": 6,
 		"PLAYER_EVENT_TYPE_PLAYER_COMMAND":      7,
+		"PLAYER_EVENT_TYPE_PRIVATE_CHAT":        8,
 	}
 )
 
@@ -103,6 +106,7 @@ type PlayerEventStreamRequest struct {
 	//	*PlayerEventStreamRequest_PlayerDeathEvent
 	//	*PlayerEventStreamRequest_PlayerGroupChangeEvent
 	//	*PlayerEventStreamRequest_PlayerCommandEvent
+	//	*PlayerEventStreamRequest_PrivateChatEvent
 	Event         isPlayerEventStreamRequest_Event `protobuf_oneof:"event"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -215,6 +219,15 @@ func (x *PlayerEventStreamRequest) GetPlayerCommandEvent() *PlayerCommandEvent {
 	return nil
 }
 
+func (x *PlayerEventStreamRequest) GetPrivateChatEvent() *PlayerPrivateChatEvent {
+	if x != nil {
+		if x, ok := x.Event.(*PlayerEventStreamRequest_PrivateChatEvent); ok {
+			return x.PrivateChatEvent
+		}
+	}
+	return nil
+}
+
 type isPlayerEventStreamRequest_Event interface {
 	isPlayerEventStreamRequest_Event()
 }
@@ -254,6 +267,10 @@ type PlayerEventStreamRequest_PlayerCommandEvent struct {
 	PlayerCommandEvent *PlayerCommandEvent `protobuf:"bytes,17,opt,name=player_command_event,json=playerCommandEvent,proto3,oneof"`
 }
 
+type PlayerEventStreamRequest_PrivateChatEvent struct {
+	PrivateChatEvent *PlayerPrivateChatEvent `protobuf:"bytes,18,opt,name=private_chat_event,json=privateChatEvent,proto3,oneof"`
+}
+
 func (*PlayerEventStreamRequest_PlayerJoinEvent) isPlayerEventStreamRequest_Event() {}
 
 func (*PlayerEventStreamRequest_PlayerQuitEvent) isPlayerEventStreamRequest_Event() {}
@@ -267,6 +284,8 @@ func (*PlayerEventStreamRequest_PlayerDeathEvent) isPlayerEventStreamRequest_Eve
 func (*PlayerEventStreamRequest_PlayerGroupChangeEvent) isPlayerEventStreamRequest_Event() {}
 
 func (*PlayerEventStreamRequest_PlayerCommandEvent) isPlayerEventStreamRequest_Event() {}
+
+func (*PlayerEventStreamRequest_PrivateChatEvent) isPlayerEventStreamRequest_Event() {}
 
 // PlayerEventStreamResponse 玩家事件流响应
 type PlayerEventStreamResponse struct {
@@ -828,11 +847,80 @@ func (x *PlayerCommandEvent) GetCommand() string {
 	return ""
 }
 
+// PlayerPrivateChatEvent 玩家私聊事件
+type PlayerPrivateChatEvent struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SenderUuid    string                 `protobuf:"bytes,1,opt,name=sender_uuid,json=senderUuid,proto3" json:"sender_uuid,omitempty"`
+	SenderName    string                 `protobuf:"bytes,2,opt,name=sender_name,json=senderName,proto3" json:"sender_name,omitempty"`
+	ReceiverName  string                 `protobuf:"bytes,3,opt,name=receiver_name,json=receiverName,proto3" json:"receiver_name,omitempty"`
+	Message       string                 `protobuf:"bytes,4,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerPrivateChatEvent) Reset() {
+	*x = PlayerPrivateChatEvent{}
+	mi := &file_essentials_v1_player_event_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerPrivateChatEvent) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerPrivateChatEvent) ProtoMessage() {}
+
+func (x *PlayerPrivateChatEvent) ProtoReflect() protoreflect.Message {
+	mi := &file_essentials_v1_player_event_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerPrivateChatEvent.ProtoReflect.Descriptor instead.
+func (*PlayerPrivateChatEvent) Descriptor() ([]byte, []int) {
+	return file_essentials_v1_player_event_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *PlayerPrivateChatEvent) GetSenderUuid() string {
+	if x != nil {
+		return x.SenderUuid
+	}
+	return ""
+}
+
+func (x *PlayerPrivateChatEvent) GetSenderName() string {
+	if x != nil {
+		return x.SenderName
+	}
+	return ""
+}
+
+func (x *PlayerPrivateChatEvent) GetReceiverName() string {
+	if x != nil {
+		return x.ReceiverName
+	}
+	return ""
+}
+
+func (x *PlayerPrivateChatEvent) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 var File_essentials_v1_player_event_proto protoreflect.FileDescriptor
 
 const file_essentials_v1_player_event_proto_rawDesc = "" +
 	"\n" +
-	" essentials/v1/player_event.proto\x12\x19frontleaves.essentials.v1\x1a\x0flink/base.proto\"\x86\x06\n" +
+	" essentials/v1/player_event.proto\x12\x19frontleaves.essentials.v1\x1a\x0flink/base.proto\"\xe9\x06\n" +
 	"\x18PlayerEventStreamRequest\x12I\n" +
 	"\n" +
 	"event_type\x18\x01 \x01(\x0e2*.frontleaves.essentials.v1.PlayerEventTypeR\teventType\x12X\n" +
@@ -842,7 +930,8 @@ const file_essentials_v1_player_event_proto_rawDesc = "" +
 	"\x11player_kick_event\x18\x0e \x01(\v2*.frontleaves.essentials.v1.PlayerKickEventH\x00R\x0fplayerKickEvent\x12[\n" +
 	"\x12player_death_event\x18\x0f \x01(\v2+.frontleaves.essentials.v1.PlayerDeathEventH\x00R\x10playerDeathEvent\x12n\n" +
 	"\x19player_group_change_event\x18\x10 \x01(\v21.frontleaves.essentials.v1.PlayerGroupChangeEventH\x00R\x16playerGroupChangeEvent\x12a\n" +
-	"\x14player_command_event\x18\x11 \x01(\v2-.frontleaves.essentials.v1.PlayerCommandEventH\x00R\x12playerCommandEventB\a\n" +
+	"\x14player_command_event\x18\x11 \x01(\v2-.frontleaves.essentials.v1.PlayerCommandEventH\x00R\x12playerCommandEvent\x12a\n" +
+	"\x12private_chat_event\x18\x12 \x01(\v21.frontleaves.essentials.v1.PlayerPrivateChatEventH\x00R\x10privateChatEventB\a\n" +
 	"\x05event\"U\n" +
 	"\x19PlayerEventStreamResponse\x128\n" +
 	"\rbase_response\x18\x01 \x01(\v2\x13.xBase.BaseResponseR\fbaseResponse\"\xb2\x01\n" +
@@ -911,7 +1000,14 @@ const file_essentials_v1_player_event_proto_rawDesc = "" +
 	"serverName\x12\x1d\n" +
 	"\n" +
 	"world_name\x18\x04 \x01(\tR\tworldName\x12\x18\n" +
-	"\acommand\x18\x05 \x01(\tR\acommand*\xb5\x02\n" +
+	"\acommand\x18\x05 \x01(\tR\acommand\"\x99\x01\n" +
+	"\x16PlayerPrivateChatEvent\x12\x1f\n" +
+	"\vsender_uuid\x18\x01 \x01(\tR\n" +
+	"senderUuid\x12\x1f\n" +
+	"\vsender_name\x18\x02 \x01(\tR\n" +
+	"senderName\x12#\n" +
+	"\rreceiver_name\x18\x03 \x01(\tR\freceiverName\x12\x18\n" +
+	"\amessage\x18\x04 \x01(\tR\amessage*\xd9\x02\n" +
 	"\x0fPlayerEventType\x12!\n" +
 	"\x1dPLAYER_EVENT_TYPE_UNSPECIFIED\x10\x00\x12!\n" +
 	"\x1dPLAYER_EVENT_TYPE_PLAYER_JOIN\x10\x01\x12!\n" +
@@ -920,7 +1016,8 @@ const file_essentials_v1_player_event_proto_rawDesc = "" +
 	"\x1dPLAYER_EVENT_TYPE_PLAYER_KICK\x10\x04\x12\"\n" +
 	"\x1ePLAYER_EVENT_TYPE_PLAYER_DEATH\x10\x05\x12)\n" +
 	"%PLAYER_EVENT_TYPE_PLAYER_GROUP_CHANGE\x10\x06\x12$\n" +
-	" PLAYER_EVENT_TYPE_PLAYER_COMMAND\x10\a2\x97\x01\n" +
+	" PLAYER_EVENT_TYPE_PLAYER_COMMAND\x10\a\x12\"\n" +
+	"\x1ePLAYER_EVENT_TYPE_PRIVATE_CHAT\x10\b2\x97\x01\n" +
 	"\x12PlayerEventService\x12\x80\x01\n" +
 	"\x11PlayerEventStream\x123.frontleaves.essentials.v1.PlayerEventStreamRequest\x1a4.frontleaves.essentials.v1.PlayerEventStreamResponse(\x01B[ZYgithub.com/frontleaves-mc/frontleaves-plugin/internal/grpc/gen/essentials/v1;essentialspbb\x06proto3"
 
@@ -937,7 +1034,7 @@ func file_essentials_v1_player_event_proto_rawDescGZIP() []byte {
 }
 
 var file_essentials_v1_player_event_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_essentials_v1_player_event_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_essentials_v1_player_event_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_essentials_v1_player_event_proto_goTypes = []any{
 	(PlayerEventType)(0),              // 0: frontleaves.essentials.v1.PlayerEventType
 	(*PlayerEventStreamRequest)(nil),  // 1: frontleaves.essentials.v1.PlayerEventStreamRequest
@@ -949,7 +1046,8 @@ var file_essentials_v1_player_event_proto_goTypes = []any{
 	(*PlayerDeathEvent)(nil),          // 7: frontleaves.essentials.v1.PlayerDeathEvent
 	(*PlayerGroupChangeEvent)(nil),    // 8: frontleaves.essentials.v1.PlayerGroupChangeEvent
 	(*PlayerCommandEvent)(nil),        // 9: frontleaves.essentials.v1.PlayerCommandEvent
-	(*generate.BaseResponse)(nil),     // 10: xBase.BaseResponse
+	(*PlayerPrivateChatEvent)(nil),    // 10: frontleaves.essentials.v1.PlayerPrivateChatEvent
+	(*generate.BaseResponse)(nil),     // 11: xBase.BaseResponse
 }
 var file_essentials_v1_player_event_proto_depIdxs = []int32{
 	0,  // 0: frontleaves.essentials.v1.PlayerEventStreamRequest.event_type:type_name -> frontleaves.essentials.v1.PlayerEventType
@@ -960,14 +1058,15 @@ var file_essentials_v1_player_event_proto_depIdxs = []int32{
 	7,  // 5: frontleaves.essentials.v1.PlayerEventStreamRequest.player_death_event:type_name -> frontleaves.essentials.v1.PlayerDeathEvent
 	8,  // 6: frontleaves.essentials.v1.PlayerEventStreamRequest.player_group_change_event:type_name -> frontleaves.essentials.v1.PlayerGroupChangeEvent
 	9,  // 7: frontleaves.essentials.v1.PlayerEventStreamRequest.player_command_event:type_name -> frontleaves.essentials.v1.PlayerCommandEvent
-	10, // 8: frontleaves.essentials.v1.PlayerEventStreamResponse.base_response:type_name -> xBase.BaseResponse
-	1,  // 9: frontleaves.essentials.v1.PlayerEventService.PlayerEventStream:input_type -> frontleaves.essentials.v1.PlayerEventStreamRequest
-	2,  // 10: frontleaves.essentials.v1.PlayerEventService.PlayerEventStream:output_type -> frontleaves.essentials.v1.PlayerEventStreamResponse
-	10, // [10:11] is the sub-list for method output_type
-	9,  // [9:10] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	10, // 8: frontleaves.essentials.v1.PlayerEventStreamRequest.private_chat_event:type_name -> frontleaves.essentials.v1.PlayerPrivateChatEvent
+	11, // 9: frontleaves.essentials.v1.PlayerEventStreamResponse.base_response:type_name -> xBase.BaseResponse
+	1,  // 10: frontleaves.essentials.v1.PlayerEventService.PlayerEventStream:input_type -> frontleaves.essentials.v1.PlayerEventStreamRequest
+	2,  // 11: frontleaves.essentials.v1.PlayerEventService.PlayerEventStream:output_type -> frontleaves.essentials.v1.PlayerEventStreamResponse
+	11, // [11:12] is the sub-list for method output_type
+	10, // [10:11] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_essentials_v1_player_event_proto_init() }
@@ -983,6 +1082,7 @@ func file_essentials_v1_player_event_proto_init() {
 		(*PlayerEventStreamRequest_PlayerDeathEvent)(nil),
 		(*PlayerEventStreamRequest_PlayerGroupChangeEvent)(nil),
 		(*PlayerEventStreamRequest_PlayerCommandEvent)(nil),
+		(*PlayerEventStreamRequest_PrivateChatEvent)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -990,7 +1090,7 @@ func file_essentials_v1_player_event_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_essentials_v1_player_event_proto_rawDesc), len(file_essentials_v1_player_event_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   9,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -25,6 +25,7 @@ func RegisterGRPCServices(ctx context.Context, server grpc.ServiceRegistrar) {
 	// Essentials 消息推送服务
 	messageHandler := handler.NewEssentialsPlayerMessageHandler(ctx, server)
 	logic.SetGlobalPushChatFunc(messageHandler.PushChatMessage)
+	logic.SetGlobalPushPrivateMessageFunc(messageHandler.PushPrivateMessage)
 
 	announcementHandler := handler.NewAnnouncementHandler(ctx, server)
 

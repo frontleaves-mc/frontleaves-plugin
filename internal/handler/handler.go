@@ -22,6 +22,7 @@ type service struct {
 	serverLoadLogic           *logic.ServerLoadLogic
 	matrixWarningQueryLogic   *logic.WarningQueryLogic
 	matrixStatisticQueryLogic *logic.StatisticQueryLogic
+	directMessageLogic        *logic.DirectMessageLogic
 }
 
 type handler struct {
@@ -57,6 +58,7 @@ func NewHandler[T IHandler](ctx context.Context, handlerName string) *T {
 			serverLoadLogic:           logic.NewServerLoadLogic(ctx),
 			matrixWarningQueryLogic:   logic.NewWarningQueryLogic(ctx),
 			matrixStatisticQueryLogic: logic.NewStatisticQueryLogic(ctx),
+			directMessageLogic:        logic.NewDirectMessageLogic(ctx),
 		},
 	}
 }

@@ -1,0 +1,63 @@
+{{define "private_message"}}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr>
+        <td style="padding-bottom: 20px;">
+            <h2 style="margin: 0 0 8px; font-size: 18px; font-weight: 600; color: #1A1E26; letter-spacing: -0.3px;">
+                你收到了来自 {{.SenderName}} 的私信
+            </h2>
+            <p style="margin: 0; font-size: 14px; color: #6B7F96; line-height: 1.6;">
+                以下是未读消息：
+            </p>
+        </td>
+    </tr>
+    {{range .Messages}}
+    <tr>
+        <td style="padding-bottom: 16px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="background-color: #F2F4F7; border-radius: 8px; width: 100%;">
+                <tr>
+                    <td style="padding: 12px 16px; font-size: 13px; color: #6B7F96; width: 80px; vertical-align: top;">
+                        发送者
+                    </td>
+                    <td style="padding: 12px 16px; font-size: 14px; color: #1A1E26; font-weight: 500;">
+                        {{.SenderName}}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 16px 12px; font-size: 13px; color: #6B7F96; vertical-align: top;">
+                        时间
+                    </td>
+                    <td style="padding: 8px 16px 12px; font-size: 13px; color: #6B7F96;">
+                        {{.SentAt.Format "2006-01-02 15:04"}}
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="padding: 0 16px 12px;">
+                        <div style="padding-top: 8px; border-top: 1px solid #DAE2EB; margin-top: 4px;">
+                            <span style="font-size: 14px; color: #1A1E26; line-height: 1.6;">
+                                {{.Message}}
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    {{end}}
+    <tr>
+        <td style="padding-top: 8px;">
+            <p style="margin: 0 0 20px; font-size: 13px; color: #6B7F96; line-height: 1.6;">
+                登录 FrontLeaves 查看并回复
+            </p>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                    <td style="border-radius: 8px; background-color: #3B76D8;">
+                        <a href="{{.SiteURL}}" target="_blank" style="display: inline-block; padding: 12px 32px; font-size: 14px; font-weight: 500; color: #F0F6FD; text-decoration: none; letter-spacing: -0.1px;">
+                            前往网站查看
+                        </a>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+{{end}}

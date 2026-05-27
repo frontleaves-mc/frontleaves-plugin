@@ -17,6 +17,7 @@ import (
 var migrateTables = []interface{}{
 	&entity.User{},
 	&entity.GameProfile{},
+	&entity.PlayerDirectMessage{},
 	&entity.Title{},
 	&entity.Achievement{},
 	&entity.GameProfileTitle{},

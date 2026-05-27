@@ -31,4 +31,7 @@ const (
 	// Matrix 系统
 	GeneMatrixPlayerStatistic xSnowflake.Gene = 50 // 玩家统计
 	GeneMatrixPlayerWarning   xSnowflake.Gene = 51 // 玩家警告日志
+
+	// 私信系统
+	GenePlayerDirectMessage xSnowflake.Gene = 52 // 玩家私信
 )

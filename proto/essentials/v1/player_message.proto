@@ -21,6 +21,7 @@ enum PlayerMessagePushType {
   PLAYER_MESSAGE_PUSH_TYPE_UNSPECIFIED = 0;
   PLAYER_MESSAGE_PUSH_TYPE_CHAT = 1;
   PLAYER_MESSAGE_PUSH_TYPE_SYSTEM = 2;
+  PLAYER_MESSAGE_PUSH_TYPE_PRIVATE = 3;
 }
 
 // PlayerMessagePushResponse 消息推送响应
@@ -35,6 +36,8 @@ message PlayerMessagePushResponse {
     PlayerChatPush chat_push = 11;
     // 系统消息推送
     SystemMessagePush system_push = 12;
+    // 私聊消息推送
+    PrivateMessagePush private_push = 13;
   }
 }
 
@@ -54,4 +57,11 @@ message SystemMessagePush {
   string title = 1;
   // 消息内容
   string content = 2;
+}
+
+// PrivateMessagePush 私聊消息推送
+message PrivateMessagePush {
+  string sender_name = 1;
+  string message = 2;
+  string sender_uuid = 3;
 }

@@ -30,6 +30,7 @@ const (
 	PlayerMessagePushType_PLAYER_MESSAGE_PUSH_TYPE_UNSPECIFIED PlayerMessagePushType = 0
 	PlayerMessagePushType_PLAYER_MESSAGE_PUSH_TYPE_CHAT        PlayerMessagePushType = 1
 	PlayerMessagePushType_PLAYER_MESSAGE_PUSH_TYPE_SYSTEM      PlayerMessagePushType = 2
+	PlayerMessagePushType_PLAYER_MESSAGE_PUSH_TYPE_PRIVATE     PlayerMessagePushType = 3
 )
 
 // Enum value maps for PlayerMessagePushType.
@@ -38,11 +39,13 @@ var (
 		0: "PLAYER_MESSAGE_PUSH_TYPE_UNSPECIFIED",
 		1: "PLAYER_MESSAGE_PUSH_TYPE_CHAT",
 		2: "PLAYER_MESSAGE_PUSH_TYPE_SYSTEM",
+		3: "PLAYER_MESSAGE_PUSH_TYPE_PRIVATE",
 	}
 	PlayerMessagePushType_value = map[string]int32{
 		"PLAYER_MESSAGE_PUSH_TYPE_UNSPECIFIED": 0,
 		"PLAYER_MESSAGE_PUSH_TYPE_CHAT":        1,
 		"PLAYER_MESSAGE_PUSH_TYPE_SYSTEM":      2,
+		"PLAYER_MESSAGE_PUSH_TYPE_PRIVATE":     3,
 	}
 )
 
@@ -86,6 +89,7 @@ type PlayerMessagePushResponse struct {
 	//
 	//	*PlayerMessagePushResponse_ChatPush
 	//	*PlayerMessagePushResponse_SystemPush
+	//	*PlayerMessagePushResponse_PrivatePush
 	Payload       isPlayerMessagePushResponse_Payload `protobuf_oneof:"payload"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -160,6 +164,15 @@ func (x *PlayerMessagePushResponse) GetSystemPush() *SystemMessagePush {
 	return nil
 }
 
+func (x *PlayerMessagePushResponse) GetPrivatePush() *PrivateMessagePush {
+	if x != nil {
+		if x, ok := x.Payload.(*PlayerMessagePushResponse_PrivatePush); ok {
+			return x.PrivatePush
+		}
+	}
+	return nil
+}
+
 type isPlayerMessagePushResponse_Payload interface {
 	isPlayerMessagePushResponse_Payload()
 }
@@ -174,9 +187,16 @@ type PlayerMessagePushResponse_SystemPush struct {
 	SystemPush *SystemMessagePush `protobuf:"bytes,12,opt,name=system_push,json=systemPush,proto3,oneof"`
 }
 
+type PlayerMessagePushResponse_PrivatePush struct {
+	// 私聊消息推送
+	PrivatePush *PrivateMessagePush `protobuf:"bytes,13,opt,name=private_push,json=privatePush,proto3,oneof"`
+}
+
 func (*PlayerMessagePushResponse_ChatPush) isPlayerMessagePushResponse_Payload() {}
 
 func (*PlayerMessagePushResponse_SystemPush) isPlayerMessagePushResponse_Payload() {}
+
+func (*PlayerMessagePushResponse_PrivatePush) isPlayerMessagePushResponse_Payload() {}
 
 // PlayerChatPush 聊天消息推送
 type PlayerChatPush struct {
@@ -297,17 +317,79 @@ func (x *SystemMessagePush) GetContent() string {
 	return ""
 }
 
+// PrivateMessagePush 私聊消息推送
+type PrivateMessagePush struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SenderName    string                 `protobuf:"bytes,1,opt,name=sender_name,json=senderName,proto3" json:"sender_name,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	SenderUuid    string                 `protobuf:"bytes,3,opt,name=sender_uuid,json=senderUuid,proto3" json:"sender_uuid,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PrivateMessagePush) Reset() {
+	*x = PrivateMessagePush{}
+	mi := &file_essentials_v1_player_message_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrivateMessagePush) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrivateMessagePush) ProtoMessage() {}
+
+func (x *PrivateMessagePush) ProtoReflect() protoreflect.Message {
+	mi := &file_essentials_v1_player_message_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrivateMessagePush.ProtoReflect.Descriptor instead.
+func (*PrivateMessagePush) Descriptor() ([]byte, []int) {
+	return file_essentials_v1_player_message_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *PrivateMessagePush) GetSenderName() string {
+	if x != nil {
+		return x.SenderName
+	}
+	return ""
+}
+
+func (x *PrivateMessagePush) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *PrivateMessagePush) GetSenderUuid() string {
+	if x != nil {
+		return x.SenderUuid
+	}
+	return ""
+}
+
 var File_essentials_v1_player_message_proto protoreflect.FileDescriptor
 
 const file_essentials_v1_player_message_proto_rawDesc = "" +
 	"\n" +
-	"\"essentials/v1/player_message.proto\x12\x19frontleaves.essentials.v1\x1a\x0flink/base.proto\x1a\x1bgoogle/protobuf/empty.proto\"\xca\x02\n" +
+	"\"essentials/v1/player_message.proto\x12\x19frontleaves.essentials.v1\x1a\x0flink/base.proto\x1a\x1bgoogle/protobuf/empty.proto\"\x9e\x03\n" +
 	"\x19PlayerMessagePushResponse\x128\n" +
 	"\rbase_response\x18\x01 \x01(\v2\x13.xBase.BaseResponseR\fbaseResponse\x12M\n" +
 	"\tpush_type\x18\x02 \x01(\x0e20.frontleaves.essentials.v1.PlayerMessagePushTypeR\bpushType\x12H\n" +
 	"\tchat_push\x18\v \x01(\v2).frontleaves.essentials.v1.PlayerChatPushH\x00R\bchatPush\x12O\n" +
 	"\vsystem_push\x18\f \x01(\v2,.frontleaves.essentials.v1.SystemMessagePushH\x00R\n" +
-	"systemPushB\t\n" +
+	"systemPush\x12R\n" +
+	"\fprivate_push\x18\r \x01(\v2-.frontleaves.essentials.v1.PrivateMessagePushH\x00R\vprivatePushB\t\n" +
 	"\apayload\"c\n" +
 	"\x0ePlayerChatPush\x12\x1f\n" +
 	"\vsender_name\x18\x01 \x01(\tR\n" +
@@ -316,11 +398,18 @@ const file_essentials_v1_player_message_proto_rawDesc = "" +
 	"\x06source\x18\x03 \x01(\tR\x06source\"C\n" +
 	"\x11SystemMessagePush\x12\x14\n" +
 	"\x05title\x18\x01 \x01(\tR\x05title\x12\x18\n" +
-	"\acontent\x18\x02 \x01(\tR\acontent*\x89\x01\n" +
+	"\acontent\x18\x02 \x01(\tR\acontent\"p\n" +
+	"\x12PrivateMessagePush\x12\x1f\n" +
+	"\vsender_name\x18\x01 \x01(\tR\n" +
+	"senderName\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1f\n" +
+	"\vsender_uuid\x18\x03 \x01(\tR\n" +
+	"senderUuid*\xaf\x01\n" +
 	"\x15PlayerMessagePushType\x12(\n" +
 	"$PLAYER_MESSAGE_PUSH_TYPE_UNSPECIFIED\x10\x00\x12!\n" +
 	"\x1dPLAYER_MESSAGE_PUSH_TYPE_CHAT\x10\x01\x12#\n" +
-	"\x1fPLAYER_MESSAGE_PUSH_TYPE_SYSTEM\x10\x022}\n" +
+	"\x1fPLAYER_MESSAGE_PUSH_TYPE_SYSTEM\x10\x02\x12$\n" +
+	" PLAYER_MESSAGE_PUSH_TYPE_PRIVATE\x10\x032}\n" +
 	"\x14PlayerMessageService\x12e\n" +
 	"\x13PlayerMessageStream\x12\x16.google.protobuf.Empty\x1a4.frontleaves.essentials.v1.PlayerMessagePushResponse0\x01B[ZYgithub.com/frontleaves-mc/frontleaves-plugin/internal/grpc/gen/essentials/v1;essentialspbb\x06proto3"
 
@@ -337,27 +426,29 @@ func file_essentials_v1_player_message_proto_rawDescGZIP() []byte {
 }
 
 var file_essentials_v1_player_message_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_essentials_v1_player_message_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_essentials_v1_player_message_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_essentials_v1_player_message_proto_goTypes = []any{
 	(PlayerMessagePushType)(0),        // 0: frontleaves.essentials.v1.PlayerMessagePushType
 	(*PlayerMessagePushResponse)(nil), // 1: frontleaves.essentials.v1.PlayerMessagePushResponse
 	(*PlayerChatPush)(nil),            // 2: frontleaves.essentials.v1.PlayerChatPush
 	(*SystemMessagePush)(nil),         // 3: frontleaves.essentials.v1.SystemMessagePush
-	(*generate.BaseResponse)(nil),     // 4: xBase.BaseResponse
-	(*emptypb.Empty)(nil),             // 5: google.protobuf.Empty
+	(*PrivateMessagePush)(nil),        // 4: frontleaves.essentials.v1.PrivateMessagePush
+	(*generate.BaseResponse)(nil),     // 5: xBase.BaseResponse
+	(*emptypb.Empty)(nil),             // 6: google.protobuf.Empty
 }
 var file_essentials_v1_player_message_proto_depIdxs = []int32{
-	4, // 0: frontleaves.essentials.v1.PlayerMessagePushResponse.base_response:type_name -> xBase.BaseResponse
+	5, // 0: frontleaves.essentials.v1.PlayerMessagePushResponse.base_response:type_name -> xBase.BaseResponse
 	0, // 1: frontleaves.essentials.v1.PlayerMessagePushResponse.push_type:type_name -> frontleaves.essentials.v1.PlayerMessagePushType
 	2, // 2: frontleaves.essentials.v1.PlayerMessagePushResponse.chat_push:type_name -> frontleaves.essentials.v1.PlayerChatPush
 	3, // 3: frontleaves.essentials.v1.PlayerMessagePushResponse.system_push:type_name -> frontleaves.essentials.v1.SystemMessagePush
-	5, // 4: frontleaves.essentials.v1.PlayerMessageService.PlayerMessageStream:input_type -> google.protobuf.Empty
-	1, // 5: frontleaves.essentials.v1.PlayerMessageService.PlayerMessageStream:output_type -> frontleaves.essentials.v1.PlayerMessagePushResponse
-	5, // [5:6] is the sub-list for method output_type
-	4, // [4:5] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	4, // 4: frontleaves.essentials.v1.PlayerMessagePushResponse.private_push:type_name -> frontleaves.essentials.v1.PrivateMessagePush
+	6, // 5: frontleaves.essentials.v1.PlayerMessageService.PlayerMessageStream:input_type -> google.protobuf.Empty
+	1, // 6: frontleaves.essentials.v1.PlayerMessageService.PlayerMessageStream:output_type -> frontleaves.essentials.v1.PlayerMessagePushResponse
+	6, // [6:7] is the sub-list for method output_type
+	5, // [5:6] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_essentials_v1_player_message_proto_init() }
@@ -368,6 +459,7 @@ func file_essentials_v1_player_message_proto_init() {
 	file_essentials_v1_player_message_proto_msgTypes[0].OneofWrappers = []any{
 		(*PlayerMessagePushResponse_ChatPush)(nil),
 		(*PlayerMessagePushResponse_SystemPush)(nil),
+		(*PlayerMessagePushResponse_PrivatePush)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -375,7 +467,7 @@ func file_essentials_v1_player_message_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_essentials_v1_player_message_proto_rawDesc), len(file_essentials_v1_player_message_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   3,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

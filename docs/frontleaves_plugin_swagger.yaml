@@ -893,6 +893,105 @@ definitions:
     - name
     - type
     type: object
+  direct_message.ConversationListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/direct_message.ConversationResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  direct_message.ConversationResponse:
+    properties:
+      last_message:
+        type: string
+      last_message_at:
+        type: string
+      unread_count:
+        type: integer
+      user_id:
+        type: string
+      user_name:
+        type: string
+    type: object
+  direct_message.DirectMessageListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/direct_message.DirectMessageResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  direct_message.DirectMessageResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      is_read:
+        type: boolean
+      message:
+        type: string
+      read_at:
+        type: string
+      receiver_id:
+        type: string
+      receiver_name:
+        type: string
+      sender_id:
+        type: string
+      sender_name:
+        type: string
+      source:
+        description: 1=Game, 2=Web
+        type: integer
+    type: object
+  direct_message.MarkAsReadRequest:
+    properties:
+      sender_id:
+        type: string
+    required:
+    - sender_id
+    type: object
+  direct_message.SendDirectMessageRequest:
+    properties:
+      message:
+        maxLength: 500
+        type: string
+      receiver_id:
+        type: string
+    required:
+    - message
+    - receiver_id
+    type: object
+  direct_message.UnreadCountByUser:
+    properties:
+      count:
+        type: integer
+      user_id:
+        type: string
+      user_name:
+        type: string
+    type: object
+  direct_message.UnreadCountResponse:
+    properties:
+      detail:
+        items:
+          $ref: '#/definitions/direct_message.UnreadCountByUser'
+        type: array
+      total:
+        type: integer
+    type: object
   xBase.BaseResponse:
     properties:
       code:
@@ -1823,6 +1922,47 @@ paths:
       summary: '[管理] 查询所有指令记录'
       tags:
       - 管理-消息接口
+  /admin/messages/dm:
+    get:
+      description: 分页查询所有用户的私信记录，支持按发送者/接收者筛选
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: 发送者名称筛选
+        in: query
+        name: sender_name
+        type: string
+      - description: 接收者名称筛选
+        in: query
+        name: receiver_name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/direct_message.DirectMessageListResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: '[管理] 查询所有私信'
+      tags:
+      - 管理-私信接口
   /admin/plugin-credentials:
     get:
       consumes:
@@ -3159,4 +3299,146 @@ paths:
       summary: '[用户] 查询我的指令记录'
       tags:
       - 用户-消息接口
+  /user/messages/dm:
+    get:
+      description: 分页查询当前用户与指定用户之间的私信对话记录
+      parameters:
+      - description: 目标用户 ID
+        in: query
+        name: target_user
+        required: true
+        type: string
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/direct_message.DirectMessageListResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: '[用户] 查询私信对话'
+      tags:
+      - 用户-私信接口
+    post:
+      consumes:
+      - application/json
+      description: Web 端用户向指定用户发送私信
+      parameters:
+      - description: 发送私信请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/direct_message.SendDirectMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: '[用户] 发送私信'
+      tags:
+      - 用户-私信接口
+  /user/messages/dm/conversations:
+    get:
+      description: 分页查询当前用户的所有私信会话，按最近消息时间排序
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/direct_message.ConversationListResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: '[用户] 查询会话列表'
+      tags:
+      - 用户-私信接口
+  /user/messages/dm/read:
+    put:
+      consumes:
+      - application/json
+      description: 将指定发送者的未读私信标记为已读
+      parameters:
+      - description: 标记已读请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/direct_message.MarkAsReadRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: '[用户] 标记私信已读'
+      tags:
+      - 用户-私信接口
+  /user/messages/dm/unread:
+    get:
+      description: 查询当前用户的未读私信数量，按发送者分组统计
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/direct_message.UnreadCountResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: '[用户] 获取未读消息统计'
+      tags:
+      - 用户-私信接口
 swagger: "2.0"

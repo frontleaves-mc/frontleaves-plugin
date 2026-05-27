@@ -138,6 +138,50 @@ func (h *EssentialsPlayerMessageHandler) PushSystemMessage(ctx context.Context, 
 	return nil
 }
 
+// PushPrivateMessage 向目标玩家所在的服务器推送私聊消息（定向推送）
+func (h *EssentialsPlayerMessageHandler) PushPrivateMessage(ctx context.Context, senderName, senderUUID, message string) error {
+	log := xLog.WithName(xLog.NamedGRPC)
+
+	playerKey := string(bConst.CacheStatusPlayer.Get(senderUUID))
+	playerData, err := h.rdb.HGetAll(ctx, playerKey).Result()
+	if err != nil || len(playerData) == 0 {
+		log.Info(ctx, "PushPrivateMessage - 玩家不在线或缓存不存在: "+senderUUID)
+		return nil
+	}
+
+	serverName := playerData["server_name"]
+	if serverName == "" {
+		log.Info(ctx, "PushPrivateMessage - 玩家缓存中无 server_name: "+senderUUID)
+		return nil
+	}
+
+	ms := h.getMessageStream(serverName)
+	if ms == nil {
+		log.Warn(ctx, "PushPrivateMessage - 无活跃流: "+serverName)
+		return nil
+	}
+
+	resp := &essentialspb.PlayerMessagePushResponse{
+		BaseResponse: &xGrpcGenerate.BaseResponse{Output: "Success"},
+		PushType:     essentialspb.PlayerMessagePushType_PLAYER_MESSAGE_PUSH_TYPE_PRIVATE,
+		Payload: &essentialspb.PlayerMessagePushResponse_PrivatePush{
+			PrivatePush: &essentialspb.PrivateMessagePush{
+				SenderName: senderName,
+				Message:    message,
+				SenderUuid: senderUUID,
+			},
+		},
+	}
+
+	ms.mu.Lock()
+	if err := ms.stream.Send(resp); err != nil {
+		log.Warn(ctx, "PushPrivateMessage - 发送失败 ["+serverName+"]: "+err.Error())
+	}
+	ms.mu.Unlock()
+
+	return nil
+}
+
 func (h *EssentialsPlayerMessageHandler) setMessageStream(ctx context.Context, serverName string, ms *essentialsPlayerMessageStream) {
 	essentialsPlayerMessageStreamManager.mu.Lock()
 	defer essentialsPlayerMessageStreamManager.mu.Unlock()
@@ -155,6 +199,12 @@ func (h *EssentialsPlayerMessageHandler) getMessageStreams() []*essentialsPlayer
 		result = append(result, ms)
 	}
 	return result
+}
+
+func (h *EssentialsPlayerMessageHandler) getMessageStream(serverName string) *essentialsPlayerMessageStream {
+	essentialsPlayerMessageStreamManager.mu.RLock()
+	defer essentialsPlayerMessageStreamManager.mu.RUnlock()
+	return essentialsPlayerMessageStreamManager.streams[serverName]
 }
 
 func (h *EssentialsPlayerMessageHandler) removeMessageStream(serverName string) {

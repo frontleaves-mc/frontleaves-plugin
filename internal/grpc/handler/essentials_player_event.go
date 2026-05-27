@@ -100,6 +100,9 @@ func (h *EssentialsPlayerEventHandler) dispatchPlayerEvent(
 	case essentialspb.PlayerEventType_PLAYER_EVENT_TYPE_PLAYER_COMMAND:
 		h.handlePlayerCommand(ctx, req.GetPlayerCommandEvent())
 
+	case essentialspb.PlayerEventType_PLAYER_EVENT_TYPE_PRIVATE_CHAT:
+		h.handlePrivateChat(ctx, req.GetPrivateChatEvent())
+
 	default:
 		pluginName, _ := xGrpcUtil.ExtractMetadata(ctx, bConst.MetadataPluginName)
 		if h.log != nil {
@@ -444,6 +447,45 @@ func (h *EssentialsPlayerEventHandler) handlePlayerCommand(
 			cmd.GetServerName(), cmd.GetWorldName(), cmd.GetCommand(), userID); xErr != nil {
 			if h.log != nil {
 				h.log.Warn(ctx, "PlayerCommandEvent - 记录指令日志失败: "+xErr.Error())
+			}
+		}
+	}
+}
+
+// handlePrivateChat 处理玩家私聊事件
+func (h *EssentialsPlayerEventHandler) handlePrivateChat(
+	ctx context.Context,
+	event *essentialspb.PlayerPrivateChatEvent,
+) {
+	if event == nil {
+		return
+	}
+
+	if event.GetSenderUuid() == "" {
+		if h.log != nil {
+			h.log.Warn(ctx, "PlayerPrivateChatEvent - sender_uuid 为空，跳过")
+		}
+		return
+	}
+	if h.log != nil {
+		h.log.Info(ctx, "PlayerPrivateChatEvent - 玩家私聊: "+event.GetSenderName()+" → "+event.GetReceiverName())
+	}
+
+	// 校验发送者 UUID 格式
+	senderUUID, err := uuid.Parse(event.GetSenderUuid())
+	if err != nil {
+		if h.log != nil {
+			h.log.Warn(ctx, "PlayerPrivateChatEvent - sender_uuid 格式无效: "+err.Error())
+		}
+		return
+	}
+
+	// 记录私信：UUID 作为 senderUserID，source=1 表示 Game 来源
+	if h.directMessageLogic != nil {
+		if xErr := h.directMessageLogic.RecordDirectMessage(ctx, senderUUID.String(),
+			event.GetSenderName(), event.GetReceiverName(), event.GetMessage(), 1); xErr != nil {
+			if h.log != nil {
+				h.log.Warn(ctx, "PlayerPrivateChatEvent - 记录私信失败: "+xErr.Error())
 			}
 		}
 	}
