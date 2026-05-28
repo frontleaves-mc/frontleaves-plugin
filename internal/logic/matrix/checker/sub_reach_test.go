@@ -17,7 +17,7 @@ import (
 func newTestReachSub(maxReach, expand, vlThreshold float64) *ReachSub {
 	warner := components.NewAntiCheatWarning(
 		uuid.New(), "TestPlayer", "TestServer", "test-session",
-		nil, nil, // warningRepo 和 monitorCache 为 nil，测试不触发 DB/Redis
+		nil, nil, nil, "", // warningRepo、monitorCache、rdb 为 nil，bufferKey 为空，测试不触发 DB/Redis
 	)
 	vl := component.NewVLTracker(0.25, vlThreshold)
 	bc := NewBaseChecker(warner, vl)

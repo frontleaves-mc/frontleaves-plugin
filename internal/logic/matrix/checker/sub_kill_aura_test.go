@@ -17,7 +17,7 @@ import (
 func newTestKillAuraSub(windowMs int64, maxSwitch int, angleThreshold float64) *KillAuraSub {
 	warner := components.NewAntiCheatWarning(
 		uuid.New(), "TestPlayer", "TestServer", "test-session",
-		nil, nil,
+		nil, nil, nil, "",
 	)
 	vl := component.NewVLTracker(0.3, 5.0)
 	bc := NewBaseChecker(warner, vl)

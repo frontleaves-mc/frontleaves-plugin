@@ -4533,6 +4533,12 @@ const docTemplatefrontleaves_plugin = `{
                 "player_uuid": {
                     "type": "string"
                 },
+                "record": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "risk_score": {
                     "type": "integer"
                 },

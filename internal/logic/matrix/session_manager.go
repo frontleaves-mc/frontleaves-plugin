@@ -60,7 +60,8 @@ func (m *MatrixSessionManager) GetOrCreate(ctx context.Context, serverName strin
 
 	// Matrix 反作弊检测：共享 AntiCheatWarning 实例，各 checker Sub 独立持有 VLTracker
 	if xEnv.GetEnvBool(bConst.EnvMatrixAcEnabled, true) {
-		warner := components.NewAntiCheatWarning(playerUUID, playerName, serverName, sessionKey, m.warningRepo, m.monitorCache)
+		bufferKey := string(bConst.CacheMatrixPlayerBuffer.Get(sessionKey))
+		warner := components.NewAntiCheatWarning(playerUUID, playerName, serverName, sessionKey, m.warningRepo, m.monitorCache, m.rdb, bufferKey)
 		antiCheatSubs := []MatrixSub{
 			checker.NewSpeedSub(warner),
 			checker.NewReachSub(warner),

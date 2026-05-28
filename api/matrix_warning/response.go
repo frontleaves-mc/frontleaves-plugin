@@ -27,6 +27,7 @@ type WarningDetailResponse struct {
 	Description string          `json:"description"`
 	RiskScore   int32           `json:"risk_score"`
 	ContextData json.RawMessage `json:"context_data"`
+	Record      json.RawMessage `json:"record"`
 	CreatedAt   time.Time       `json:"created_at"`
 }
 

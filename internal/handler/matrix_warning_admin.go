@@ -155,6 +155,7 @@ func (h *MatrixWarningAdminHandler) GetWarning(ctx *gin.Context) {
 		Description: warning.Description,
 		RiskScore:   warning.RiskScore,
 		ContextData: warning.ContextData,
+		Record:      warning.Record,
 		CreatedAt:   warning.CreatedAt,
 	}
 

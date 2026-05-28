@@ -382,6 +382,10 @@ definitions:
         type: string
       player_uuid:
         type: string
+      record:
+        items:
+          type: integer
+        type: array
       risk_score:
         type: integer
       server_name:
