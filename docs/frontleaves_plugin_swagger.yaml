@@ -182,10 +182,14 @@ definitions:
         type: string
       created_at:
         type: string
+      delay_seconds:
+        type: integer
       id:
         type: string
       published_at:
         type: string
+      schedule_order:
+        type: integer
       status:
         type: integer
       title:
@@ -197,6 +201,10 @@ definitions:
     properties:
       content:
         type: string
+      delay_seconds:
+        type: integer
+      schedule_order:
+        type: integer
       title:
         type: string
       type:
@@ -208,11 +216,24 @@ definitions:
     - content
     - title
     - type
+    type: object
+  apiAnnouncement.GetSchedulerConfigResponse:
+    properties:
+      interval_seconds:
+        type: integer
+      is_enabled:
+        type: boolean
+      mode:
+        type: integer
     type: object
   apiAnnouncement.UpdateAnnouncementRequest:
     properties:
       content:
         type: string
+      delay_seconds:
+        type: integer
+      schedule_order:
+        type: integer
       title:
         type: string
       type:
@@ -225,103 +246,19 @@ definitions:
     - title
     - type
     type: object
-  apiAnnouncementSchedule.CreateScheduleRequest:
+  apiAnnouncement.UpdateSchedulerConfigRequest:
     properties:
       interval_seconds:
+        minimum: 1
         type: integer
-      items:
-        items:
-          $ref: '#/definitions/apiAnnouncementSchedule.ScheduleItemInput'
-        minItems: 1
-        type: array
       mode:
         enum:
         - 1
         - 2
         type: integer
-      name:
-        type: string
     required:
-    - items
+    - interval_seconds
     - mode
-    - name
-    type: object
-  apiAnnouncementSchedule.ScheduleItemInput:
-    properties:
-      announcement_id:
-        type: string
-      delay_seconds:
-        type: integer
-      sort_order:
-        type: integer
-    required:
-    - announcement_id
-    type: object
-  apiAnnouncementSchedule.ScheduleItemResponse:
-    properties:
-      announcement_id:
-        type: string
-      announcement_title:
-        type: string
-      delay_seconds:
-        type: integer
-      sort_order:
-        type: integer
-    type: object
-  apiAnnouncementSchedule.ScheduleListResponse:
-    properties:
-      list:
-        items:
-          $ref: '#/definitions/apiAnnouncementSchedule.ScheduleResponse'
-        type: array
-      page:
-        type: integer
-      page_size:
-        type: integer
-      total:
-        type: integer
-    type: object
-  apiAnnouncementSchedule.ScheduleResponse:
-    properties:
-      created_at:
-        type: string
-      id:
-        type: string
-      interval_seconds:
-        type: integer
-      is_active:
-        type: boolean
-      items:
-        items:
-          $ref: '#/definitions/apiAnnouncementSchedule.ScheduleItemResponse'
-        type: array
-      mode:
-        type: integer
-      name:
-        type: string
-      status:
-        type: integer
-    type: object
-  apiAnnouncementSchedule.UpdateScheduleRequest:
-    properties:
-      interval_seconds:
-        type: integer
-      items:
-        items:
-          $ref: '#/definitions/apiAnnouncementSchedule.ScheduleItemInput'
-        minItems: 1
-        type: array
-      mode:
-        enum:
-        - 1
-        - 2
-        type: integer
-      name:
-        type: string
-    required:
-    - items
-    - mode
-    - name
     type: object
   apiMatrixStatistic.StatisticResponse:
     properties:
@@ -1484,20 +1421,11 @@ paths:
       summary: '[管理] 发布公告'
       tags:
       - 管理-公告接口
-  /admin/announcements/schedules:
+  /admin/announcements/scheduler/config:
     get:
       consumes:
       - application/json
-      description: 分页查询公告调度列表
-      parameters:
-      - description: 页码
-        in: query
-        name: page
-        type: integer
-      - description: 每页数量
-        in: query
-        name: page_size
-        type: integer
+      description: 获取公告调度引擎的全局配置信息
       produces:
       - application/json
       responses:
@@ -1508,123 +1436,22 @@ paths:
             - $ref: '#/definitions/xBase.BaseResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/apiAnnouncementSchedule.ScheduleListResponse'
+                  $ref: '#/definitions/apiAnnouncement.GetSchedulerConfigResponse'
               type: object
-        "400":
-          description: 请求参数错误
-          schema:
-            $ref: '#/definitions/xBase.BaseResponse'
-      summary: '[管理] 查询公告调度列表'
+      summary: '[管理] 获取公告调度配置'
       tags:
-      - 管理-公告调度接口
-    post:
-      consumes:
-      - application/json
-      description: 创建新的公告调度，指定调度名称、模式、间隔秒数和调度项
-      parameters:
-      - description: 创建调度请求
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/apiAnnouncementSchedule.CreateScheduleRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 成功
-          schema:
-            allOf:
-            - $ref: '#/definitions/xBase.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/apiAnnouncementSchedule.ScheduleResponse'
-              type: object
-        "400":
-          description: 请求参数错误
-          schema:
-            $ref: '#/definitions/xBase.BaseResponse'
-      summary: '[管理] 创建公告调度'
-      tags:
-      - 管理-公告调度接口
-  /admin/announcements/schedules/:id:
-    delete:
-      consumes:
-      - application/json
-      description: 删除指定公告调度，活动调度需先停用才能删除
-      parameters:
-      - description: 调度ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 成功
-          schema:
-            $ref: '#/definitions/xBase.BaseResponse'
-        "400":
-          description: 请求参数错误
-          schema:
-            $ref: '#/definitions/xBase.BaseResponse'
-        "404":
-          description: 调度不存在
-          schema:
-            $ref: '#/definitions/xBase.BaseResponse'
-      summary: '[管理] 删除公告调度'
-      tags:
-      - 管理-公告调度接口
-    get:
-      consumes:
-      - application/json
-      description: 根据调度 ID 查询公告调度详情，包含调度项列表
-      parameters:
-      - description: 调度ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 成功
-          schema:
-            allOf:
-            - $ref: '#/definitions/xBase.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/apiAnnouncementSchedule.ScheduleResponse'
-              type: object
-        "400":
-          description: 请求参数错误
-          schema:
-            $ref: '#/definitions/xBase.BaseResponse'
-        "404":
-          description: 调度不存在
-          schema:
-            $ref: '#/definitions/xBase.BaseResponse'
-      summary: '[管理] 查询公告调度详情'
-      tags:
-      - 管理-公告调度接口
+      - 管理-公告接口
     put:
       consumes:
       - application/json
-      description: 更新指定公告调度的名称、模式、间隔秒数和调度项
+      description: 更新公告调度引擎的全局配置信息
       parameters:
-      - description: 调度ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: 更新调度请求
+      - description: 更新配置请求
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/apiAnnouncementSchedule.UpdateScheduleRequest'
+          $ref: '#/definitions/apiAnnouncement.UpdateSchedulerConfigRequest'
       produces:
       - application/json
       responses:
@@ -1635,82 +1462,45 @@ paths:
             - $ref: '#/definitions/xBase.BaseResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/apiAnnouncementSchedule.ScheduleResponse'
+                  $ref: '#/definitions/apiAnnouncement.GetSchedulerConfigResponse'
               type: object
         "400":
           description: 请求参数错误
           schema:
             $ref: '#/definitions/xBase.BaseResponse'
-        "404":
-          description: 调度不存在
-          schema:
-            $ref: '#/definitions/xBase.BaseResponse'
-      summary: '[管理] 更新公告调度'
+      summary: '[管理] 更新公告调度配置'
       tags:
-      - 管理-公告调度接口
-  /admin/announcements/schedules/:id/activate:
+      - 管理-公告接口
+  /admin/announcements/scheduler/disable:
     post:
       consumes:
       - application/json
-      description: 将调度设为活动状态并启动推送引擎
-      parameters:
-      - description: 调度ID
-        in: path
-        name: id
-        required: true
-        type: string
+      description: 停用公告调度引擎
       produces:
       - application/json
       responses:
         "200":
           description: 成功
-          schema:
-            allOf:
-            - $ref: '#/definitions/xBase.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/apiAnnouncementSchedule.ScheduleResponse'
-              type: object
-        "400":
-          description: 请求参数错误
-          schema:
-            $ref: '#/definitions/xBase.BaseResponse'
-        "404":
-          description: 调度不存在
-          schema:
-            $ref: '#/definitions/xBase.BaseResponse'
-      summary: '[管理] 激活公告调度'
-      tags:
-      - 管理-公告调度接口
-  /admin/announcements/schedules/:id/deactivate:
-    post:
-      consumes:
-      - application/json
-      description: 停用调度并停止推送引擎
-      parameters:
-      - description: 调度ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 成功
-          schema:
-            $ref: '#/definitions/xBase.BaseResponse'
-        "400":
-          description: 请求参数错误
-          schema:
-            $ref: '#/definitions/xBase.BaseResponse'
-        "404":
-          description: 调度不存在
           schema:
             $ref: '#/definitions/xBase.BaseResponse'
       summary: '[管理] 停用公告调度'
       tags:
-      - 管理-公告调度接口
+      - 管理-公告接口
+  /admin/announcements/scheduler/enable:
+    post:
+      consumes:
+      - application/json
+      description: 启用公告调度引擎
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 启用公告调度'
+      tags:
+      - 管理-公告接口
   /admin/matrix/statistics/:uuid:
     get:
       consumes:

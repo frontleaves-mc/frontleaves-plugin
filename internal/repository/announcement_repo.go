@@ -92,3 +92,15 @@ func (r *AnnouncementRepo) GetPublishedGlobal(ctx context.Context) ([]entity.Ann
 	}
 	return announcements, nil
 }
+
+func (r *AnnouncementRepo) GetScheduledAnnouncements(ctx context.Context) ([]entity.Announcement, *xError.Error) {
+	r.log.Info(ctx, "GetScheduledAnnouncements - 获取调度公告列表")
+	var announcements []entity.Announcement
+	if err := r.db.WithContext(ctx).
+		Where("type = ? AND status = ? AND schedule_order IS NOT NULL", entity.AnnouncementTypeGlobal, entity.AnnouncementStatusPublished).
+		Order("schedule_order ASC, id ASC").
+		Find(&announcements).Error; err != nil {
+		return nil, xError.NewError(nil, xError.DatabaseError, "获取调度公告列表失败", false, err)
+	}
+	return announcements, nil
+}

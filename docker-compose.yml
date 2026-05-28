@@ -13,6 +13,7 @@ services:
       - "5600:5600"
     volumes:
       - .logs:/app/.logs
+      - ./template:/app/template
     networks:
       - 1panel-network
     healthcheck:

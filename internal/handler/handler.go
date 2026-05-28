@@ -14,7 +14,6 @@ type service struct {
 	titleLogic                *logic.TitleLogic
 	achievementLogic          *logic.AchievementLogic
 	announcementLogic         *logic.AnnouncementLogic
-	announcementScheduleLogic *logic.AnnouncementScheduleLogic
 	pluginCredentialLogic     *logic.PluginCredentialLogic
 	playerChatLogic           *logic.PlayerChatLogic
 	playerCommandLogic        *logic.PlayerCommandLogic
@@ -50,7 +49,6 @@ func NewHandler[T IHandler](ctx context.Context, handlerName string) *T {
 			titleLogic:                logic.NewTitleLogic(ctx),
 			achievementLogic:          logic.NewAchievementLogic(ctx),
 			announcementLogic:         logic.NewAnnouncementLogic(ctx),
-			announcementScheduleLogic: logic.NewAnnouncementScheduleLogic(ctx),
 			pluginCredentialLogic:     logic.NewPluginCredentialLogic(ctx),
 			playerChatLogic:           logic.NewPlayerChatLogic(ctx),
 			playerCommandLogic:        logic.NewPlayerCommandLogic(ctx),

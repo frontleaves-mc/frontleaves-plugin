@@ -18,9 +18,10 @@ const (
 	GenePlayerChatLog     xSnowflake.Gene = 42 // 玩家聊天日志
 
 	// 公告系统
-	GeneAnnouncement             xSnowflake.Gene = 43 // 公告
-	GeneAnnouncementSchedule     xSnowflake.Gene = 44 // 公告调度
-	GeneAnnouncementScheduleItem xSnowflake.Gene = 45 // 公告调度项
+	GeneAnnouncement xSnowflake.Gene = 43 // 公告
+
+	// 通用配置系统
+	GeneConfig xSnowflake.Gene = 44 // 通用键值对配置（复用原 GeneAnnouncementSchedulerConfig）
 
 	// 服务器系统
 	GeneServer        xSnowflake.Gene = 46 // 服务器
@@ -34,4 +35,5 @@ const (
 
 	// 私信系统
 	GenePlayerDirectMessage xSnowflake.Gene = 52 // 玩家私信
+
 )

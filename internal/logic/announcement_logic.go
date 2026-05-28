@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
@@ -9,13 +10,16 @@ import (
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
 	apiAnnouncement "github.com/frontleaves-mc/frontleaves-plugin/api/announcement"
+	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/util"
 )
 
 type announcementRepo struct {
-	announcement *repository.AnnouncementRepo
+	announcement  *repository.AnnouncementRepo
+	configRepo    *repository.ConfigRepository
+	configLoader  *SchedulerConfigLoader
 }
 
 type AnnouncementLogic struct {
@@ -27,6 +31,10 @@ func NewAnnouncementLogic(ctx context.Context) *AnnouncementLogic {
 	db := xCtxUtil.MustGetDB(ctx)
 	rdb := xCtxUtil.MustGetRDB(ctx)
 
+	configRepo := repository.NewConfigRepository()
+	configLoader := NewSchedulerConfigLoader(configRepo)
+	_ = configLoader.Load(ctx)
+
 	return &AnnouncementLogic{
 		logic: logic{
 			db:  db,
@@ -35,18 +43,22 @@ func NewAnnouncementLogic(ctx context.Context) *AnnouncementLogic {
 		},
 		repo: announcementRepo{
 			announcement: repository.NewAnnouncementRepo(db),
+			configRepo:   configRepo,
+			configLoader: configLoader,
 		},
 	}
 }
 
-func (l *AnnouncementLogic) CreateAnnouncement(ctx context.Context, title, content string, annType entity.AnnouncementType) (*apiAnnouncement.AnnouncementResponse, *xError.Error) {
+func (l *AnnouncementLogic) CreateAnnouncement(ctx context.Context, title, content string, annType entity.AnnouncementType, scheduleOrder *int, delaySeconds int) (*apiAnnouncement.AnnouncementResponse, *xError.Error) {
 	l.log.Info(ctx, "CreateAnnouncement - 创建公告")
 
 	announcement := &entity.Announcement{
-		Title:   title,
-		Content: content,
-		Type:    annType,
-		Status:  entity.AnnouncementStatusDraft,
+		Title:         title,
+		Content:       content,
+		Type:          annType,
+		Status:        entity.AnnouncementStatusDraft,
+		ScheduleOrder: scheduleOrder,
+		DelaySeconds:  delaySeconds,
 	}
 
 	if xErr := l.repo.announcement.Create(ctx, announcement); xErr != nil {
@@ -56,7 +68,7 @@ func (l *AnnouncementLogic) CreateAnnouncement(ctx context.Context, title, conte
 	return l.toAnnouncementResponse(announcement), nil
 }
 
-func (l *AnnouncementLogic) UpdateAnnouncement(ctx context.Context, id xSnowflake.SnowflakeID, title, content string, annType entity.AnnouncementType) (*apiAnnouncement.AnnouncementResponse, *xError.Error) {
+func (l *AnnouncementLogic) UpdateAnnouncement(ctx context.Context, id xSnowflake.SnowflakeID, title, content string, annType entity.AnnouncementType, scheduleOrder *int, delaySeconds int) (*apiAnnouncement.AnnouncementResponse, *xError.Error) {
 	l.log.Info(ctx, "UpdateAnnouncement - 更新公告")
 
 	announcement, xErr := l.repo.announcement.GetByID(ctx, id)
@@ -67,6 +79,8 @@ func (l *AnnouncementLogic) UpdateAnnouncement(ctx context.Context, id xSnowflak
 	announcement.Title = title
 	announcement.Content = content
 	announcement.Type = annType
+	announcement.ScheduleOrder = scheduleOrder
+	announcement.DelaySeconds = delaySeconds
 
 	if xErr := l.repo.announcement.Update(ctx, announcement); xErr != nil {
 		return nil, xErr
@@ -153,15 +167,114 @@ func (l *AnnouncementLogic) GetPublishedGlobalAnnouncements(ctx context.Context)
 	return l.repo.announcement.GetPublishedGlobal(ctx)
 }
 
+func (l *AnnouncementLogic) SetAnnouncementScheduleOrder(ctx context.Context, id xSnowflake.SnowflakeID, order *int, delaySeconds int) *xError.Error {
+	l.log.Info(ctx, "SetAnnouncementScheduleOrder - 设置公告调度顺序")
+
+	announcement, xErr := l.repo.announcement.GetByID(ctx, id)
+	if xErr != nil {
+		return xErr
+	}
+
+	announcement.ScheduleOrder = order
+	announcement.DelaySeconds = delaySeconds
+
+	if xErr := l.repo.announcement.Update(ctx, announcement); xErr != nil {
+		return xErr
+	}
+
+	return nil
+}
+
+func (l *AnnouncementLogic) ListScheduledAnnouncements(ctx context.Context) ([]apiAnnouncement.AnnouncementResponse, *xError.Error) {
+	l.log.Info(ctx, "ListScheduledAnnouncements - 获取调度公告列表")
+
+	announcements, xErr := l.repo.announcement.GetScheduledAnnouncements(ctx)
+	if xErr != nil {
+		return nil, xErr
+	}
+
+	var resp []apiAnnouncement.AnnouncementResponse
+	for _, a := range announcements {
+		resp = append(resp, *l.toAnnouncementResponse(&a))
+	}
+	return resp, nil
+}
+
+func (l *AnnouncementLogic) GetSchedulerConfig(ctx context.Context) (*apiAnnouncement.GetSchedulerConfigResponse, *xError.Error) {
+	l.log.Info(ctx, "GetSchedulerConfig - 获取公告调度配置")
+	snapshot := l.repo.configLoader.Get()
+	return &apiAnnouncement.GetSchedulerConfigResponse{
+		Mode:            int16(snapshot.Mode),
+		IntervalSeconds: snapshot.IntervalSeconds,
+		IsEnabled:       snapshot.IsEnabled,
+	}, nil
+}
+
+func (l *AnnouncementLogic) SaveSchedulerConfig(ctx context.Context, mode int16, intervalSeconds int) *xError.Error {
+	l.log.Info(ctx, "SaveSchedulerConfig - 保存公告调度配置")
+	if xErr := l.repo.configRepo.Set(ctx, bConst.SchedulerConfigNamespace, bConst.SchedulerConfigMode, strconv.Itoa(int(mode))); xErr != nil {
+		return xErr
+	}
+	if xErr := l.repo.configRepo.Set(ctx, bConst.SchedulerConfigNamespace, bConst.SchedulerConfigIntervalSeconds, strconv.Itoa(intervalSeconds)); xErr != nil {
+		return xErr
+	}
+	if xErr := l.repo.configLoader.Load(ctx); xErr != nil {
+		return xErr
+	}
+	return nil
+}
+
+func (l *AnnouncementLogic) EnableScheduler(ctx context.Context) *xError.Error {
+	l.log.Info(ctx, "EnableScheduler - 启用公告调度")
+	// 先确保 mode 和 interval 存在（如果不存在，loader 会有默认值）
+	snapshot := l.repo.configLoader.Get()
+	if xErr := l.repo.configRepo.Set(ctx, bConst.SchedulerConfigNamespace, bConst.SchedulerConfigMode, strconv.Itoa(int(snapshot.Mode))); xErr != nil {
+		return xErr
+	}
+	if xErr := l.repo.configRepo.Set(ctx, bConst.SchedulerConfigNamespace, bConst.SchedulerConfigIntervalSeconds, strconv.Itoa(snapshot.IntervalSeconds)); xErr != nil {
+		return xErr
+	}
+	if xErr := l.repo.configRepo.Set(ctx, bConst.SchedulerConfigNamespace, bConst.SchedulerConfigIsEnabled, "true"); xErr != nil {
+		return xErr
+	}
+	if xErr := l.repo.configLoader.Load(ctx); xErr != nil {
+		return xErr
+	}
+	engine := GetGlobalEngine()
+	if engine != nil && engine.IsRunning() {
+		if xErr := engine.Restart(ctx); xErr != nil {
+			return xErr
+		}
+	}
+	return nil
+}
+
+func (l *AnnouncementLogic) DisableScheduler(ctx context.Context) *xError.Error {
+	l.log.Info(ctx, "DisableScheduler - 停用公告调度")
+	if xErr := l.repo.configRepo.Set(ctx, bConst.SchedulerConfigNamespace, bConst.SchedulerConfigIsEnabled, "false"); xErr != nil {
+		return xErr
+	}
+	if xErr := l.repo.configLoader.Load(ctx); xErr != nil {
+		return xErr
+	}
+	engine := GetGlobalEngine()
+	if engine != nil {
+		_ = engine.Stop()
+	}
+	return nil
+}
+
 func (l *AnnouncementLogic) toAnnouncementResponse(a *entity.Announcement) *apiAnnouncement.AnnouncementResponse {
 	return &apiAnnouncement.AnnouncementResponse{
-		ID:          a.ID.String(),
-		Title:       a.Title,
-		Content:     a.Content,
-		Type:        int16(a.Type),
-		Status:      int16(a.Status),
-		PublishedAt: a.PublishedAt,
-		CreatedAt:   a.CreatedAt,
+		ID:            a.ID.String(),
+		Title:         a.Title,
+		Content:       a.Content,
+		Type:          int16(a.Type),
+		Status:        int16(a.Status),
+		ScheduleOrder: a.ScheduleOrder,
+		DelaySeconds:  a.DelaySeconds,
+		PublishedAt:   a.PublishedAt,
+		CreatedAt:     a.CreatedAt,
 	}
 }
 

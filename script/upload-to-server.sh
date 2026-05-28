@@ -238,7 +238,7 @@ if [ -n "$DEPLOY_SSH_KEY" ]; then
     RSYNC_CMD="$RSYNC_CMD -i $DEPLOY_SSH_KEY"
 fi
 
-eval "$RSYNC_CMD docker-compose.yml Makefile.run .env.prod ${DEPLOY_USER}@${DEPLOY_SERVER}:${DEPLOY_PATH}/"
+eval "$RSYNC_CMD docker-compose.yml Makefile.run .env.prod template ${DEPLOY_USER}@${DEPLOY_SERVER}:${DEPLOY_PATH}/"
 
 echo ""
 log_success "文件上传完成"

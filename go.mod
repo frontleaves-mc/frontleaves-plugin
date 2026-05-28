@@ -7,6 +7,7 @@ require (
 	github.com/bamboo-services/bamboo-base-go/defined v1.0.0-202605031602
 	github.com/bamboo-services/bamboo-base-go/major v1.0.0-202604270610
 	github.com/bamboo-services/bamboo-base-go/plugins/async v1.0.0-202604270654
+	github.com/bamboo-services/bamboo-base-go/plugins/email v1.0.0-202605031602
 	github.com/bamboo-services/bamboo-base-go/plugins/grpc v1.0.0-202604270610
 	github.com/frontleaves-mc/frontleaves-yggleaf/proto v1.0.0-202605031622
 	github.com/gin-gonic/gin v1.12.0
@@ -25,7 +26,6 @@ require (
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
-	github.com/bamboo-services/bamboo-base-go/plugins/email v1.0.0-202605031602 // indirect
 	github.com/bytedance/gopkg v0.1.4 // indirect
 	github.com/bytedance/sonic v1.15.1 // indirect
 	github.com/bytedance/sonic/loader v0.5.1 // indirect

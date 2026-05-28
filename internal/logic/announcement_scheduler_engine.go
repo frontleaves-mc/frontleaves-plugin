@@ -10,6 +10,7 @@ import (
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/entity"
+	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository"
 )
 
 // PushFunc 是将公告推送到 MC 服务器的函数类型，由上层注入以解耦 gRPC 层
@@ -17,34 +18,33 @@ type PushFunc func(ctx context.Context, announcementID, title, content string, a
 
 // SchedulerEngine 公告调度引擎，负责按 FixedInterval 或 Sequential 模式循环推送公告
 type SchedulerEngine struct {
-	mu                sync.RWMutex
-	scheduleLogic     *AnnouncementScheduleLogic
-	announcementLogic *AnnouncementLogic
-	pushFunc          PushFunc
-	cancelFunc        context.CancelFunc
-	currentScheduleID xSnowflake.SnowflakeID
-	currentIndex      int
-	ticker            *time.Ticker
-	log               *xLog.LogNamedLogger
-	running           bool
+	mu               sync.RWMutex
+	configLoader     *SchedulerConfigLoader
+	announcementRepo *repository.AnnouncementRepo
+	pushFunc         PushFunc
+	cancelFunc       context.CancelFunc
+	currentIndex     int
+	ticker           *time.Ticker
+	log              *xLog.LogNamedLogger
+	running          bool
 }
 
 // NewSchedulerEngine 创建调度引擎实例
 func NewSchedulerEngine(
-	scheduleLogic *AnnouncementScheduleLogic,
-	announcementLogic *AnnouncementLogic,
+	configLoader *SchedulerConfigLoader,
+	announcementRepo *repository.AnnouncementRepo,
 	pushFunc PushFunc,
 ) *SchedulerEngine {
 	return &SchedulerEngine{
-		scheduleLogic:     scheduleLogic,
-		announcementLogic: announcementLogic,
-		pushFunc:          pushFunc,
-		log:               xLog.WithName(xLog.NamedLOGC, "SchedulerEngine"),
+		configLoader:     configLoader,
+		announcementRepo: announcementRepo,
+		pushFunc:         pushFunc,
+		log:              xLog.WithName(xLog.NamedLOGC, "SchedulerEngine"),
 	}
 }
 
-// Start 启动调度引擎，根据 scheduleID 加载调度配置并开始循环推送
-func (e *SchedulerEngine) Start(ctx context.Context, scheduleID xSnowflake.SnowflakeID) *xError.Error {
+// Start 启动调度引擎，从 configLoader 读取配置，从 announcementRepo 读取公告列表并开始循环推送
+func (e *SchedulerEngine) Start(ctx context.Context) *xError.Error {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
@@ -53,41 +53,42 @@ func (e *SchedulerEngine) Start(ctx context.Context, scheduleID xSnowflake.Snowf
 		e.stopLocked()
 	}
 
-	// 加载调度信息
-	schedule, xErr := e.scheduleLogic.repo.schedule.GetByID(ctx, scheduleID)
-	if xErr != nil {
-		return xError.NewError(nil, xError.NotFound, "调度不存在或加载失败", true, xErr)
+	// 读取配置（零分配热路径，无需字符串解析）
+	config := e.configLoader.Get()
+	if !config.IsEnabled {
+		e.log.Info(ctx, "调度引擎未启用，跳过启动")
+		return nil
 	}
 
-	// 加载调度项
-	items, xErr := e.scheduleLogic.repo.item.GetByScheduleID(ctx, scheduleID)
+	// 读取公告列表
+	announcements, xErr := e.announcementRepo.GetScheduledAnnouncements(ctx)
 	if xErr != nil {
-		return xError.NewError(nil, xError.DatabaseError, "加载调度项失败", false, xErr)
+		return xError.NewError(nil, xError.DatabaseError, "读取调度公告列表失败", false, xErr)
 	}
-	if len(items) == 0 {
-		return xError.NewError(nil, xError.ParameterError, "调度项为空，无法启动", true, nil)
+	if len(announcements) == 0 {
+		e.log.Info(ctx, "调度公告列表为空，引擎不启动")
+		return nil
 	}
 
 	// 创建可取消的子 context
 	childCtx, cancel := context.WithCancel(ctx)
 	e.cancelFunc = cancel
-	e.currentScheduleID = scheduleID
 	e.currentIndex = 0
 	e.running = true
 
-	e.log.Info(ctx, fmt.Sprintf("启动调度引擎 - 调度: %s, 模式: %s, 项数: %d",
-		schedule.Name, schedule.Mode.String(), len(items)))
+	e.log.Info(ctx, fmt.Sprintf("启动调度引擎 - 模式: %s, 公告数: %d",
+		config.Mode.String(), len(announcements)))
 
 	// 根据模式启动不同的 ticker
-	switch schedule.Mode {
+	switch config.Mode {
 	case entity.ScheduleModeFixedInterval:
-		e.startFixedInterval(childCtx, schedule, items)
+		e.startFixedInterval(childCtx, config, announcements)
 	case entity.ScheduleModeSequential:
-		e.startSequential(childCtx, schedule, items)
+		e.startSequential(childCtx, announcements)
 	default:
 		cancel()
 		e.running = false
-		return xError.NewError(nil, xError.ParameterError, xError.ErrMessage(fmt.Sprintf("未知的调度模式: %d", schedule.Mode)), true, nil)
+		return xError.NewError(nil, xError.ParameterError, xError.ErrMessage(fmt.Sprintf("未知的调度模式: %d", config.Mode)), true, nil)
 	}
 
 	return nil
@@ -107,22 +108,12 @@ func (e *SchedulerEngine) Stop() error {
 	return nil
 }
 
-// Restart 重启调度引擎，从数据库重新加载活动调度
+// Restart 重启调度引擎
 func (e *SchedulerEngine) Restart(ctx context.Context) *xError.Error {
 	// 先停止
 	_ = e.Stop()
 
-	// 从数据库加载活动调度
-	schedule, _, xErr := e.scheduleLogic.GetActiveScheduleWithItems(ctx)
-	if xErr != nil {
-		return xError.NewError(nil, xError.DatabaseError, "加载活动调度失败", false, xErr)
-	}
-	if schedule == nil {
-		e.log.Info(ctx, "重启调度引擎 - 无活动调度，跳过启动")
-		return nil
-	}
-
-	return e.Start(ctx, schedule.ID)
+	return e.Start(ctx)
 }
 
 // IsRunning 检查调度引擎是否正在运行
@@ -136,26 +127,13 @@ func (e *SchedulerEngine) IsRunning() bool {
 func (e *SchedulerEngine) GetCurrentStatus() (scheduleID xSnowflake.SnowflakeID, index int, running bool) {
 	e.mu.RLock()
 	defer e.mu.RUnlock()
-	return e.currentScheduleID, e.currentIndex, e.running
+	return 0, e.currentIndex, e.running
 }
 
 // RecoverFromDatabase 从数据库恢复调度状态（用于服务启动时自动恢复）
 func (e *SchedulerEngine) RecoverFromDatabase(ctx context.Context) *xError.Error {
 	e.log.Info(ctx, "RecoverFromDatabase - 从数据库恢复调度引擎")
-
-	schedule, _, xErr := e.scheduleLogic.GetActiveScheduleWithItems(ctx)
-	if xErr != nil {
-		return xError.NewError(nil, xError.DatabaseError, "恢复调度引擎失败", false, xErr)
-	}
-	if schedule == nil {
-		e.log.Info(ctx, "RecoverFromDatabase - 无活动调度，跳过恢复")
-		return nil
-	}
-
-	e.log.Info(ctx, fmt.Sprintf("RecoverFromDatabase - 发现活动调度: %s (ID: %s)，开始恢复",
-		schedule.Name, schedule.ID.String()))
-
-	return e.Start(ctx, schedule.ID)
+	return e.Start(ctx)
 }
 
 // --- 全局调度引擎单例 ---
@@ -176,8 +154,8 @@ func GetGlobalEngine() *SchedulerEngine {
 // --- 私有方法 ---
 
 // startFixedInterval 固定间隔模式：每个 tick 推送下一个公告
-func (e *SchedulerEngine) startFixedInterval(ctx context.Context, schedule *entity.AnnouncementSchedule, items []entity.AnnouncementScheduleItem) {
-	interval := time.Duration(schedule.IntervalSeconds) * time.Second
+func (e *SchedulerEngine) startFixedInterval(ctx context.Context, config *SchedulerConfigSnapshot, announcements []entity.Announcement) {
+	interval := time.Duration(config.IntervalSeconds) * time.Second
 	e.ticker = time.NewTicker(interval)
 
 	go func() {
@@ -186,32 +164,32 @@ func (e *SchedulerEngine) startFixedInterval(ctx context.Context, schedule *enti
 			case <-ctx.Done():
 				return
 			case <-e.ticker.C:
-				e.tick(ctx, items)
+				e.tick(ctx, announcements)
 			}
 		}
 	}()
 }
 
-// startSequential 顺序播放模式：按每个调度项的 DelaySeconds 推送当前公告，然后切换到下一个
-func (e *SchedulerEngine) startSequential(ctx context.Context, schedule *entity.AnnouncementSchedule, items []entity.AnnouncementScheduleItem) {
+// startSequential 顺序播放模式：按每个公告的 DelaySeconds 推送当前公告，然后切换到下一个
+func (e *SchedulerEngine) startSequential(ctx context.Context, announcements []entity.Announcement) {
 	// 先立即推送第一个
-	e.tick(ctx, items)
+	e.tick(ctx, announcements)
 
-	// 设置下一个调度项的延迟
-	e.resetSequentialTicker(ctx, items)
+	// 设置下一个公告的延迟
+	e.resetSequentialTicker(ctx, announcements)
 }
 
-// resetSequentialTicker 重置 Sequential 模式的 ticker 为下一个调度项的延迟
-func (e *SchedulerEngine) resetSequentialTicker(ctx context.Context, items []entity.AnnouncementScheduleItem) {
+// resetSequentialTicker 重置 Sequential 模式的 ticker 为下一个公告的延迟
+func (e *SchedulerEngine) resetSequentialTicker(ctx context.Context, announcements []entity.Announcement) {
 	if e.ticker != nil {
 		e.ticker.Stop()
 	}
 
 	e.mu.RLock()
-	nextIndex := (e.currentIndex + 1) % len(items)
+	nextIndex := (e.currentIndex + 1) % len(announcements)
 	e.mu.RUnlock()
 
-	delaySeconds := items[nextIndex].DelaySeconds
+	delaySeconds := announcements[nextIndex].DelaySeconds
 	if delaySeconds <= 0 {
 		delaySeconds = 1 // 最小 1 秒
 	}
@@ -224,31 +202,22 @@ func (e *SchedulerEngine) resetSequentialTicker(ctx context.Context, items []ent
 		case <-ctx.Done():
 			return
 		case <-e.ticker.C:
-			e.tick(ctx, items)
-			e.resetSequentialTicker(ctx, items)
+			e.tick(ctx, announcements)
+			e.resetSequentialTicker(ctx, announcements)
 		}
 	}()
 }
 
 // tick 推送当前索引的公告，然后推进索引（循环）
-func (e *SchedulerEngine) tick(ctx context.Context, items []entity.AnnouncementScheduleItem) {
+func (e *SchedulerEngine) tick(ctx context.Context, announcements []entity.Announcement) {
 	e.mu.RLock()
-	if !e.running || len(items) == 0 {
+	if !e.running || len(announcements) == 0 {
 		e.mu.RUnlock()
 		return
 	}
 	idx := e.currentIndex
-	item := items[idx]
+	announcement := announcements[idx]
 	e.mu.RUnlock()
-
-	// 加载公告详情
-	announcement, xErr := e.announcementLogic.repo.announcement.GetByID(ctx, item.AnnouncementID)
-	if xErr != nil {
-		e.log.Error(ctx, fmt.Sprintf("加载公告失败 (ID: %s): %v", item.AnnouncementID.String(), xErr))
-		// 即使加载失败也推进索引
-		e.advanceIndex(len(items))
-		return
-	}
 
 	// 推送公告（fire-and-forget：失败不停止引擎）
 	if err := e.pushFunc(ctx, announcement.ID.String(), announcement.Title, announcement.Content, int32(announcement.Type)); err != nil {
@@ -256,7 +225,7 @@ func (e *SchedulerEngine) tick(ctx context.Context, items []entity.AnnouncementS
 	}
 
 	// 推进索引（循环）
-	e.advanceIndex(len(items))
+	e.advanceIndex(len(announcements))
 }
 
 // advanceIndex 推进当前索引（循环）
@@ -277,6 +246,5 @@ func (e *SchedulerEngine) stopLocked() {
 		e.ticker = nil
 	}
 	e.running = false
-	e.currentScheduleID = 0
 	e.currentIndex = 0
 }

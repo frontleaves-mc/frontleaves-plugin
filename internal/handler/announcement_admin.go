@@ -38,7 +38,7 @@ func (h *AnnouncementAdminHandler) CreateAnnouncement(ctx *gin.Context) {
 		return
 	}
 
-	announcement, xErr := h.service.announcementLogic.CreateAnnouncement(ctx.Request.Context(), req.Title, req.Content, entity.AnnouncementType(req.Type))
+	announcement, xErr := h.service.announcementLogic.CreateAnnouncement(ctx.Request.Context(), req.Title, req.Content, entity.AnnouncementType(req.Type), req.ScheduleOrder, req.DelaySeconds)
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return
@@ -75,7 +75,7 @@ func (h *AnnouncementAdminHandler) UpdateAnnouncement(ctx *gin.Context) {
 		return
 	}
 
-	announcement, xErr := h.service.announcementLogic.UpdateAnnouncement(ctx.Request.Context(), announcementID, req.Title, req.Content, entity.AnnouncementType(req.Type))
+	announcement, xErr := h.service.announcementLogic.UpdateAnnouncement(ctx.Request.Context(), announcementID, req.Title, req.Content, entity.AnnouncementType(req.Type), req.ScheduleOrder, req.DelaySeconds)
 	if xErr != nil {
 		_ = ctx.Error(xErr)
 		return
@@ -255,6 +255,101 @@ func (h *AnnouncementAdminHandler) OfflineAnnouncement(ctx *gin.Context) {
 	}
 
 	xResult.SuccessHasData(ctx, "下线成功", announcement)
+}
+
+// GetSchedulerConfig 获取调度配置
+//
+// @Summary     [管理] 获取公告调度配置
+// @Description 获取公告调度引擎的全局配置信息
+// @Tags        管理-公告接口
+// @Accept      json
+// @Produce     json
+// @Success     200  {object}  xBase.BaseResponse{data=apiAnnouncement.GetSchedulerConfigResponse}  "成功"
+// @Router      /admin/announcements/scheduler/config [GET]
+func (h *AnnouncementAdminHandler) GetSchedulerConfig(ctx *gin.Context) {
+	h.log.Info(ctx, "GetSchedulerConfig - 获取公告调度配置")
+
+	resp, xErr := h.service.announcementLogic.GetSchedulerConfig(ctx.Request.Context())
+	if xErr != nil {
+		_ = ctx.Error(xErr)
+		return
+	}
+
+	xResult.SuccessHasData(ctx, "查询成功", resp)
+}
+
+// UpdateSchedulerConfig 更新调度配置
+//
+// @Summary     [管理] 更新公告调度配置
+// @Description 更新公告调度引擎的全局配置信息
+// @Tags        管理-公告接口
+// @Accept      json
+// @Produce     json
+// @Param       request  body  apiAnnouncement.UpdateSchedulerConfigRequest  true  "更新配置请求"
+// @Success     200  {object}  xBase.BaseResponse{data=apiAnnouncement.GetSchedulerConfigResponse}  "成功"
+// @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
+// @Router      /admin/announcements/scheduler/config [PUT]
+func (h *AnnouncementAdminHandler) UpdateSchedulerConfig(ctx *gin.Context) {
+	h.log.Info(ctx, "UpdateSchedulerConfig - 更新公告调度配置")
+
+	var req apiAnnouncement.UpdateSchedulerConfigRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		_ = ctx.Error(xError.NewError(nil, xError.ParameterError, "请求参数错误", true, err))
+		return
+	}
+
+	if xErr := h.service.announcementLogic.SaveSchedulerConfig(ctx.Request.Context(), req.Mode, req.IntervalSeconds); xErr != nil {
+		_ = ctx.Error(xErr)
+		return
+	}
+
+	resp, xErr := h.service.announcementLogic.GetSchedulerConfig(ctx.Request.Context())
+	if xErr != nil {
+		_ = ctx.Error(xErr)
+		return
+	}
+
+	xResult.SuccessHasData(ctx, "更新成功", resp)
+}
+
+// EnableScheduler 启用调度
+//
+// @Summary     [管理] 启用公告调度
+// @Description 启用公告调度引擎
+// @Tags        管理-公告接口
+// @Accept      json
+// @Produce     json
+// @Success     200  {object}  xBase.BaseResponse  "成功"
+// @Router      /admin/announcements/scheduler/enable [POST]
+func (h *AnnouncementAdminHandler) EnableScheduler(ctx *gin.Context) {
+	h.log.Info(ctx, "EnableScheduler - 启用公告调度")
+
+	if xErr := h.service.announcementLogic.EnableScheduler(ctx.Request.Context()); xErr != nil {
+		_ = ctx.Error(xErr)
+		return
+	}
+
+	xResult.SuccessHasData(ctx, "启用成功", nil)
+}
+
+// DisableScheduler 停用调度
+//
+// @Summary     [管理] 停用公告调度
+// @Description 停用公告调度引擎
+// @Tags        管理-公告接口
+// @Accept      json
+// @Produce     json
+// @Success     200  {object}  xBase.BaseResponse  "成功"
+// @Router      /admin/announcements/scheduler/disable [POST]
+func (h *AnnouncementAdminHandler) DisableScheduler(ctx *gin.Context) {
+	h.log.Info(ctx, "DisableScheduler - 停用公告调度")
+
+	if xErr := h.service.announcementLogic.DisableScheduler(ctx.Request.Context()); xErr != nil {
+		_ = ctx.Error(xErr)
+		return
+	}
+
+	xResult.SuccessHasData(ctx, "停用成功", nil)
 }
 
 func (h *AnnouncementAdminHandler) parseAnnouncementID(ctx *gin.Context) (xSnowflake.SnowflakeID, *xError.Error) {

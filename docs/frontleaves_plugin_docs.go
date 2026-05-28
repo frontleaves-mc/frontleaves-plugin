@@ -774,9 +774,9 @@ const docTemplatefrontleaves_plugin = `{
                 }
             }
         },
-        "/admin/announcements/schedules": {
+        "/admin/announcements/scheduler/config": {
             "get": {
-                "description": "分页查询公告调度列表",
+                "description": "获取公告调度引擎的全局配置信息",
                 "consumes": [
                     "application/json"
                 ],
@@ -784,23 +784,9 @@ const docTemplatefrontleaves_plugin = `{
                     "application/json"
                 ],
                 "tags": [
-                    "管理-公告调度接口"
+                    "管理-公告接口"
                 ],
-                "summary": "[管理] 查询公告调度列表",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "页码",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "每页数量",
-                        "name": "page_size",
-                        "in": "query"
-                    }
-                ],
+                "summary": "[管理] 获取公告调度配置",
                 "responses": {
                     "200": {
                         "description": "成功",
@@ -813,129 +799,17 @@ const docTemplatefrontleaves_plugin = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/apiAnnouncementSchedule.ScheduleListResponse"
+                                            "$ref": "#/definitions/apiAnnouncement.GetSchedulerConfigResponse"
                                         }
                                     }
                                 }
                             ]
-                        }
-                    },
-                    "400": {
-                        "description": "请求参数错误",
-                        "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "创建新的公告调度，指定调度名称、模式、间隔秒数和调度项",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "管理-公告调度接口"
-                ],
-                "summary": "[管理] 创建公告调度",
-                "parameters": [
-                    {
-                        "description": "创建调度请求",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/apiAnnouncementSchedule.CreateScheduleRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "成功",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/xBase.BaseResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/apiAnnouncementSchedule.ScheduleResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "请求参数错误",
-                        "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/announcements/schedules/:id": {
-            "get": {
-                "description": "根据调度 ID 查询公告调度详情，包含调度项列表",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "管理-公告调度接口"
-                ],
-                "summary": "[管理] 查询公告调度详情",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "调度ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "成功",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/xBase.BaseResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/apiAnnouncementSchedule.ScheduleResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "请求参数错误",
-                        "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "调度不存在",
-                        "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
                         }
                     }
                 }
             },
             "put": {
-                "description": "更新指定公告调度的名称、模式、间隔秒数和调度项",
+                "description": "更新公告调度引擎的全局配置信息",
                 "consumes": [
                     "application/json"
                 ],
@@ -943,24 +817,17 @@ const docTemplatefrontleaves_plugin = `{
                     "application/json"
                 ],
                 "tags": [
-                    "管理-公告调度接口"
+                    "管理-公告接口"
                 ],
-                "summary": "[管理] 更新公告调度",
+                "summary": "[管理] 更新公告调度配置",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "调度ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "更新调度请求",
+                        "description": "更新配置请求",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/apiAnnouncementSchedule.UpdateScheduleRequest"
+                            "$ref": "#/definitions/apiAnnouncement.UpdateSchedulerConfigRequest"
                         }
                     }
                 ],
@@ -976,7 +843,7 @@ const docTemplatefrontleaves_plugin = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/apiAnnouncementSchedule.ScheduleResponse"
+                                            "$ref": "#/definitions/apiAnnouncement.GetSchedulerConfigResponse"
                                         }
                                     }
                                 }
@@ -988,61 +855,13 @@ const docTemplatefrontleaves_plugin = `{
                         "schema": {
                             "$ref": "#/definitions/xBase.BaseResponse"
                         }
-                    },
-                    "404": {
-                        "description": "调度不存在",
-                        "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "删除指定公告调度，活动调度需先停用才能删除",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "管理-公告调度接口"
-                ],
-                "summary": "[管理] 删除公告调度",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "调度ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "成功",
-                        "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "请求参数错误",
-                        "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "调度不存在",
-                        "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
-                        }
                     }
                 }
             }
         },
-        "/admin/announcements/schedules/:id/activate": {
+        "/admin/announcements/scheduler/disable": {
             "post": {
-                "description": "将调度设为活动状态并启动推送引擎",
+                "description": "停用公告调度引擎",
                 "consumes": [
                     "application/json"
                 ],
@@ -1050,89 +869,35 @@ const docTemplatefrontleaves_plugin = `{
                     "application/json"
                 ],
                 "tags": [
-                    "管理-公告调度接口"
-                ],
-                "summary": "[管理] 激活公告调度",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "调度ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "成功",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/xBase.BaseResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/apiAnnouncementSchedule.ScheduleResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "请求参数错误",
-                        "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "调度不存在",
-                        "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/announcements/schedules/:id/deactivate": {
-            "post": {
-                "description": "停用调度并停止推送引擎",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "管理-公告调度接口"
+                    "管理-公告接口"
                 ],
                 "summary": "[管理] 停用公告调度",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "调度ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "成功",
                         "schema": {
                             "$ref": "#/definitions/xBase.BaseResponse"
                         }
-                    },
-                    "400": {
-                        "description": "请求参数错误",
-                        "schema": {
-                            "$ref": "#/definitions/xBase.BaseResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "调度不存在",
+                    }
+                }
+            }
+        },
+        "/admin/announcements/scheduler/enable": {
+            "post": {
+                "description": "启用公告调度引擎",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "管理-公告接口"
+                ],
+                "summary": "[管理] 启用公告调度",
+                "responses": {
+                    "200": {
+                        "description": "成功",
                         "schema": {
                             "$ref": "#/definitions/xBase.BaseResponse"
                         }
@@ -4235,11 +4000,17 @@ const docTemplatefrontleaves_plugin = `{
                 "created_at": {
                     "type": "string"
                 },
+                "delay_seconds": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "string"
                 },
                 "published_at": {
                     "type": "string"
+                },
+                "schedule_order": {
+                    "type": "integer"
                 },
                 "status": {
                     "type": "integer"
@@ -4263,6 +4034,12 @@ const docTemplatefrontleaves_plugin = `{
                 "content": {
                     "type": "string"
                 },
+                "delay_seconds": {
+                    "type": "integer"
+                },
+                "schedule_order": {
+                    "type": "integer"
+                },
                 "title": {
                     "type": "string"
                 },
@@ -4272,6 +4049,20 @@ const docTemplatefrontleaves_plugin = `{
                         1,
                         2
                     ]
+                }
+            }
+        },
+        "apiAnnouncement.GetSchedulerConfigResponse": {
+            "type": "object",
+            "properties": {
+                "interval_seconds": {
+                    "type": "integer"
+                },
+                "is_enabled": {
+                    "type": "boolean"
+                },
+                "mode": {
+                    "type": "integer"
                 }
             }
         },
@@ -4286,6 +4077,12 @@ const docTemplatefrontleaves_plugin = `{
                 "content": {
                     "type": "string"
                 },
+                "delay_seconds": {
+                    "type": "integer"
+                },
+                "schedule_order": {
+                    "type": "integer"
+                },
                 "title": {
                     "type": "string"
                 },
@@ -4298,23 +4095,16 @@ const docTemplatefrontleaves_plugin = `{
                 }
             }
         },
-        "apiAnnouncementSchedule.CreateScheduleRequest": {
+        "apiAnnouncement.UpdateSchedulerConfigRequest": {
             "type": "object",
             "required": [
-                "items",
-                "mode",
-                "name"
+                "interval_seconds",
+                "mode"
             ],
             "properties": {
                 "interval_seconds": {
-                    "type": "integer"
-                },
-                "items": {
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
-                        "$ref": "#/definitions/apiAnnouncementSchedule.ScheduleItemInput"
-                    }
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "mode": {
                     "type": "integer",
@@ -4322,125 +4112,6 @@ const docTemplatefrontleaves_plugin = `{
                         1,
                         2
                     ]
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "apiAnnouncementSchedule.ScheduleItemInput": {
-            "type": "object",
-            "required": [
-                "announcement_id"
-            ],
-            "properties": {
-                "announcement_id": {
-                    "type": "string"
-                },
-                "delay_seconds": {
-                    "type": "integer"
-                },
-                "sort_order": {
-                    "type": "integer"
-                }
-            }
-        },
-        "apiAnnouncementSchedule.ScheduleItemResponse": {
-            "type": "object",
-            "properties": {
-                "announcement_id": {
-                    "type": "string"
-                },
-                "announcement_title": {
-                    "type": "string"
-                },
-                "delay_seconds": {
-                    "type": "integer"
-                },
-                "sort_order": {
-                    "type": "integer"
-                }
-            }
-        },
-        "apiAnnouncementSchedule.ScheduleListResponse": {
-            "type": "object",
-            "properties": {
-                "list": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/apiAnnouncementSchedule.ScheduleResponse"
-                    }
-                },
-                "page": {
-                    "type": "integer"
-                },
-                "page_size": {
-                    "type": "integer"
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
-        },
-        "apiAnnouncementSchedule.ScheduleResponse": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "interval_seconds": {
-                    "type": "integer"
-                },
-                "is_active": {
-                    "type": "boolean"
-                },
-                "items": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/apiAnnouncementSchedule.ScheduleItemResponse"
-                    }
-                },
-                "mode": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "integer"
-                }
-            }
-        },
-        "apiAnnouncementSchedule.UpdateScheduleRequest": {
-            "type": "object",
-            "required": [
-                "items",
-                "mode",
-                "name"
-            ],
-            "properties": {
-                "interval_seconds": {
-                    "type": "integer"
-                },
-                "items": {
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
-                        "$ref": "#/definitions/apiAnnouncementSchedule.ScheduleItemInput"
-                    }
-                },
-                "mode": {
-                    "type": "integer",
-                    "enum": [
-                        1,
-                        2
-                    ]
-                },
-                "name": {
-                    "type": "string"
                 }
             }
         },

@@ -4,9 +4,11 @@ import (
 	"context"
 
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
+	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/grpc/handler"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/logic"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/logic/matrix"
+	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository"
 	"google.golang.org/grpc"
 )
 
@@ -29,10 +31,17 @@ func RegisterGRPCServices(ctx context.Context, server grpc.ServiceRegistrar) {
 
 	announcementHandler := handler.NewAnnouncementHandler(ctx, server)
 
+	configRepo := repository.NewConfigRepository()
+	configLoader := logic.NewSchedulerConfigLoader(configRepo)
+	if xErr := configLoader.Load(ctx); xErr != nil {
+		log.Error(ctx, "RegisterGRPCServices - 调度配置加载失败: "+xErr.Error())
+	}
+
 	// 创建调度引擎并注册为全局单例
+	db := xCtxUtil.MustGetDB(ctx)
 	engine := logic.NewSchedulerEngine(
-		logic.NewAnnouncementScheduleLogic(ctx),
-		logic.NewAnnouncementLogic(ctx),
+		configLoader,
+		repository.NewAnnouncementRepo(db),
 		announcementHandler.PushAnnouncement,
 	)
 	logic.SetGlobalEngine(engine)
