@@ -174,6 +174,24 @@ func (h *ServerStatusHandler) handleHeartbeat(
 	h.rdb.HSet(ctx, serverKey, fields)
 	h.rdb.Expire(ctx, serverKey, statusTTL)
 
+	h.rdb.HIncrByFloat(ctx, serverKey, "tps_sum", float64(heartbeat.GetTps()))
+	h.rdb.HIncrBy(ctx, serverKey, "tps_count", 1)
+
+	if cpu := heartbeat.GetCpuInfo(); cpu != nil {
+		h.rdb.HIncrByFloat(ctx, serverKey, "cpu_usage_sum", float64(cpu.GetUsagePercent()))
+		h.rdb.HIncrBy(ctx, serverKey, "cpu_usage_count", 1)
+	}
+
+	if mem := heartbeat.GetMemoryInfo(); mem != nil {
+		h.rdb.HIncrBy(ctx, serverKey, "mem_used_sum", int64(mem.GetUsedBytes()))
+		h.rdb.HIncrBy(ctx, serverKey, "mem_used_count", 1)
+	}
+
+	if jvm := heartbeat.GetJvmInfo(); jvm != nil {
+		h.rdb.HIncrBy(ctx, serverKey, "jvm_used_sum", int64(jvm.GetUsedMemoryBytes()))
+		h.rdb.HIncrBy(ctx, serverKey, "jvm_used_count", 1)
+	}
+
 	if *registeredServerName == "" {
 		*registeredServerName = serverName
 		h.setEventStream(serverName, &eventStream{
