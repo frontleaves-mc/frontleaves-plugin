@@ -26,9 +26,6 @@ type PlayerStatusInfo struct {
 	WorldName  string
 }
 
-// sessionRecoveryLog 会话恢复专用 logger
-var sessionRecoveryLog = xLog.WithName(xLog.NamedINIT, "SessionRecovery")
-
 // sessionRecoveryStartupDelay 恢复前的等待延迟（测试中可覆盖）
 var sessionRecoveryStartupDelay = 10 * time.Second
 
@@ -40,7 +37,7 @@ var sessionRecoveryStartupDelay = 10 * time.Second
 //
 // 任意单台服务器或单个玩家的失败不会中断整体恢复流程。
 func RecoverSessions(ctx context.Context, querier ServerQuerier) {
-	log := sessionRecoveryLog
+	log := xLog.WithName(xLog.NamedINIT, "SessionRecovery")
 	startTime := time.Now()
 
 	log.Info(ctx, "RecoverSessions - 等待 gRPC 流连接建立...")

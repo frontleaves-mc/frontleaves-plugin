@@ -4,7 +4,9 @@ import (
 	"context"
 
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
+	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/logic"
+	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository"
 )
 
 type service struct {
@@ -22,6 +24,7 @@ type service struct {
 	matrixWarningQueryLogic   *logic.WarningQueryLogic
 	matrixStatisticQueryLogic *logic.StatisticQueryLogic
 	directMessageLogic        *logic.DirectMessageLogic
+	transactionLogLogic       *logic.TransactionLogLogic
 }
 
 type handler struct {
@@ -57,6 +60,7 @@ func NewHandler[T IHandler](ctx context.Context, handlerName string) *T {
 			matrixWarningQueryLogic:   logic.NewWarningQueryLogic(ctx),
 			matrixStatisticQueryLogic: logic.NewStatisticQueryLogic(ctx),
 			directMessageLogic:        logic.NewDirectMessageLogic(ctx),
+			transactionLogLogic:       logic.NewTransactionLogLogic(repository.NewTransactionLogRepo(xCtxUtil.MustGetDB(ctx))),
 		},
 	}
 }

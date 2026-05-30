@@ -44,6 +44,11 @@ type titleService struct {
 	gameProfileLogic *logic.GameProfileLogic
 }
 
+// economyService 经济系统相关业务逻辑（EconomyTransactionHandler 使用）
+type economyService struct {
+	transactionLogLogic *logic.TransactionLogLogic
+}
+
 // matrixService Matrix 遥测相关业务逻辑（MatrixTelemetryHandler 使用）
 type matrixService struct {
 	sessionManager *matrix.MatrixSessionManager
@@ -97,6 +102,14 @@ func newTitleService(ctx context.Context) *titleService {
 	return &titleService{
 		titleLogic:       logic.NewTitleLogic(ctx),
 		gameProfileLogic: logic.NewGameProfileLogic(ctx),
+	}
+}
+
+// newEconomyService 创建经济系统相关业务逻辑服务组
+func newEconomyService(ctx context.Context) *economyService {
+	db := xCtxUtil.MustGetDB(ctx)
+	return &economyService{
+		transactionLogLogic: logic.NewTransactionLogLogic(repository.NewTransactionLogRepo(db)),
 	}
 }
 

@@ -45,4 +45,5 @@ func NewRoute(reg *xReg.Reg) {
 	r.matrixWarningRouter(apiRouter)
 	r.matrixStatisticRouter(apiRouter)
 	r.dmRouter(apiRouter)
+	r.economyRouter(apiRouter)
 }

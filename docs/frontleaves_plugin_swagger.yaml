@@ -933,6 +933,60 @@ definitions:
       total:
         type: integer
     type: object
+  economy.BalanceDTO:
+    properties:
+      balance:
+        description: 单位：分
+        type: integer
+      balance_display:
+        description: 格式化显示，如 "100.50"
+        type: string
+      currency:
+        type: string
+      player_uuid:
+        type: string
+    type: object
+  economy.TransactionDTO:
+    properties:
+      amount:
+        description: 单位：分
+        type: integer
+      amount_display:
+        description: 格式化显示
+        type: string
+      comment:
+        type: string
+      counterparty:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      operator:
+        type: string
+      player_name:
+        type: string
+      player_uuid:
+        type: string
+      type:
+        type: integer
+      type_name:
+        description: '"转账"/"管理员操作"'
+        type: string
+    type: object
+  economy.TransactionListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/economy.TransactionDTO'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
   xBase.BaseResponse:
     properties:
       code:
@@ -1501,6 +1555,139 @@ paths:
       summary: '[管理] 启用公告调度'
       tags:
       - 管理-公告接口
+  /admin/economy/audit-logs:
+    get:
+      consumes:
+      - application/json
+      description: 管理员分页查询所有管理员操作记录，支持按操作员或目标玩家筛选
+      parameters:
+      - description: 操作员UUID
+        in: query
+        name: operator_uuid
+        type: string
+      - description: 目标玩家UUID
+        in: query
+        name: player_uuid
+        type: string
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/economy.TransactionListResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "403":
+          description: 无权限
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 查询管理员操作审计日志'
+      tags:
+      - 管理-经济接口
+  /admin/economy/balance:
+    get:
+      consumes:
+      - application/json
+      description: 管理员根据玩家 UUID 查询指定玩家的经济余额
+      parameters:
+      - description: 玩家UUID
+        in: query
+        name: player_uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/economy.BalanceDTO'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "403":
+          description: 无权限
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 查询玩家余额'
+      tags:
+      - 管理-经济接口
+  /admin/economy/transactions:
+    get:
+      consumes:
+      - application/json
+      description: 管理员根据玩家 UUID 分页查询指定玩家的交易流水记录
+      parameters:
+      - description: 玩家UUID
+        in: query
+        name: player_uuid
+        required: true
+        type: string
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/economy.TransactionListResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "403":
+          description: 无权限
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 查询玩家交易流水'
+      tags:
+      - 管理-经济接口
   /admin/matrix/statistics/:uuid:
     get:
       consumes:
@@ -2989,6 +3176,79 @@ paths:
       summary: '[用户] 获取所有服务器状态'
       tags:
       - 服务器状态接口
+  /user/economy/balance:
+    get:
+      consumes:
+      - application/json
+      description: 根据登录用户的 Token 解析出游戏角色 UUID，查询该角色的经济余额
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/economy.BalanceDTO'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 未找到关联的游戏角色
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[玩家] 查询我的余额'
+      tags:
+      - 玩家-经济接口
+  /user/economy/transactions:
+    get:
+      consumes:
+      - application/json
+      description: 根据登录用户的 Token 解析出游戏角色 UUID，分页查询该角色的交易流水记录
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/economy.TransactionListResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "404":
+          description: 未找到关联的游戏角色
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[玩家] 查询我的交易流水'
+      tags:
+      - 玩家-经济接口
   /user/messages/chat:
     get:
       consumes:

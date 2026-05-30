@@ -17,8 +17,6 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-var playerSessionLog = xLog.WithName(xLog.NamedINIT, "PlayerSession")
-
 const (
 	inputChSize  = 5000
 	popBatchSize = 100
@@ -31,7 +29,8 @@ var manageInterval time.Duration
 func init() {
 	raw := xEnv.GetEnvString(bConst.EnvMatrixManageInterval, "5s")
 	manageInterval = parseManageInterval(raw)
-	playerSessionLog.Info(context.Background(), fmt.Sprintf("manageInterval 配置为 %v", manageInterval))
+	log := xLog.WithName(xLog.NamedINIT, "PlayerSession")
+	log.Info(context.Background(), fmt.Sprintf("manageInterval 配置为 %v", manageInterval))
 }
 
 // parseManageInterval 解析 manageInterval 配置值
@@ -39,7 +38,8 @@ func init() {
 func parseManageInterval(raw string) time.Duration {
 	parsed, err := time.ParseDuration(raw)
 	if err != nil || parsed <= 0 {
-		playerSessionLog.Warn(context.Background(), fmt.Sprintf("manageInterval 配置无效 [%s]，使用默认值 5s", raw))
+		log := xLog.WithName(xLog.NamedINIT, "PlayerSession")
+		log.Warn(context.Background(), fmt.Sprintf("manageInterval 配置无效 [%s]，使用默认值 5s", raw))
 		return 5 * time.Second
 	}
 	return parsed

@@ -12,12 +12,11 @@ import (
 	"google.golang.org/grpc"
 )
 
-var log = xLog.WithName(xLog.NamedGRPC, "Register")
-
 // RegisterGRPCServices 注册所有 gRPC 服务
 //
 // 每个服务在 Handler 构造函数中绑定各自的服务级中间件。
 func RegisterGRPCServices(ctx context.Context, server grpc.ServiceRegistrar) {
+	log := xLog.WithName(xLog.NamedGRPC, "Register")
 	handler.NewServerStatusHandler(ctx, server)
 	handler.NewTitleHandler(ctx, server)
 	handler.NewEssentialsPlayerEventHandler(ctx, server)
@@ -58,4 +57,8 @@ func RegisterGRPCServices(ctx context.Context, server grpc.ServiceRegistrar) {
 	// 启动 Session 恢复（异步，不阻塞服务启动）
 	recoveryAdapter := handler.NewServerQuerierAdapter(queryHandler)
 	go matrix.RecoverSessions(ctx, recoveryAdapter)
+
+	// 经济审计系统
+	ecoHandler := handler.NewEconomyTransactionHandler(ctx, server)
+	handler.SetGlobalEconomyHandler(ecoHandler)
 }

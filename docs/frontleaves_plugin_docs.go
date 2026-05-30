@@ -905,6 +905,221 @@ const docTemplatefrontleaves_plugin = `{
                 }
             }
         },
+        "/admin/economy/audit-logs": {
+            "get": {
+                "description": "管理员分页查询所有管理员操作记录，支持按操作员或目标玩家筛选",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "管理-经济接口"
+                ],
+                "summary": "[管理] 查询管理员操作审计日志",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "操作员UUID",
+                        "name": "operator_uuid",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "目标玩家UUID",
+                        "name": "player_uuid",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/economy.TransactionListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "无权限",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/economy/balance": {
+            "get": {
+                "description": "管理员根据玩家 UUID 查询指定玩家的经济余额",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "管理-经济接口"
+                ],
+                "summary": "[管理] 查询玩家余额",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "玩家UUID",
+                        "name": "player_uuid",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/economy.BalanceDTO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "无权限",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/economy/transactions": {
+            "get": {
+                "description": "管理员根据玩家 UUID 分页查询指定玩家的交易流水记录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "管理-经济接口"
+                ],
+                "summary": "[管理] 查询玩家交易流水",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "玩家UUID",
+                        "name": "player_uuid",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/economy.TransactionListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "无权限",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/matrix/statistics/:uuid": {
             "get": {
                 "description": "根据玩家 UUID 查询统计数据",
@@ -3317,6 +3532,126 @@ const docTemplatefrontleaves_plugin = `{
                 }
             }
         },
+        "/user/economy/balance": {
+            "get": {
+                "description": "根据登录用户的 Token 解析出游戏角色 UUID，查询该角色的经济余额",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "玩家-经济接口"
+                ],
+                "summary": "[玩家] 查询我的余额",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/economy.BalanceDTO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "未找到关联的游戏角色",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/economy/transactions": {
+            "get": {
+                "description": "根据登录用户的 Token 解析出游戏角色 UUID，分页查询该角色的交易流水记录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "玩家-经济接口"
+                ],
+                "summary": "[玩家] 查询我的交易流水",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/economy.TransactionListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "未找到关联的游戏角色",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/user/messages/chat": {
             "get": {
                 "description": "分页查询当前用户关联游戏角色的聊天记录",
@@ -5133,6 +5468,86 @@ const docTemplatefrontleaves_plugin = `{
                     "items": {
                         "$ref": "#/definitions/direct_message.UnreadCountByUser"
                     }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "economy.BalanceDTO": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "description": "单位：分",
+                    "type": "integer"
+                },
+                "balance_display": {
+                    "description": "格式化显示，如 \"100.50\"",
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "player_uuid": {
+                    "type": "string"
+                }
+            }
+        },
+        "economy.TransactionDTO": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "description": "单位：分",
+                    "type": "integer"
+                },
+                "amount_display": {
+                    "description": "格式化显示",
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "counterparty": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "operator": {
+                    "type": "string"
+                },
+                "player_name": {
+                    "type": "string"
+                },
+                "player_uuid": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "integer"
+                },
+                "type_name": {
+                    "description": "\"转账\"/\"管理员操作\"",
+                    "type": "string"
+                }
+            }
+        },
+        "economy.TransactionListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/economy.TransactionDTO"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
                 },
                 "total": {
                     "type": "integer"

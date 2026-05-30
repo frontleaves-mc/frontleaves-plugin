@@ -36,6 +36,9 @@ var migrateTables = []interface{}{
 	// Layer 6: Matrix 系统
 	&entity.MatrixPlayerStatistic{},
 	&entity.MatrixPlayerWarning{},
+
+	// Layer 7: 经济审计系统
+	&entity.TransactionLog{},
 }
 
 func (r *reg) databaseInit(ctx context.Context) (any, error) {

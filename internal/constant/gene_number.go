@@ -36,4 +36,7 @@ const (
 	// 私信系统
 	GenePlayerDirectMessage xSnowflake.Gene = 52 // 玩家私信
 
+	// 经济系统
+	GeneTransactionLog xSnowflake.Gene = 53 // 交易流水
+
 )

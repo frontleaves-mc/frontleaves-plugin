@@ -1,0 +1,105 @@
+syntax = "proto3";
+
+package frontleaves.economy.v1;
+
+option go_package = "github.com/frontleaves-mc/frontleaves-plugin/internal/grpc/gen/economy/v1;economypb";
+
+import "link/base.proto";
+
+// TransactionType 交易类型枚举
+enum TransactionType {
+  // 未指定（默认值，Proto3 要求 0 值）
+  TRANSACTION_TYPE_UNSPECIFIED = 0;
+  // 玩家间转账
+  TRANSACTION_TYPE_TRANSFER = 1;
+  // 管理员操作（发放/扣减）
+  TRANSACTION_TYPE_ADMIN = 2;
+}
+
+// ============================================================================
+// TransactionLogService - 交易流水记录服务
+// Go 侧为 Server，MC 侧为 Client。MC 通过 Client Streaming 批量上报交易流水。
+// ============================================================================
+
+// RecordTransactionRequest 记录交易流水请求
+message RecordTransactionRequest {
+  // 玩家 UUID
+  string player_uuid = 1;
+  // 玩家名称
+  string player_name = 2;
+  // 交易金额（单位：分 fen）
+  int64 amount = 3;
+  // 交易类型
+  TransactionType type = 4;
+  // 对方 UUID（可选）
+  optional string counterparty_uuid = 5;
+  // 对方名称（可选）
+  optional string counterparty_name = 6;
+  // 操作员 UUID（可选，管理员操作时填写）
+  optional string operator_uuid = 7;
+  // 操作员名称（可选，管理员操作时填写）
+  optional string operator_name = 8;
+  // 备注
+  string comment = 9;
+  // 幂等键（用于防重）
+  string idempotency_key = 10;
+  // 交易时间戳（Unix 毫秒）
+  int64 timestamp = 11;
+}
+
+// RecordTransactionResponse 记录交易流水响应
+message RecordTransactionResponse {
+  // 基础响应
+  xBase.BaseResponse base_response = 1;
+  // 是否成功
+  bool success = 2;
+  // 提示信息
+  string message = 3;
+}
+
+// TransactionLogService 交易流水与余额查询服务
+//
+// Go 侧永远为 Server，MC 侧为 Client。
+// - RecordTransactionStream：Client-Streaming，MC 批量上报交易流水
+// - BalanceStream：Bidi-Streaming，Go 请求余额 → MC 返回数据
+service TransactionLogService {
+  // RecordTransactionStream 交易流水客户端流
+  rpc RecordTransactionStream(stream RecordTransactionRequest) returns (RecordTransactionResponse);
+
+  // BalanceStream 余额双向流
+  //
+  // MC 连接后，Go 通过流发送 BalanceQuery 查询余额，
+  // MC 查 Vault 后通过流返回 BalanceResult。
+  // 支持多路复用：通过 request_id 匹配请求与响应。
+  rpc BalanceStream(stream BalanceResult) returns (stream BalanceQuery);
+}
+
+// ============================================================================
+// Balance Bidi Stream — 余额双向流消息
+// ============================================================================
+
+// BalanceQuery 余额查询请求（Go Server → MC Client）
+message BalanceQuery {
+  // 请求 ID（用于匹配响应）
+  uint64 request_id = 1;
+  // 玩家 UUID
+  string player_uuid = 2;
+}
+
+// BalanceResult 余额查询响应（MC Client → Go Server）
+message BalanceResult {
+  // 基础响应
+  xBase.BaseResponse base_response = 1;
+  // 对应请求 ID
+  uint64 request_id = 2;
+  // 玩家 UUID
+  string player_uuid = 3;
+  // 余额（单位：分 fen），success=false 时为 0
+  int64 balance = 4;
+  // 货币类型
+  string currency = 5;
+  // 是否查询成功
+  bool success = 6;
+  // 错误信息（success=false 时有值）
+  string error_message = 7;
+}
