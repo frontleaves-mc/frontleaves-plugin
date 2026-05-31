@@ -75,6 +75,71 @@ func (TransactionType) EnumDescriptor() ([]byte, []int) {
 	return file_economy_v1_economy_proto_rawDescGZIP(), []int{0}
 }
 
+// BalanceOperation 余额操作类型枚举
+type BalanceOperation int32
+
+const (
+	// 未指定（默认值，Proto3 要求 0 值）
+	BalanceOperation_BALANCE_OPERATION_UNSPECIFIED BalanceOperation = 0
+	// 查询
+	BalanceOperation_BALANCE_OPERATION_QUERY BalanceOperation = 1
+	// 增加
+	BalanceOperation_BALANCE_OPERATION_ADD BalanceOperation = 2
+	// 扣减
+	BalanceOperation_BALANCE_OPERATION_REMOVE BalanceOperation = 3
+	// 设置
+	BalanceOperation_BALANCE_OPERATION_SET BalanceOperation = 4
+	// 重置
+	BalanceOperation_BALANCE_OPERATION_RESET BalanceOperation = 5
+)
+
+// Enum value maps for BalanceOperation.
+var (
+	BalanceOperation_name = map[int32]string{
+		0: "BALANCE_OPERATION_UNSPECIFIED",
+		1: "BALANCE_OPERATION_QUERY",
+		2: "BALANCE_OPERATION_ADD",
+		3: "BALANCE_OPERATION_REMOVE",
+		4: "BALANCE_OPERATION_SET",
+		5: "BALANCE_OPERATION_RESET",
+	}
+	BalanceOperation_value = map[string]int32{
+		"BALANCE_OPERATION_UNSPECIFIED": 0,
+		"BALANCE_OPERATION_QUERY":       1,
+		"BALANCE_OPERATION_ADD":         2,
+		"BALANCE_OPERATION_REMOVE":      3,
+		"BALANCE_OPERATION_SET":         4,
+		"BALANCE_OPERATION_RESET":       5,
+	}
+)
+
+func (x BalanceOperation) Enum() *BalanceOperation {
+	p := new(BalanceOperation)
+	*p = x
+	return p
+}
+
+func (x BalanceOperation) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (BalanceOperation) Descriptor() protoreflect.EnumDescriptor {
+	return file_economy_v1_economy_proto_enumTypes[1].Descriptor()
+}
+
+func (BalanceOperation) Type() protoreflect.EnumType {
+	return &file_economy_v1_economy_proto_enumTypes[1]
+}
+
+func (x BalanceOperation) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use BalanceOperation.Descriptor instead.
+func (BalanceOperation) EnumDescriptor() ([]byte, []int) {
+	return file_economy_v1_economy_proto_rawDescGZIP(), []int{1}
+}
+
 // RecordTransactionRequest 记录交易流水请求
 type RecordTransactionRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -281,7 +346,11 @@ type BalanceQuery struct {
 	// 请求 ID（用于匹配响应）
 	RequestId uint64 `protobuf:"varint,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
 	// 玩家 UUID
-	PlayerUuid    string `protobuf:"bytes,2,opt,name=player_uuid,json=playerUuid,proto3" json:"player_uuid,omitempty"`
+	PlayerUuid string `protobuf:"bytes,2,opt,name=player_uuid,json=playerUuid,proto3" json:"player_uuid,omitempty"`
+	// 操作类型
+	Operation BalanceOperation `protobuf:"varint,3,opt,name=operation,proto3,enum=frontleaves.economy.v1.BalanceOperation" json:"operation,omitempty"`
+	// 操作金额（单位：分 fen），QUERY 时可忽略
+	Amount        int64 `protobuf:"varint,4,opt,name=amount,proto3" json:"amount,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -328,6 +397,20 @@ func (x *BalanceQuery) GetPlayerUuid() string {
 		return x.PlayerUuid
 	}
 	return ""
+}
+
+func (x *BalanceQuery) GetOperation() BalanceOperation {
+	if x != nil {
+		return x.Operation
+	}
+	return BalanceOperation_BALANCE_OPERATION_UNSPECIFIED
+}
+
+func (x *BalanceQuery) GetAmount() int64 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
 }
 
 // BalanceResult 余额查询响应（MC Client → Go Server）
@@ -457,12 +540,14 @@ const file_economy_v1_economy_proto_rawDesc = "" +
 	"\x19RecordTransactionResponse\x128\n" +
 	"\rbase_response\x18\x01 \x01(\v2\x13.xBase.BaseResponseR\fbaseResponse\x12\x18\n" +
 	"\asuccess\x18\x02 \x01(\bR\asuccess\x12\x18\n" +
-	"\amessage\x18\x03 \x01(\tR\amessage\"N\n" +
+	"\amessage\x18\x03 \x01(\tR\amessage\"\xae\x01\n" +
 	"\fBalanceQuery\x12\x1d\n" +
 	"\n" +
 	"request_id\x18\x01 \x01(\x04R\trequestId\x12\x1f\n" +
 	"\vplayer_uuid\x18\x02 \x01(\tR\n" +
-	"playerUuid\"\xfe\x01\n" +
+	"playerUuid\x12F\n" +
+	"\toperation\x18\x03 \x01(\x0e2(.frontleaves.economy.v1.BalanceOperationR\toperation\x12\x16\n" +
+	"\x06amount\x18\x04 \x01(\x03R\x06amount\"\xfe\x01\n" +
 	"\rBalanceResult\x128\n" +
 	"\rbase_response\x18\x01 \x01(\v2\x13.xBase.BaseResponseR\fbaseResponse\x12\x1d\n" +
 	"\n" +
@@ -476,7 +561,14 @@ const file_economy_v1_economy_proto_rawDesc = "" +
 	"\x0fTransactionType\x12 \n" +
 	"\x1cTRANSACTION_TYPE_UNSPECIFIED\x10\x00\x12\x1d\n" +
 	"\x19TRANSACTION_TYPE_TRANSFER\x10\x01\x12\x1a\n" +
-	"\x16TRANSACTION_TYPE_ADMIN\x10\x022\xfc\x01\n" +
+	"\x16TRANSACTION_TYPE_ADMIN\x10\x02*\xc3\x01\n" +
+	"\x10BalanceOperation\x12!\n" +
+	"\x1dBALANCE_OPERATION_UNSPECIFIED\x10\x00\x12\x1b\n" +
+	"\x17BALANCE_OPERATION_QUERY\x10\x01\x12\x19\n" +
+	"\x15BALANCE_OPERATION_ADD\x10\x02\x12\x1c\n" +
+	"\x18BALANCE_OPERATION_REMOVE\x10\x03\x12\x19\n" +
+	"\x15BALANCE_OPERATION_SET\x10\x04\x12\x1b\n" +
+	"\x17BALANCE_OPERATION_RESET\x10\x052\xfc\x01\n" +
 	"\x15TransactionLogService\x12\x80\x01\n" +
 	"\x17RecordTransactionStream\x120.frontleaves.economy.v1.RecordTransactionRequest\x1a1.frontleaves.economy.v1.RecordTransactionResponse(\x01\x12`\n" +
 	"\rBalanceStream\x12%.frontleaves.economy.v1.BalanceResult\x1a$.frontleaves.economy.v1.BalanceQuery(\x010\x01BUZSgithub.com/frontleaves-mc/frontleaves-plugin/internal/grpc/gen/economy/v1;economypbb\x06proto3"
@@ -493,29 +585,31 @@ func file_economy_v1_economy_proto_rawDescGZIP() []byte {
 	return file_economy_v1_economy_proto_rawDescData
 }
 
-var file_economy_v1_economy_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_economy_v1_economy_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
 var file_economy_v1_economy_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_economy_v1_economy_proto_goTypes = []any{
 	(TransactionType)(0),              // 0: frontleaves.economy.v1.TransactionType
-	(*RecordTransactionRequest)(nil),  // 1: frontleaves.economy.v1.RecordTransactionRequest
-	(*RecordTransactionResponse)(nil), // 2: frontleaves.economy.v1.RecordTransactionResponse
-	(*BalanceQuery)(nil),              // 3: frontleaves.economy.v1.BalanceQuery
-	(*BalanceResult)(nil),             // 4: frontleaves.economy.v1.BalanceResult
-	(*generate.BaseResponse)(nil),     // 5: xBase.BaseResponse
+	(BalanceOperation)(0),             // 1: frontleaves.economy.v1.BalanceOperation
+	(*RecordTransactionRequest)(nil),  // 2: frontleaves.economy.v1.RecordTransactionRequest
+	(*RecordTransactionResponse)(nil), // 3: frontleaves.economy.v1.RecordTransactionResponse
+	(*BalanceQuery)(nil),              // 4: frontleaves.economy.v1.BalanceQuery
+	(*BalanceResult)(nil),             // 5: frontleaves.economy.v1.BalanceResult
+	(*generate.BaseResponse)(nil),     // 6: xBase.BaseResponse
 }
 var file_economy_v1_economy_proto_depIdxs = []int32{
 	0, // 0: frontleaves.economy.v1.RecordTransactionRequest.type:type_name -> frontleaves.economy.v1.TransactionType
-	5, // 1: frontleaves.economy.v1.RecordTransactionResponse.base_response:type_name -> xBase.BaseResponse
-	5, // 2: frontleaves.economy.v1.BalanceResult.base_response:type_name -> xBase.BaseResponse
-	1, // 3: frontleaves.economy.v1.TransactionLogService.RecordTransactionStream:input_type -> frontleaves.economy.v1.RecordTransactionRequest
-	4, // 4: frontleaves.economy.v1.TransactionLogService.BalanceStream:input_type -> frontleaves.economy.v1.BalanceResult
-	2, // 5: frontleaves.economy.v1.TransactionLogService.RecordTransactionStream:output_type -> frontleaves.economy.v1.RecordTransactionResponse
-	3, // 6: frontleaves.economy.v1.TransactionLogService.BalanceStream:output_type -> frontleaves.economy.v1.BalanceQuery
-	5, // [5:7] is the sub-list for method output_type
-	3, // [3:5] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	6, // 1: frontleaves.economy.v1.RecordTransactionResponse.base_response:type_name -> xBase.BaseResponse
+	1, // 2: frontleaves.economy.v1.BalanceQuery.operation:type_name -> frontleaves.economy.v1.BalanceOperation
+	6, // 3: frontleaves.economy.v1.BalanceResult.base_response:type_name -> xBase.BaseResponse
+	2, // 4: frontleaves.economy.v1.TransactionLogService.RecordTransactionStream:input_type -> frontleaves.economy.v1.RecordTransactionRequest
+	5, // 5: frontleaves.economy.v1.TransactionLogService.BalanceStream:input_type -> frontleaves.economy.v1.BalanceResult
+	3, // 6: frontleaves.economy.v1.TransactionLogService.RecordTransactionStream:output_type -> frontleaves.economy.v1.RecordTransactionResponse
+	4, // 7: frontleaves.economy.v1.TransactionLogService.BalanceStream:output_type -> frontleaves.economy.v1.BalanceQuery
+	6, // [6:8] is the sub-list for method output_type
+	4, // [4:6] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_economy_v1_economy_proto_init() }
@@ -529,7 +623,7 @@ func file_economy_v1_economy_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_economy_v1_economy_proto_rawDesc), len(file_economy_v1_economy_proto_rawDesc)),
-			NumEnums:      1,
+			NumEnums:      2,
 			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,

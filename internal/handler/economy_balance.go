@@ -2,12 +2,14 @@ package handler
 
 import (
 	"context"
+	"math"
 
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xSnowflake "github.com/bamboo-services/bamboo-base-go/common/snowflake"
 	xResult "github.com/bamboo-services/bamboo-base-go/major/result"
 	apiEconomy "github.com/frontleaves-mc/frontleaves-plugin/api/economy"
 	bConst "github.com/frontleaves-mc/frontleaves-plugin/internal/constant"
+	economypb "github.com/frontleaves-mc/frontleaves-plugin/internal/grpc/gen/economy/v1"
 	grpcHandler "github.com/frontleaves-mc/frontleaves-plugin/internal/grpc/handler"
 	"github.com/frontleaves-mc/frontleaves-plugin/internal/repository"
 	"github.com/gin-gonic/gin"
@@ -108,6 +110,85 @@ func (h *EconomyBalanceHandler) GetPlayerBalance(ctx *gin.Context) {
 		Balance:       balance,
 		BalanceDisplay: formatAmount(balance),
 		Currency:      "CNY",
+	})
+}
+
+// AdjustPlayerBalance 管理员调整指定玩家的余额
+//
+//	@Summary		[管理] 调整玩家余额
+//	@Description	管理员调整指定玩家的经济余额（增加/扣减/设置/重置）
+//	@Tags			管理-经济接口
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body	apiEconomy.AdjustBalanceRequest	true	"调整玩家余额请求"
+//	@Success		200	{object}	xBase.BaseResponse{data=apiEconomy.AdjustBalanceResponse}	"成功"
+//	@Failure		400	{object}	xBase.BaseResponse	"请求参数错误"
+//	@Failure		401	{object}	xBase.BaseResponse	"未授权"
+//	@Failure		403	{object}	xBase.BaseResponse	"无权限"
+//	@Failure		503	{object}	xBase.BaseResponse	"服务不可用（MC 插件未连接或查询超时）"
+//	@Router			/admin/economy/balance/adjust [POST]
+func (h *EconomyBalanceHandler) AdjustPlayerBalance(ctx *gin.Context) {
+	h.log.Info(ctx, "AdjustPlayerBalance - 管理员调整玩家余额")
+
+	var req apiEconomy.AdjustBalanceRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		_ = ctx.Error(xError.NewError(nil, xError.ParameterError, "请求参数错误", true, err))
+		return
+	}
+
+	if req.PlayerUUID == "" {
+		_ = ctx.Error(xError.NewError(nil, xError.ParameterError, "player_uuid 不能为空", true, nil))
+		return
+	}
+	playerUUID, err := uuid.Parse(req.PlayerUUID)
+	if err != nil {
+		_ = ctx.Error(xError.NewError(nil, xError.ParameterError, "无效的玩家 UUID", true, err))
+		return
+	}
+
+	validOperations := map[string]bool{
+		"add":    true,
+		"remove": true,
+		"set":    true,
+		"reset":  true,
+	}
+	if !validOperations[req.Operation] {
+		_ = ctx.Error(xError.NewError(nil, xError.ParameterError, "无效的操作类型，可选值：add, remove, set, reset", true, nil))
+		return
+	}
+
+	var amountFen int64
+	if req.Operation != "reset" {
+		if req.Amount <= 0 {
+			_ = ctx.Error(xError.NewError(nil, xError.ParameterError, "操作金额必须大于 0", true, nil))
+			return
+		}
+		amountFen = int64(math.Round(req.Amount * 100))
+	}
+
+	var protoOp economypb.BalanceOperation
+	switch req.Operation {
+	case "add":
+		protoOp = economypb.BalanceOperation_BALANCE_OPERATION_ADD
+	case "remove":
+		protoOp = economypb.BalanceOperation_BALANCE_OPERATION_REMOVE
+	case "set":
+		protoOp = economypb.BalanceOperation_BALANCE_OPERATION_SET
+	case "reset":
+		protoOp = economypb.BalanceOperation_BALANCE_OPERATION_RESET
+	}
+
+	newBalance, xErr := grpcHandler.AdjustBalance(ctx.Request.Context(), playerUUID.String(), protoOp, amountFen)
+	if xErr != nil {
+		_ = ctx.Error(xErr)
+		return
+	}
+
+	xResult.SuccessHasData(ctx, "调整余额成功", &apiEconomy.AdjustBalanceResponse{
+		PlayerUUID:        playerUUID.String(),
+		NewBalance:        newBalance,
+		NewBalanceDisplay: formatAmount(newBalance),
+		Currency:          "CNY",
 	})
 }
 

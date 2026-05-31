@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"sync"
 	"sync/atomic"
@@ -23,8 +24,11 @@ import (
 // 由 QueryBalance 方法通过 queryCh 投递到 sendLoop 协程，
 // resultCh 接收 MC 插件异步返回的 BalanceResult。
 type balanceQueryRequest struct {
+	requestID  uint64
 	playerUUID string
 	resultCh   chan *economypb.BalanceResult
+	operation  economypb.BalanceOperation
+	amount     int64
 }
 
 // EconomyTransactionHandler 处理经济交易流水的 Client-Streaming / Bidi-Streaming gRPC Handler。
@@ -232,15 +236,16 @@ func (h *EconomyTransactionHandler) balanceSendLoop(ctx context.Context, stream 
 			if !ok {
 				return
 			}
-			rid := h.nextRequestID.Add(1)
 			query := &economypb.BalanceQuery{
-				RequestId:  rid,
+				RequestId:  req.requestID,
 				PlayerUuid: req.playerUUID,
+				Operation:  req.operation,
+				Amount:     req.amount,
 			}
-			h.pendingRequests.Store(rid, req.resultCh)
+			h.pendingRequests.Store(req.requestID, req.resultCh)
 			if err := stream.Send(query); err != nil {
 				h.log.Warn(ctx, "BalanceStream - 发送查询失败: "+err.Error())
-				h.pendingRequests.Delete(rid)
+				h.pendingRequests.Delete(req.requestID)
 				select {
 				case req.resultCh <- &economypb.BalanceResult{
 					Success:      false,
@@ -286,7 +291,9 @@ func (h *EconomyTransactionHandler) QueryBalance(ctx context.Context, playerUUID
 	}
 
 	resultCh := make(chan *economypb.BalanceResult, 1)
+	rid := h.nextRequestID.Add(1)
 	h.queryCh <- &balanceQueryRequest{
+		requestID:  rid,
 		playerUUID: playerUUID,
 		resultCh:   resultCh,
 	}
@@ -304,7 +311,88 @@ func (h *EconomyTransactionHandler) QueryBalance(ctx context.Context, playerUUID
 		}
 		return result.GetBalance(), nil
 	case <-ctx.Done():
+		h.pendingRequests.Delete(rid)
 		return 0, xError.NewError(nil, xError.ServiceUnavailable, "查询余额超时", false, ctx.Err())
+	}
+}
+
+// AdjustBalance 通过 Bidi 流向 MC 插件调整指定玩家余额（5s 超时）。
+//
+// 由 HTTP handler 或 logic 层调用。
+func (h *EconomyTransactionHandler) AdjustBalance(ctx context.Context, playerUUID string, operation economypb.BalanceOperation, amount int64) (int64, *xError.Error) {
+	h.mu.Lock()
+	stream := h.balanceStream
+	h.mu.Unlock()
+	if stream == nil {
+		return 0, xError.NewError(nil, xError.ServiceUnavailable, "余额查询流未建立，请确保 MC 插件已连接", true, nil)
+	}
+
+	resultCh := make(chan *economypb.BalanceResult, 1)
+	rid := h.nextRequestID.Add(1)
+	h.queryCh <- &balanceQueryRequest{
+		requestID:  rid,
+		playerUUID: playerUUID,
+		resultCh:   resultCh,
+		operation:  operation,
+		amount:     amount,
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	select {
+	case result, ok := <-resultCh:
+		if !ok || result == nil {
+			return 0, xError.NewError(nil, xError.ServiceUnavailable, "余额查询流已断开", false, nil)
+		}
+		if !result.GetSuccess() {
+			return 0, xError.NewError(nil, xError.ServiceUnavailable, xError.ErrMessage(result.GetErrorMessage()), true, nil)
+		}
+
+		// 异步记录管理员操作流水
+		go func() {
+			bgCtx := context.WithoutCancel(ctx)
+			parsedUUID, err := uuid.Parse(playerUUID)
+			if err != nil {
+				h.log.Warn(bgCtx, "AdjustBalance - 解析UUID失败，跳过流水记录: "+err.Error())
+				return
+			}
+			var comment string
+			var logAmount int64
+			switch operation {
+			case economypb.BalanceOperation_BALANCE_OPERATION_ADD:
+				comment = "管理员操作：增加余额"
+				logAmount = amount
+			case economypb.BalanceOperation_BALANCE_OPERATION_REMOVE:
+				comment = "管理员操作：扣减余额"
+				logAmount = -amount
+			case economypb.BalanceOperation_BALANCE_OPERATION_SET:
+				comment = "管理员操作：设置余额"
+				logAmount = amount
+			case economypb.BalanceOperation_BALANCE_OPERATION_RESET:
+				comment = "管理员操作：重置余额"
+				logAmount = 0
+			default:
+				comment = "管理员操作：调整余额"
+				logAmount = amount
+			}
+			txLog := &entity.TransactionLog{
+				PlayerUUID:     parsedUUID,
+				Amount:         logAmount,
+				Type:           entity.TransactionTypeAdmin,
+				Comment:        comment,
+				IdempotencyKey: fmt.Sprintf("adjust-%s-%d-%d-%d", playerUUID, operation, amount, time.Now().UnixNano()),
+				CreatedAt:      time.Now(),
+			}
+			if xErr := h.transactionLogLogic.RecordTransaction(bgCtx, txLog); xErr != nil {
+				h.log.Warn(bgCtx, "AdjustBalance - 记录流水失败: "+xErr.Error())
+			}
+		}()
+
+		return result.GetBalance(), nil
+	case <-ctx.Done():
+		h.pendingRequests.Delete(rid)
+		return 0, xError.NewError(nil, xError.ServiceUnavailable, "调整余额超时", false, ctx.Err())
 	}
 }
 
@@ -328,4 +416,15 @@ func QueryBalance(ctx context.Context, playerUUID string) (int64, *xError.Error)
 		return 0, xError.NewError(nil, xError.ServiceUnavailable, "经济系统未初始化", false, nil)
 	}
 	return globalEconomyHandler.QueryBalance(ctx, playerUUID)
+}
+
+// AdjustBalance 全局余额调整入口。
+//
+// HTTP handler 通过此函数跨层访问 gRPC 层的 Bidi Stream 余额调整能力。
+// 返回玩家余额（单位：分 fen）或错误。
+func AdjustBalance(ctx context.Context, playerUUID string, operation economypb.BalanceOperation, amount int64) (int64, *xError.Error) {
+	if globalEconomyHandler == nil {
+		return 0, xError.NewError(nil, xError.ServiceUnavailable, "经济系统未初始化", false, nil)
+	}
+	return globalEconomyHandler.AdjustBalance(ctx, playerUUID, operation, amount)
 }

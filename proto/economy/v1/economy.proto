@@ -78,12 +78,32 @@ service TransactionLogService {
 // Balance Bidi Stream — 余额双向流消息
 // ============================================================================
 
+// BalanceOperation 余额操作类型枚举
+enum BalanceOperation {
+  // 未指定（默认值，Proto3 要求 0 值）
+  BALANCE_OPERATION_UNSPECIFIED = 0;
+  // 查询
+  BALANCE_OPERATION_QUERY = 1;
+  // 增加
+  BALANCE_OPERATION_ADD = 2;
+  // 扣减
+  BALANCE_OPERATION_REMOVE = 3;
+  // 设置
+  BALANCE_OPERATION_SET = 4;
+  // 重置
+  BALANCE_OPERATION_RESET = 5;
+}
+
 // BalanceQuery 余额查询请求（Go Server → MC Client）
 message BalanceQuery {
   // 请求 ID（用于匹配响应）
   uint64 request_id = 1;
   // 玩家 UUID
   string player_uuid = 2;
+  // 操作类型
+  BalanceOperation operation = 3;
+  // 操作金额（单位：分 fen），QUERY 时可忽略
+  int64 amount = 4;
 }
 
 // BalanceResult 余额查询响应（MC Client → Go Server）

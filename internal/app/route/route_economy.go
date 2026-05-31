@@ -19,6 +19,7 @@ func (r *route) economyRouter(router gin.IRouter) {
 		adminGroup.GET("/transactions", transactionHandler.ListPlayerTransactions)
 		adminGroup.GET("/audit-logs", auditHandler.ListAdminAuditLogs)
 		adminGroup.GET("/balance", balanceHandler.GetPlayerBalance)
+		adminGroup.POST("/balance/adjust", balanceHandler.AdjustPlayerBalance)
 	}
 
 	// 用户端接口

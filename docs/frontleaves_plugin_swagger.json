@@ -1035,6 +1035,76 @@
                 }
             }
         },
+        "/admin/economy/balance/adjust": {
+            "post": {
+                "description": "管理员调整指定玩家的经济余额（增加/扣减/设置/重置）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "管理-经济接口"
+                ],
+                "summary": "[管理] 调整玩家余额",
+                "parameters": [
+                    {
+                        "description": "调整玩家余额请求",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/economy.AdjustBalanceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/economy.AdjustBalanceResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "无权限",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "服务不可用（MC 插件未连接或查询超时）",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/economy/transactions": {
             "get": {
                 "description": "管理员根据玩家 UUID 分页查询指定玩家的交易流水记录",
@@ -5460,6 +5530,48 @@
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "economy.AdjustBalanceRequest": {
+            "type": "object",
+            "required": [
+                "operation",
+                "player_uuid"
+            ],
+            "properties": {
+                "amount": {
+                    "description": "操作金额（单位：元，reset时忽略）",
+                    "type": "number"
+                },
+                "operation": {
+                    "description": "操作类型：add/remove/set/reset",
+                    "type": "string"
+                },
+                "player_uuid": {
+                    "description": "玩家UUID",
+                    "type": "string"
+                }
+            }
+        },
+        "economy.AdjustBalanceResponse": {
+            "type": "object",
+            "properties": {
+                "currency": {
+                    "description": "货币类型",
+                    "type": "string"
+                },
+                "new_balance": {
+                    "description": "操作后新余额（单位：分）",
+                    "type": "integer"
+                },
+                "new_balance_display": {
+                    "description": "格式化显示",
+                    "type": "string"
+                },
+                "player_uuid": {
+                    "description": "玩家UUID",
+                    "type": "string"
                 }
             }
         },

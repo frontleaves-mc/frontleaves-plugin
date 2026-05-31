@@ -933,6 +933,36 @@ definitions:
       total:
         type: integer
     type: object
+  economy.AdjustBalanceRequest:
+    properties:
+      amount:
+        description: 操作金额（单位：元，reset时忽略）
+        type: number
+      operation:
+        description: 操作类型：add/remove/set/reset
+        type: string
+      player_uuid:
+        description: 玩家UUID
+        type: string
+    required:
+    - operation
+    - player_uuid
+    type: object
+  economy.AdjustBalanceResponse:
+    properties:
+      currency:
+        description: 货币类型
+        type: string
+      new_balance:
+        description: 操作后新余额（单位：分）
+        type: integer
+      new_balance_display:
+        description: 格式化显示
+        type: string
+      player_uuid:
+        description: 玩家UUID
+        type: string
+    type: object
   economy.BalanceDTO:
     properties:
       balance:
@@ -1640,6 +1670,49 @@ paths:
           schema:
             $ref: '#/definitions/xBase.BaseResponse'
       summary: '[管理] 查询玩家余额'
+      tags:
+      - 管理-经济接口
+  /admin/economy/balance/adjust:
+    post:
+      consumes:
+      - application/json
+      description: 管理员调整指定玩家的经济余额（增加/扣减/设置/重置）
+      parameters:
+      - description: 调整玩家余额请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/economy.AdjustBalanceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/economy.AdjustBalanceResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "403":
+          description: 无权限
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "503":
+          description: 服务不可用（MC 插件未连接或查询超时）
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[管理] 调整玩家余额'
       tags:
       - 管理-经济接口
   /admin/economy/transactions:
