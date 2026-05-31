@@ -53,12 +53,10 @@ func (t *TimerSub) Process(ctx context.Context, msg *matrixpb.MatrixTelemetryReq
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	switch msg.Payload.(type) {
-	case *matrixpb.MatrixTelemetryRequest_TelemetryTick:
-		t.checkTimer(ctx, msg.GetTelemetryTick())
-	case *matrixpb.MatrixTelemetryRequest_Teleport,
-		*matrixpb.MatrixTelemetryRequest_Respawn,
-		*matrixpb.MatrixTelemetryRequest_GameModeChange:
+	for _, tick := range msg.GetTelemetryTicks() {
+		t.checkTimer(ctx, tick)
+	}
+	if len(msg.GetTeleports()) > 0 || len(msg.GetRespawns()) > 0 || len(msg.GetGameModeChanges()) > 0 {
 		// 传送/重生/游戏模式变更 → 重置时间追踪
 		t.timerBalance = 0
 		t.initialized = false

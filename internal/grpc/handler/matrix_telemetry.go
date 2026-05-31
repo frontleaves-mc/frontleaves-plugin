@@ -67,16 +67,17 @@ func (h *MatrixTelemetryHandler) TelemetryStream(
 	}
 }
 
-// dispatchTelemetry 根据 oneof payload 类型分发遥测数据
+// dispatchTelemetry 根据遥测请求中的字段分发遥测数据
 func (h *MatrixTelemetryHandler) dispatchTelemetry(ctx context.Context, req *matrixpb.MatrixTelemetryRequest) {
-	switch payload := req.Payload.(type) {
-	case *matrixpb.MatrixTelemetryRequest_PlayerJoin:
-		h.handlePlayerJoin(ctx, payload.PlayerJoin, req.GetServerName())
-	case *matrixpb.MatrixTelemetryRequest_PlayerQuit:
-		h.handlePlayerQuit(ctx, payload.PlayerQuit, req.GetServerName())
-	default:
-		h.handleGenericEvent(req)
+	// 处理生命周期事件（单次字段）
+	if req.GetPlayerJoin() != nil {
+		h.handlePlayerJoin(ctx, req.GetPlayerJoin(), req.GetServerName())
 	}
+	if req.GetPlayerQuit() != nil {
+		h.handlePlayerQuit(ctx, req.GetPlayerQuit(), req.GetServerName())
+	}
+	// 处理批量事件（repeated 字段）
+	h.dispatchBatchEvents(ctx, req)
 }
 
 // handlePlayerJoin 处理玩家加入事件
@@ -93,7 +94,7 @@ func (h *MatrixTelemetryHandler) handlePlayerJoin(ctx context.Context, evt *matr
 	session := h.sessionManager.GetOrCreate(ctx, serverName, playerUUID, evt.GetPlayerName())
 	session.Send(&matrixpb.MatrixTelemetryRequest{
 		ServerName: serverName,
-		Payload:    &matrixpb.MatrixTelemetryRequest_PlayerJoin{PlayerJoin: evt},
+		PlayerJoin: evt,
 	})
 }
 
@@ -112,7 +113,7 @@ func (h *MatrixTelemetryHandler) handlePlayerQuit(ctx context.Context, evt *matr
 	if session != nil {
 		session.Send(&matrixpb.MatrixTelemetryRequest{
 			ServerName: serverName,
-			Payload:    &matrixpb.MatrixTelemetryRequest_PlayerQuit{PlayerQuit: evt},
+			PlayerQuit: evt,
 		})
 		session.MarkOffline()
 
@@ -122,58 +123,123 @@ func (h *MatrixTelemetryHandler) handlePlayerQuit(ctx context.Context, evt *matr
 	}
 }
 
-// handleGenericEvent 处理所有其他遥测事件
-func (h *MatrixTelemetryHandler) handleGenericEvent(req *matrixpb.MatrixTelemetryRequest) {
-	var playerUUIDStr string
+// dispatchBatchEvents 遍历所有 16 种 repeated 事件字段，提取 player_uuid 后逐条路由到对应 session
+func (h *MatrixTelemetryHandler) dispatchBatchEvents(ctx context.Context, req *matrixpb.MatrixTelemetryRequest) {
+	serverName := req.GetServerName()
 
-	switch payload := req.Payload.(type) {
-	case *matrixpb.MatrixTelemetryRequest_TelemetryTick:
-		playerUUIDStr = payload.TelemetryTick.GetPlayerUuid()
-	case *matrixpb.MatrixTelemetryRequest_BlockBreak:
-		playerUUIDStr = payload.BlockBreak.GetPlayerUuid()
-	case *matrixpb.MatrixTelemetryRequest_BlockPlace:
-		playerUUIDStr = payload.BlockPlace.GetPlayerUuid()
-	case *matrixpb.MatrixTelemetryRequest_EntityKill:
-		playerUUIDStr = payload.EntityKill.GetPlayerUuid()
-	case *matrixpb.MatrixTelemetryRequest_EntityDamage:
-		playerUUIDStr = payload.EntityDamage.GetPlayerUuid()
-	case *matrixpb.MatrixTelemetryRequest_PlayerDamage:
-		playerUUIDStr = payload.PlayerDamage.GetPlayerUuid()
-	case *matrixpb.MatrixTelemetryRequest_PlayerDeath:
-		playerUUIDStr = payload.PlayerDeath.GetPlayerUuid()
-	case *matrixpb.MatrixTelemetryRequest_ItemDrop:
-		playerUUIDStr = payload.ItemDrop.GetPlayerUuid()
-	case *matrixpb.MatrixTelemetryRequest_ItemPickup:
-		playerUUIDStr = payload.ItemPickup.GetPlayerUuid()
-	case *matrixpb.MatrixTelemetryRequest_InventoryAction:
-		playerUUIDStr = payload.InventoryAction.GetPlayerUuid()
-	case *matrixpb.MatrixTelemetryRequest_PlayerChat:
-		playerUUIDStr = payload.PlayerChat.GetPlayerUuid()
-	case *matrixpb.MatrixTelemetryRequest_PlayerCommand:
-		playerUUIDStr = payload.PlayerCommand.GetPlayerUuid()
-	case *matrixpb.MatrixTelemetryRequest_PlayerToggle:
-		playerUUIDStr = payload.PlayerToggle.GetPlayerUuid()
-	case *matrixpb.MatrixTelemetryRequest_Teleport:
-		playerUUIDStr = payload.Teleport.GetPlayerUuid()
-	case *matrixpb.MatrixTelemetryRequest_Respawn:
-		playerUUIDStr = payload.Respawn.GetPlayerUuid()
-	case *matrixpb.MatrixTelemetryRequest_GameModeChange:
-		playerUUIDStr = payload.GameModeChange.GetPlayerUuid()
-	default:
-		return
+	// sendEvent 辅助函数：将单条事件包装为 MatrixTelemetryRequest 后发送到 session
+	sendEvent := func(playerUUIDStr string, setPayload func(*matrixpb.MatrixTelemetryRequest)) {
+		if playerUUIDStr == "" {
+			return
+		}
+		playerUUID, err := uuid.Parse(playerUUIDStr)
+		if err != nil {
+			h.log.Warn(ctx, "dispatchBatchEvents - UUID格式无效: "+playerUUIDStr)
+			return
+		}
+		session := h.sessionManager.Get(serverName, playerUUID)
+		if session == nil {
+			return
+		}
+		eventReq := &matrixpb.MatrixTelemetryRequest{ServerName: serverName}
+		setPayload(eventReq)
+		session.Send(eventReq)
 	}
 
-	if playerUUIDStr == "" {
-		return
+	// TelemetryTick (field 13)
+	for _, evt := range req.GetTelemetryTicks() {
+		sendEvent(evt.GetPlayerUuid(), func(r *matrixpb.MatrixTelemetryRequest) {
+			r.TelemetryTicks = []*matrixpb.TelemetryTick{evt}
+		})
 	}
-
-	playerUUID, err := uuid.Parse(playerUUIDStr)
-	if err != nil {
-		return
+	// BlockBreak (field 14)
+	for _, evt := range req.GetBlockBreaks() {
+		sendEvent(evt.GetPlayerUuid(), func(r *matrixpb.MatrixTelemetryRequest) {
+			r.BlockBreaks = []*matrixpb.BlockBreakEvent{evt}
+		})
 	}
-
-	session := h.sessionManager.Get(req.GetServerName(), playerUUID)
-	if session != nil {
-		session.Send(req)
+	// BlockPlace (field 15)
+	for _, evt := range req.GetBlockPlaces() {
+		sendEvent(evt.GetPlayerUuid(), func(r *matrixpb.MatrixTelemetryRequest) {
+			r.BlockPlaces = []*matrixpb.BlockPlaceEvent{evt}
+		})
+	}
+	// EntityKill (field 16)
+	for _, evt := range req.GetEntityKills() {
+		sendEvent(evt.GetPlayerUuid(), func(r *matrixpb.MatrixTelemetryRequest) {
+			r.EntityKills = []*matrixpb.EntityKillEvent{evt}
+		})
+	}
+	// EntityDamage (field 17)
+	for _, evt := range req.GetEntityDamages() {
+		sendEvent(evt.GetPlayerUuid(), func(r *matrixpb.MatrixTelemetryRequest) {
+			r.EntityDamages = []*matrixpb.EntityDamageEvent{evt}
+		})
+	}
+	// PlayerDamage (field 18)
+	for _, evt := range req.GetPlayerDamages() {
+		sendEvent(evt.GetPlayerUuid(), func(r *matrixpb.MatrixTelemetryRequest) {
+			r.PlayerDamages = []*matrixpb.PlayerDamageEvent{evt}
+		})
+	}
+	// PlayerDeath (field 19)
+	for _, evt := range req.GetPlayerDeaths() {
+		sendEvent(evt.GetPlayerUuid(), func(r *matrixpb.MatrixTelemetryRequest) {
+			r.PlayerDeaths = []*matrixpb.PlayerDeathEvent{evt}
+		})
+	}
+	// ItemDrop (field 20)
+	for _, evt := range req.GetItemDrops() {
+		sendEvent(evt.GetPlayerUuid(), func(r *matrixpb.MatrixTelemetryRequest) {
+			r.ItemDrops = []*matrixpb.ItemDropEvent{evt}
+		})
+	}
+	// ItemPickup (field 21)
+	for _, evt := range req.GetItemPickups() {
+		sendEvent(evt.GetPlayerUuid(), func(r *matrixpb.MatrixTelemetryRequest) {
+			r.ItemPickups = []*matrixpb.ItemPickupEvent{evt}
+		})
+	}
+	// InventoryAction (field 22)
+	for _, evt := range req.GetInventoryActions() {
+		sendEvent(evt.GetPlayerUuid(), func(r *matrixpb.MatrixTelemetryRequest) {
+			r.InventoryActions = []*matrixpb.InventoryActionEvent{evt}
+		})
+	}
+	// PlayerChat (field 23)
+	for _, evt := range req.GetPlayerChats() {
+		sendEvent(evt.GetPlayerUuid(), func(r *matrixpb.MatrixTelemetryRequest) {
+			r.PlayerChats = []*matrixpb.PlayerChatEvent{evt}
+		})
+	}
+	// PlayerCommand (field 24)
+	for _, evt := range req.GetPlayerCommands() {
+		sendEvent(evt.GetPlayerUuid(), func(r *matrixpb.MatrixTelemetryRequest) {
+			r.PlayerCommands = []*matrixpb.PlayerCommandEvent{evt}
+		})
+	}
+	// PlayerToggle (field 25)
+	for _, evt := range req.GetPlayerToggles() {
+		sendEvent(evt.GetPlayerUuid(), func(r *matrixpb.MatrixTelemetryRequest) {
+			r.PlayerToggles = []*matrixpb.PlayerToggleEvent{evt}
+		})
+	}
+	// Teleport (field 26)
+	for _, evt := range req.GetTeleports() {
+		sendEvent(evt.GetPlayerUuid(), func(r *matrixpb.MatrixTelemetryRequest) {
+			r.Teleports = []*matrixpb.PlayerTeleportEvent{evt}
+		})
+	}
+	// Respawn (field 27)
+	for _, evt := range req.GetRespawns() {
+		sendEvent(evt.GetPlayerUuid(), func(r *matrixpb.MatrixTelemetryRequest) {
+			r.Respawns = []*matrixpb.PlayerRespawnEvent{evt}
+		})
+	}
+	// GameModeChange (field 28)
+	for _, evt := range req.GetGameModeChanges() {
+		sendEvent(evt.GetPlayerUuid(), func(r *matrixpb.MatrixTelemetryRequest) {
+			r.GameModeChanges = []*matrixpb.GameModeChangeEvent{evt}
+		})
 	}
 }

@@ -74,9 +74,8 @@ func (x *XRaySub) Process(ctx context.Context, msg *matrixpb.MatrixTelemetryRequ
 	x.mu.Lock()
 	defer x.mu.Unlock()
 
-	switch msg.Payload.(type) {
-	case *matrixpb.MatrixTelemetryRequest_BlockBreak:
-		x.checkXRay(ctx, msg.GetBlockBreak())
+	for _, evt := range msg.GetBlockBreaks() {
+		x.checkXRay(ctx, evt)
 	}
 
 	return nil

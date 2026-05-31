@@ -48,9 +48,7 @@ func makeDamageEvent(px, py, pz, ex, ey, ez float64, yaw, pitch float32, entityT
 // makeDamageMsg 将 EntityDamageEvent 包装为 MatrixTelemetryRequest
 func makeDamageMsg(evt *matrixpb.EntityDamageEvent) *matrixpb.MatrixTelemetryRequest {
 	return &matrixpb.MatrixTelemetryRequest{
-		Payload: &matrixpb.MatrixTelemetryRequest_EntityDamage{
-			EntityDamage: evt,
-		},
+		EntityDamages: []*matrixpb.EntityDamageEvent{evt},
 	}
 }
 

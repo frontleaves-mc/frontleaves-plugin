@@ -26,8 +26,8 @@ func newTestFastBreakSub() *FastBreakSub {
 func makeBreakMsg(material, toolUsed string, ts int64) *matrixpb.MatrixTelemetryRequest {
 	return &matrixpb.MatrixTelemetryRequest{
 		ServerName: "test-server",
-		Payload: &matrixpb.MatrixTelemetryRequest_BlockBreak{
-			BlockBreak: &matrixpb.BlockBreakEvent{
+		BlockBreaks: []*matrixpb.BlockBreakEvent{
+			{
 				PlayerUuid: "test-uuid",
 				PlayerName: "TestPlayer",
 				Material:   material,
@@ -138,9 +138,7 @@ func TestFastBreakSub_NilPayload(t *testing.T) {
 
 	msg := &matrixpb.MatrixTelemetryRequest{
 		ServerName: "test-server",
-		Payload: &matrixpb.MatrixTelemetryRequest_BlockBreak{
-			BlockBreak: nil,
-		},
+		BlockBreaks: []*matrixpb.BlockBreakEvent{nil},
 	}
 
 	// 不应 panic

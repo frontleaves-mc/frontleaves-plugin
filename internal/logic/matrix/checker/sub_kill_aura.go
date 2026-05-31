@@ -64,9 +64,8 @@ func (s *KillAuraSub) Process(ctx context.Context, msg *matrixpb.MatrixTelemetry
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	switch msg.Payload.(type) {
-	case *matrixpb.MatrixTelemetryRequest_EntityDamage:
-		s.checkKillAura(ctx, msg.GetEntityDamage())
+	for _, evt := range msg.GetEntityDamages() {
+		s.checkKillAura(ctx, evt)
 	}
 
 	return nil

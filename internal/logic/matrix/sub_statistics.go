@@ -58,32 +58,28 @@ func (s *StatisticsSub) Process(ctx context.Context, msg *matrixpb.MatrixTelemet
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	switch msg.Payload.(type) {
-	case *matrixpb.MatrixTelemetryRequest_BlockBreak:
-		evt := msg.GetBlockBreak()
+	for _, evt := range msg.GetBlockBreaks() {
 		material := evt.GetMaterial()
 		s.blocksBreak[material]++
 		s.totalBlocksBroken++
-
-	case *matrixpb.MatrixTelemetryRequest_BlockPlace:
-		evt := msg.GetBlockPlace()
+	}
+	for _, evt := range msg.GetBlockPlaces() {
 		material := evt.GetMaterial()
 		s.blocksPlace[material]++
 		s.totalBlocksPlaced++
-
-	case *matrixpb.MatrixTelemetryRequest_EntityKill:
-		evt := msg.GetEntityKill()
+	}
+	for _, evt := range msg.GetEntityKills() {
 		entityType := evt.GetEntityType()
 		s.entitiesKill[entityType]++
 		s.totalEntitiesKilled++
-
-	case *matrixpb.MatrixTelemetryRequest_PlayerDeath:
-		evt := msg.GetPlayerDeath()
+	}
+	for _, evt := range msg.GetPlayerDeaths() {
 		cause := evt.GetDeathCause()
 		s.deaths[cause]++
 		s.totalDeaths++
+	}
 
-	case *matrixpb.MatrixTelemetryRequest_PlayerQuit:
+	if msg.GetPlayerQuit() != nil {
 		s.flushToDB(ctx)
 		return nil
 	}

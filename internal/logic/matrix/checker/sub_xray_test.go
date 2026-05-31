@@ -28,8 +28,8 @@ func newTestXRaySub() *XRaySub {
 func makeBlockBreakMsg(material string) *matrixpb.MatrixTelemetryRequest {
 	return &matrixpb.MatrixTelemetryRequest{
 		ServerName: "test-server",
-		Payload: &matrixpb.MatrixTelemetryRequest_BlockBreak{
-			BlockBreak: &matrixpb.BlockBreakEvent{
+		BlockBreaks: []*matrixpb.BlockBreakEvent{
+			{
 				PlayerUuid: "test-uuid",
 				PlayerName: "TestPlayer",
 				Material:   material,

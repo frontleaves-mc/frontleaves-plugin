@@ -27,8 +27,8 @@ func newTestAimbotSub() *AimbotSub {
 func makeAimbotYawPitchTick(yaw, pitch float32) *matrixpb.MatrixTelemetryRequest {
 	return &matrixpb.MatrixTelemetryRequest{
 		ServerName: "test-server",
-		Payload: &matrixpb.MatrixTelemetryRequest_TelemetryTick{
-			TelemetryTick: &matrixpb.TelemetryTick{
+		TelemetryTicks: []*matrixpb.TelemetryTick{
+			{
 				PlayerUuid: "test-uuid",
 				PlayerName: "TestPlayer",
 				Yaw:        yaw,
@@ -43,8 +43,8 @@ func makeAimbotYawPitchTick(yaw, pitch float32) *matrixpb.MatrixTelemetryRequest
 func makeAimbotDamageEvent(yaw, pitch float32) *matrixpb.MatrixTelemetryRequest {
 	return &matrixpb.MatrixTelemetryRequest{
 		ServerName: "test-server",
-		Payload: &matrixpb.MatrixTelemetryRequest_EntityDamage{
-			EntityDamage: &matrixpb.EntityDamageEvent{
+		EntityDamages: []*matrixpb.EntityDamageEvent{
+			{
 				PlayerUuid:  "test-uuid",
 				PlayerName:  "TestPlayer",
 				PlayerYaw:   yaw,
@@ -143,8 +143,8 @@ func TestAimbotSub_Reset(t *testing.T) {
 	// 发送传送事件
 	tpMsg := &matrixpb.MatrixTelemetryRequest{
 		ServerName: "test-server",
-		Payload: &matrixpb.MatrixTelemetryRequest_Teleport{
-			Teleport: &matrixpb.PlayerTeleportEvent{
+		Teleports: []*matrixpb.PlayerTeleportEvent{
+			{
 				PlayerUuid: "test-uuid",
 				PlayerName: "TestPlayer",
 				Timestamp:  2000,
@@ -222,8 +222,8 @@ func TestAimbotSub_RespawnReset(t *testing.T) {
 	// 发送重生事件
 	respawnMsg := &matrixpb.MatrixTelemetryRequest{
 		ServerName: "test-server",
-		Payload: &matrixpb.MatrixTelemetryRequest_Respawn{
-			Respawn: &matrixpb.PlayerRespawnEvent{
+		Respawns: []*matrixpb.PlayerRespawnEvent{
+			{
 				PlayerUuid: "test-uuid",
 				PlayerName: "TestPlayer",
 				Timestamp:  2000,

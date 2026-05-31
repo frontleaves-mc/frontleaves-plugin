@@ -34,10 +34,8 @@ func makeTickMsg(posX, posY, posZ float64, ts int64, opts ...func(*matrixpb.Tele
 		opt(tick)
 	}
 	return &matrixpb.MatrixTelemetryRequest{
-		ServerName: "test-server",
-		Payload: &matrixpb.MatrixTelemetryRequest_TelemetryTick{
-			TelemetryTick: tick,
-		},
+		ServerName:    "test-server",
+		TelemetryTicks: []*matrixpb.TelemetryTick{tick},
 	}
 }
 
@@ -101,8 +99,8 @@ func TestSpeedSub_TeleportReset(t *testing.T) {
 	// 发送传送事件
 	tpMsg := &matrixpb.MatrixTelemetryRequest{
 		ServerName: "test-server",
-		Payload: &matrixpb.MatrixTelemetryRequest_Teleport{
-			Teleport: &matrixpb.PlayerTeleportEvent{
+		Teleports: []*matrixpb.PlayerTeleportEvent{
+			{
 				PlayerUuid: "test-uuid",
 				PlayerName: "TestPlayer",
 				Timestamp:  2000,

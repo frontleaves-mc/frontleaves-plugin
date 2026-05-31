@@ -26,29 +26,34 @@ const (
 type MatrixTelemetryRequest struct {
 	state      protoimpl.MessageState `protogen:"open.v1"`
 	ServerName string                 `protobuf:"bytes,1,opt,name=server_name,json=serverName,proto3" json:"server_name,omitempty"`
-	// Types that are valid to be assigned to Payload:
-	//
-	//	*MatrixTelemetryRequest_PlayerJoin
-	//	*MatrixTelemetryRequest_PlayerQuit
-	//	*MatrixTelemetryRequest_TelemetryTick
-	//	*MatrixTelemetryRequest_BlockBreak
-	//	*MatrixTelemetryRequest_BlockPlace
-	//	*MatrixTelemetryRequest_EntityKill
-	//	*MatrixTelemetryRequest_EntityDamage
-	//	*MatrixTelemetryRequest_PlayerDamage
-	//	*MatrixTelemetryRequest_PlayerDeath
-	//	*MatrixTelemetryRequest_ItemDrop
-	//	*MatrixTelemetryRequest_ItemPickup
-	//	*MatrixTelemetryRequest_InventoryAction
-	//	*MatrixTelemetryRequest_PlayerChat
-	//	*MatrixTelemetryRequest_PlayerCommand
-	//	*MatrixTelemetryRequest_PlayerToggle
-	//	*MatrixTelemetryRequest_Teleport
-	//	*MatrixTelemetryRequest_Respawn
-	//	*MatrixTelemetryRequest_GameModeChange
-	Payload       isMatrixTelemetryRequest_Payload `protobuf_oneof:"payload"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	TickNumber int64                  `protobuf:"varint,2,opt,name=tick_number,json=tickNumber,proto3" json:"tick_number,omitempty"`
+	Timestamp  int64                  `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	// 连接事件 (11-12) — 单次事件，不使用 repeated
+	PlayerJoin *PlayerJoinEvent `protobuf:"bytes,11,opt,name=player_join,json=playerJoin,proto3" json:"player_join,omitempty"`
+	PlayerQuit *PlayerQuitEvent `protobuf:"bytes,12,opt,name=player_quit,json=playerQuit,proto3" json:"player_quit,omitempty"`
+	// 心跳快照 (13)
+	TelemetryTicks []*TelemetryTick `protobuf:"bytes,13,rep,name=telemetry_ticks,json=telemetryTicks,proto3" json:"telemetry_ticks,omitempty"`
+	// 方块事件 (14-15)
+	BlockBreaks []*BlockBreakEvent `protobuf:"bytes,14,rep,name=block_breaks,json=blockBreaks,proto3" json:"block_breaks,omitempty"`
+	BlockPlaces []*BlockPlaceEvent `protobuf:"bytes,15,rep,name=block_places,json=blockPlaces,proto3" json:"block_places,omitempty"`
+	// 实体/战斗事件 (16-19)
+	EntityKills   []*EntityKillEvent   `protobuf:"bytes,16,rep,name=entity_kills,json=entityKills,proto3" json:"entity_kills,omitempty"`
+	EntityDamages []*EntityDamageEvent `protobuf:"bytes,17,rep,name=entity_damages,json=entityDamages,proto3" json:"entity_damages,omitempty"`
+	PlayerDamages []*PlayerDamageEvent `protobuf:"bytes,18,rep,name=player_damages,json=playerDamages,proto3" json:"player_damages,omitempty"`
+	PlayerDeaths  []*PlayerDeathEvent  `protobuf:"bytes,19,rep,name=player_deaths,json=playerDeaths,proto3" json:"player_deaths,omitempty"`
+	// 物品/背包事件 (20-22)
+	ItemDrops        []*ItemDropEvent        `protobuf:"bytes,20,rep,name=item_drops,json=itemDrops,proto3" json:"item_drops,omitempty"`
+	ItemPickups      []*ItemPickupEvent      `protobuf:"bytes,21,rep,name=item_pickups,json=itemPickups,proto3" json:"item_pickups,omitempty"`
+	InventoryActions []*InventoryActionEvent `protobuf:"bytes,22,rep,name=inventory_actions,json=inventoryActions,proto3" json:"inventory_actions,omitempty"`
+	// 玩家行为事件 (23-28)
+	PlayerChats     []*PlayerChatEvent     `protobuf:"bytes,23,rep,name=player_chats,json=playerChats,proto3" json:"player_chats,omitempty"`
+	PlayerCommands  []*PlayerCommandEvent  `protobuf:"bytes,24,rep,name=player_commands,json=playerCommands,proto3" json:"player_commands,omitempty"`
+	PlayerToggles   []*PlayerToggleEvent   `protobuf:"bytes,25,rep,name=player_toggles,json=playerToggles,proto3" json:"player_toggles,omitempty"`
+	Teleports       []*PlayerTeleportEvent `protobuf:"bytes,26,rep,name=teleports,proto3" json:"teleports,omitempty"`
+	Respawns        []*PlayerRespawnEvent  `protobuf:"bytes,27,rep,name=respawns,proto3" json:"respawns,omitempty"`
+	GameModeChanges []*GameModeChangeEvent `protobuf:"bytes,28,rep,name=game_mode_changes,json=gameModeChanges,proto3" json:"game_mode_changes,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *MatrixTelemetryRequest) Reset() {
@@ -88,292 +93,145 @@ func (x *MatrixTelemetryRequest) GetServerName() string {
 	return ""
 }
 
-func (x *MatrixTelemetryRequest) GetPayload() isMatrixTelemetryRequest_Payload {
+func (x *MatrixTelemetryRequest) GetTickNumber() int64 {
 	if x != nil {
-		return x.Payload
+		return x.TickNumber
 	}
-	return nil
+	return 0
+}
+
+func (x *MatrixTelemetryRequest) GetTimestamp() int64 {
+	if x != nil {
+		return x.Timestamp
+	}
+	return 0
 }
 
 func (x *MatrixTelemetryRequest) GetPlayerJoin() *PlayerJoinEvent {
 	if x != nil {
-		if x, ok := x.Payload.(*MatrixTelemetryRequest_PlayerJoin); ok {
-			return x.PlayerJoin
-		}
+		return x.PlayerJoin
 	}
 	return nil
 }
 
 func (x *MatrixTelemetryRequest) GetPlayerQuit() *PlayerQuitEvent {
 	if x != nil {
-		if x, ok := x.Payload.(*MatrixTelemetryRequest_PlayerQuit); ok {
-			return x.PlayerQuit
-		}
+		return x.PlayerQuit
 	}
 	return nil
 }
 
-func (x *MatrixTelemetryRequest) GetTelemetryTick() *TelemetryTick {
+func (x *MatrixTelemetryRequest) GetTelemetryTicks() []*TelemetryTick {
 	if x != nil {
-		if x, ok := x.Payload.(*MatrixTelemetryRequest_TelemetryTick); ok {
-			return x.TelemetryTick
-		}
+		return x.TelemetryTicks
 	}
 	return nil
 }
 
-func (x *MatrixTelemetryRequest) GetBlockBreak() *BlockBreakEvent {
+func (x *MatrixTelemetryRequest) GetBlockBreaks() []*BlockBreakEvent {
 	if x != nil {
-		if x, ok := x.Payload.(*MatrixTelemetryRequest_BlockBreak); ok {
-			return x.BlockBreak
-		}
+		return x.BlockBreaks
 	}
 	return nil
 }
 
-func (x *MatrixTelemetryRequest) GetBlockPlace() *BlockPlaceEvent {
+func (x *MatrixTelemetryRequest) GetBlockPlaces() []*BlockPlaceEvent {
 	if x != nil {
-		if x, ok := x.Payload.(*MatrixTelemetryRequest_BlockPlace); ok {
-			return x.BlockPlace
-		}
+		return x.BlockPlaces
 	}
 	return nil
 }
 
-func (x *MatrixTelemetryRequest) GetEntityKill() *EntityKillEvent {
+func (x *MatrixTelemetryRequest) GetEntityKills() []*EntityKillEvent {
 	if x != nil {
-		if x, ok := x.Payload.(*MatrixTelemetryRequest_EntityKill); ok {
-			return x.EntityKill
-		}
+		return x.EntityKills
 	}
 	return nil
 }
 
-func (x *MatrixTelemetryRequest) GetEntityDamage() *EntityDamageEvent {
+func (x *MatrixTelemetryRequest) GetEntityDamages() []*EntityDamageEvent {
 	if x != nil {
-		if x, ok := x.Payload.(*MatrixTelemetryRequest_EntityDamage); ok {
-			return x.EntityDamage
-		}
+		return x.EntityDamages
 	}
 	return nil
 }
 
-func (x *MatrixTelemetryRequest) GetPlayerDamage() *PlayerDamageEvent {
+func (x *MatrixTelemetryRequest) GetPlayerDamages() []*PlayerDamageEvent {
 	if x != nil {
-		if x, ok := x.Payload.(*MatrixTelemetryRequest_PlayerDamage); ok {
-			return x.PlayerDamage
-		}
+		return x.PlayerDamages
 	}
 	return nil
 }
 
-func (x *MatrixTelemetryRequest) GetPlayerDeath() *PlayerDeathEvent {
+func (x *MatrixTelemetryRequest) GetPlayerDeaths() []*PlayerDeathEvent {
 	if x != nil {
-		if x, ok := x.Payload.(*MatrixTelemetryRequest_PlayerDeath); ok {
-			return x.PlayerDeath
-		}
+		return x.PlayerDeaths
 	}
 	return nil
 }
 
-func (x *MatrixTelemetryRequest) GetItemDrop() *ItemDropEvent {
+func (x *MatrixTelemetryRequest) GetItemDrops() []*ItemDropEvent {
 	if x != nil {
-		if x, ok := x.Payload.(*MatrixTelemetryRequest_ItemDrop); ok {
-			return x.ItemDrop
-		}
+		return x.ItemDrops
 	}
 	return nil
 }
 
-func (x *MatrixTelemetryRequest) GetItemPickup() *ItemPickupEvent {
+func (x *MatrixTelemetryRequest) GetItemPickups() []*ItemPickupEvent {
 	if x != nil {
-		if x, ok := x.Payload.(*MatrixTelemetryRequest_ItemPickup); ok {
-			return x.ItemPickup
-		}
+		return x.ItemPickups
 	}
 	return nil
 }
 
-func (x *MatrixTelemetryRequest) GetInventoryAction() *InventoryActionEvent {
+func (x *MatrixTelemetryRequest) GetInventoryActions() []*InventoryActionEvent {
 	if x != nil {
-		if x, ok := x.Payload.(*MatrixTelemetryRequest_InventoryAction); ok {
-			return x.InventoryAction
-		}
+		return x.InventoryActions
 	}
 	return nil
 }
 
-func (x *MatrixTelemetryRequest) GetPlayerChat() *PlayerChatEvent {
+func (x *MatrixTelemetryRequest) GetPlayerChats() []*PlayerChatEvent {
 	if x != nil {
-		if x, ok := x.Payload.(*MatrixTelemetryRequest_PlayerChat); ok {
-			return x.PlayerChat
-		}
+		return x.PlayerChats
 	}
 	return nil
 }
 
-func (x *MatrixTelemetryRequest) GetPlayerCommand() *PlayerCommandEvent {
+func (x *MatrixTelemetryRequest) GetPlayerCommands() []*PlayerCommandEvent {
 	if x != nil {
-		if x, ok := x.Payload.(*MatrixTelemetryRequest_PlayerCommand); ok {
-			return x.PlayerCommand
-		}
+		return x.PlayerCommands
 	}
 	return nil
 }
 
-func (x *MatrixTelemetryRequest) GetPlayerToggle() *PlayerToggleEvent {
+func (x *MatrixTelemetryRequest) GetPlayerToggles() []*PlayerToggleEvent {
 	if x != nil {
-		if x, ok := x.Payload.(*MatrixTelemetryRequest_PlayerToggle); ok {
-			return x.PlayerToggle
-		}
+		return x.PlayerToggles
 	}
 	return nil
 }
 
-func (x *MatrixTelemetryRequest) GetTeleport() *PlayerTeleportEvent {
+func (x *MatrixTelemetryRequest) GetTeleports() []*PlayerTeleportEvent {
 	if x != nil {
-		if x, ok := x.Payload.(*MatrixTelemetryRequest_Teleport); ok {
-			return x.Teleport
-		}
+		return x.Teleports
 	}
 	return nil
 }
 
-func (x *MatrixTelemetryRequest) GetRespawn() *PlayerRespawnEvent {
+func (x *MatrixTelemetryRequest) GetRespawns() []*PlayerRespawnEvent {
 	if x != nil {
-		if x, ok := x.Payload.(*MatrixTelemetryRequest_Respawn); ok {
-			return x.Respawn
-		}
+		return x.Respawns
 	}
 	return nil
 }
 
-func (x *MatrixTelemetryRequest) GetGameModeChange() *GameModeChangeEvent {
+func (x *MatrixTelemetryRequest) GetGameModeChanges() []*GameModeChangeEvent {
 	if x != nil {
-		if x, ok := x.Payload.(*MatrixTelemetryRequest_GameModeChange); ok {
-			return x.GameModeChange
-		}
+		return x.GameModeChanges
 	}
 	return nil
 }
-
-type isMatrixTelemetryRequest_Payload interface {
-	isMatrixTelemetryRequest_Payload()
-}
-
-type MatrixTelemetryRequest_PlayerJoin struct {
-	// 连接事件 (11-12)
-	PlayerJoin *PlayerJoinEvent `protobuf:"bytes,11,opt,name=player_join,json=playerJoin,proto3,oneof"`
-}
-
-type MatrixTelemetryRequest_PlayerQuit struct {
-	PlayerQuit *PlayerQuitEvent `protobuf:"bytes,12,opt,name=player_quit,json=playerQuit,proto3,oneof"`
-}
-
-type MatrixTelemetryRequest_TelemetryTick struct {
-	// 心跳快照 (13)
-	TelemetryTick *TelemetryTick `protobuf:"bytes,13,opt,name=telemetry_tick,json=telemetryTick,proto3,oneof"`
-}
-
-type MatrixTelemetryRequest_BlockBreak struct {
-	// 方块事件 (14-15)
-	BlockBreak *BlockBreakEvent `protobuf:"bytes,14,opt,name=block_break,json=blockBreak,proto3,oneof"`
-}
-
-type MatrixTelemetryRequest_BlockPlace struct {
-	BlockPlace *BlockPlaceEvent `protobuf:"bytes,15,opt,name=block_place,json=blockPlace,proto3,oneof"`
-}
-
-type MatrixTelemetryRequest_EntityKill struct {
-	// 实体/战斗事件 (16-19)
-	EntityKill *EntityKillEvent `protobuf:"bytes,16,opt,name=entity_kill,json=entityKill,proto3,oneof"`
-}
-
-type MatrixTelemetryRequest_EntityDamage struct {
-	EntityDamage *EntityDamageEvent `protobuf:"bytes,17,opt,name=entity_damage,json=entityDamage,proto3,oneof"`
-}
-
-type MatrixTelemetryRequest_PlayerDamage struct {
-	PlayerDamage *PlayerDamageEvent `protobuf:"bytes,18,opt,name=player_damage,json=playerDamage,proto3,oneof"`
-}
-
-type MatrixTelemetryRequest_PlayerDeath struct {
-	PlayerDeath *PlayerDeathEvent `protobuf:"bytes,19,opt,name=player_death,json=playerDeath,proto3,oneof"`
-}
-
-type MatrixTelemetryRequest_ItemDrop struct {
-	// 物品/背包事件 (20-22)
-	ItemDrop *ItemDropEvent `protobuf:"bytes,20,opt,name=item_drop,json=itemDrop,proto3,oneof"`
-}
-
-type MatrixTelemetryRequest_ItemPickup struct {
-	ItemPickup *ItemPickupEvent `protobuf:"bytes,21,opt,name=item_pickup,json=itemPickup,proto3,oneof"`
-}
-
-type MatrixTelemetryRequest_InventoryAction struct {
-	InventoryAction *InventoryActionEvent `protobuf:"bytes,22,opt,name=inventory_action,json=inventoryAction,proto3,oneof"`
-}
-
-type MatrixTelemetryRequest_PlayerChat struct {
-	// 玩家行为事件 (23-28)
-	PlayerChat *PlayerChatEvent `protobuf:"bytes,23,opt,name=player_chat,json=playerChat,proto3,oneof"`
-}
-
-type MatrixTelemetryRequest_PlayerCommand struct {
-	PlayerCommand *PlayerCommandEvent `protobuf:"bytes,24,opt,name=player_command,json=playerCommand,proto3,oneof"`
-}
-
-type MatrixTelemetryRequest_PlayerToggle struct {
-	PlayerToggle *PlayerToggleEvent `protobuf:"bytes,25,opt,name=player_toggle,json=playerToggle,proto3,oneof"`
-}
-
-type MatrixTelemetryRequest_Teleport struct {
-	Teleport *PlayerTeleportEvent `protobuf:"bytes,26,opt,name=teleport,proto3,oneof"`
-}
-
-type MatrixTelemetryRequest_Respawn struct {
-	Respawn *PlayerRespawnEvent `protobuf:"bytes,27,opt,name=respawn,proto3,oneof"`
-}
-
-type MatrixTelemetryRequest_GameModeChange struct {
-	GameModeChange *GameModeChangeEvent `protobuf:"bytes,28,opt,name=game_mode_change,json=gameModeChange,proto3,oneof"`
-}
-
-func (*MatrixTelemetryRequest_PlayerJoin) isMatrixTelemetryRequest_Payload() {}
-
-func (*MatrixTelemetryRequest_PlayerQuit) isMatrixTelemetryRequest_Payload() {}
-
-func (*MatrixTelemetryRequest_TelemetryTick) isMatrixTelemetryRequest_Payload() {}
-
-func (*MatrixTelemetryRequest_BlockBreak) isMatrixTelemetryRequest_Payload() {}
-
-func (*MatrixTelemetryRequest_BlockPlace) isMatrixTelemetryRequest_Payload() {}
-
-func (*MatrixTelemetryRequest_EntityKill) isMatrixTelemetryRequest_Payload() {}
-
-func (*MatrixTelemetryRequest_EntityDamage) isMatrixTelemetryRequest_Payload() {}
-
-func (*MatrixTelemetryRequest_PlayerDamage) isMatrixTelemetryRequest_Payload() {}
-
-func (*MatrixTelemetryRequest_PlayerDeath) isMatrixTelemetryRequest_Payload() {}
-
-func (*MatrixTelemetryRequest_ItemDrop) isMatrixTelemetryRequest_Payload() {}
-
-func (*MatrixTelemetryRequest_ItemPickup) isMatrixTelemetryRequest_Payload() {}
-
-func (*MatrixTelemetryRequest_InventoryAction) isMatrixTelemetryRequest_Payload() {}
-
-func (*MatrixTelemetryRequest_PlayerChat) isMatrixTelemetryRequest_Payload() {}
-
-func (*MatrixTelemetryRequest_PlayerCommand) isMatrixTelemetryRequest_Payload() {}
-
-func (*MatrixTelemetryRequest_PlayerToggle) isMatrixTelemetryRequest_Payload() {}
-
-func (*MatrixTelemetryRequest_Teleport) isMatrixTelemetryRequest_Payload() {}
-
-func (*MatrixTelemetryRequest_Respawn) isMatrixTelemetryRequest_Payload() {}
-
-func (*MatrixTelemetryRequest_GameModeChange) isMatrixTelemetryRequest_Payload() {}
 
 // MatrixTelemetryResponse 遥测数据流响应
 type MatrixTelemetryResponse struct {
@@ -2384,36 +2242,34 @@ var File_matrix_v1_matrix_telemetry_proto protoreflect.FileDescriptor
 
 const file_matrix_v1_matrix_telemetry_proto_rawDesc = "" +
 	"\n" +
-	" matrix/v1/matrix_telemetry.proto\x12\x15frontleaves.matrix.v1\x1a\x0flink/base.proto\"\xbd\v\n" +
+	" matrix/v1/matrix_telemetry.proto\x12\x15frontleaves.matrix.v1\x1a\x0flink/base.proto\"\xed\v\n" +
 	"\x16MatrixTelemetryRequest\x12\x1f\n" +
 	"\vserver_name\x18\x01 \x01(\tR\n" +
-	"serverName\x12I\n" +
-	"\vplayer_join\x18\v \x01(\v2&.frontleaves.matrix.v1.PlayerJoinEventH\x00R\n" +
-	"playerJoin\x12I\n" +
-	"\vplayer_quit\x18\f \x01(\v2&.frontleaves.matrix.v1.PlayerQuitEventH\x00R\n" +
+	"serverName\x12\x1f\n" +
+	"\vtick_number\x18\x02 \x01(\x03R\n" +
+	"tickNumber\x12\x1c\n" +
+	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\x12G\n" +
+	"\vplayer_join\x18\v \x01(\v2&.frontleaves.matrix.v1.PlayerJoinEventR\n" +
+	"playerJoin\x12G\n" +
+	"\vplayer_quit\x18\f \x01(\v2&.frontleaves.matrix.v1.PlayerQuitEventR\n" +
 	"playerQuit\x12M\n" +
-	"\x0etelemetry_tick\x18\r \x01(\v2$.frontleaves.matrix.v1.TelemetryTickH\x00R\rtelemetryTick\x12I\n" +
-	"\vblock_break\x18\x0e \x01(\v2&.frontleaves.matrix.v1.BlockBreakEventH\x00R\n" +
-	"blockBreak\x12I\n" +
-	"\vblock_place\x18\x0f \x01(\v2&.frontleaves.matrix.v1.BlockPlaceEventH\x00R\n" +
-	"blockPlace\x12I\n" +
-	"\ventity_kill\x18\x10 \x01(\v2&.frontleaves.matrix.v1.EntityKillEventH\x00R\n" +
-	"entityKill\x12O\n" +
-	"\rentity_damage\x18\x11 \x01(\v2(.frontleaves.matrix.v1.EntityDamageEventH\x00R\fentityDamage\x12O\n" +
-	"\rplayer_damage\x18\x12 \x01(\v2(.frontleaves.matrix.v1.PlayerDamageEventH\x00R\fplayerDamage\x12L\n" +
-	"\fplayer_death\x18\x13 \x01(\v2'.frontleaves.matrix.v1.PlayerDeathEventH\x00R\vplayerDeath\x12C\n" +
-	"\titem_drop\x18\x14 \x01(\v2$.frontleaves.matrix.v1.ItemDropEventH\x00R\bitemDrop\x12I\n" +
-	"\vitem_pickup\x18\x15 \x01(\v2&.frontleaves.matrix.v1.ItemPickupEventH\x00R\n" +
-	"itemPickup\x12X\n" +
-	"\x10inventory_action\x18\x16 \x01(\v2+.frontleaves.matrix.v1.InventoryActionEventH\x00R\x0finventoryAction\x12I\n" +
-	"\vplayer_chat\x18\x17 \x01(\v2&.frontleaves.matrix.v1.PlayerChatEventH\x00R\n" +
-	"playerChat\x12R\n" +
-	"\x0eplayer_command\x18\x18 \x01(\v2).frontleaves.matrix.v1.PlayerCommandEventH\x00R\rplayerCommand\x12O\n" +
-	"\rplayer_toggle\x18\x19 \x01(\v2(.frontleaves.matrix.v1.PlayerToggleEventH\x00R\fplayerToggle\x12H\n" +
-	"\bteleport\x18\x1a \x01(\v2*.frontleaves.matrix.v1.PlayerTeleportEventH\x00R\bteleport\x12E\n" +
-	"\arespawn\x18\x1b \x01(\v2).frontleaves.matrix.v1.PlayerRespawnEventH\x00R\arespawn\x12V\n" +
-	"\x10game_mode_change\x18\x1c \x01(\v2*.frontleaves.matrix.v1.GameModeChangeEventH\x00R\x0egameModeChangeB\t\n" +
-	"\apayload\"B\n" +
+	"\x0ftelemetry_ticks\x18\r \x03(\v2$.frontleaves.matrix.v1.TelemetryTickR\x0etelemetryTicks\x12I\n" +
+	"\fblock_breaks\x18\x0e \x03(\v2&.frontleaves.matrix.v1.BlockBreakEventR\vblockBreaks\x12I\n" +
+	"\fblock_places\x18\x0f \x03(\v2&.frontleaves.matrix.v1.BlockPlaceEventR\vblockPlaces\x12I\n" +
+	"\fentity_kills\x18\x10 \x03(\v2&.frontleaves.matrix.v1.EntityKillEventR\ventityKills\x12O\n" +
+	"\x0eentity_damages\x18\x11 \x03(\v2(.frontleaves.matrix.v1.EntityDamageEventR\rentityDamages\x12O\n" +
+	"\x0eplayer_damages\x18\x12 \x03(\v2(.frontleaves.matrix.v1.PlayerDamageEventR\rplayerDamages\x12L\n" +
+	"\rplayer_deaths\x18\x13 \x03(\v2'.frontleaves.matrix.v1.PlayerDeathEventR\fplayerDeaths\x12C\n" +
+	"\n" +
+	"item_drops\x18\x14 \x03(\v2$.frontleaves.matrix.v1.ItemDropEventR\titemDrops\x12I\n" +
+	"\fitem_pickups\x18\x15 \x03(\v2&.frontleaves.matrix.v1.ItemPickupEventR\vitemPickups\x12X\n" +
+	"\x11inventory_actions\x18\x16 \x03(\v2+.frontleaves.matrix.v1.InventoryActionEventR\x10inventoryActions\x12I\n" +
+	"\fplayer_chats\x18\x17 \x03(\v2&.frontleaves.matrix.v1.PlayerChatEventR\vplayerChats\x12R\n" +
+	"\x0fplayer_commands\x18\x18 \x03(\v2).frontleaves.matrix.v1.PlayerCommandEventR\x0eplayerCommands\x12O\n" +
+	"\x0eplayer_toggles\x18\x19 \x03(\v2(.frontleaves.matrix.v1.PlayerToggleEventR\rplayerToggles\x12H\n" +
+	"\tteleports\x18\x1a \x03(\v2*.frontleaves.matrix.v1.PlayerTeleportEventR\tteleports\x12E\n" +
+	"\brespawns\x18\x1b \x03(\v2).frontleaves.matrix.v1.PlayerRespawnEventR\brespawns\x12V\n" +
+	"\x11game_mode_changes\x18\x1c \x03(\v2*.frontleaves.matrix.v1.GameModeChangeEventR\x0fgameModeChanges\"B\n" +
 	"\x17MatrixTelemetryResponse\x12'\n" +
 	"\x04base\x18\x01 \x01(\v2\x13.xBase.BaseResponseR\x04base\"\xaf\x01\n" +
 	"\x0fPlayerJoinEvent\x12\x1f\n" +
@@ -2717,22 +2573,22 @@ var file_matrix_v1_matrix_telemetry_proto_goTypes = []any{
 var file_matrix_v1_matrix_telemetry_proto_depIdxs = []int32{
 	2,  // 0: frontleaves.matrix.v1.MatrixTelemetryRequest.player_join:type_name -> frontleaves.matrix.v1.PlayerJoinEvent
 	3,  // 1: frontleaves.matrix.v1.MatrixTelemetryRequest.player_quit:type_name -> frontleaves.matrix.v1.PlayerQuitEvent
-	4,  // 2: frontleaves.matrix.v1.MatrixTelemetryRequest.telemetry_tick:type_name -> frontleaves.matrix.v1.TelemetryTick
-	5,  // 3: frontleaves.matrix.v1.MatrixTelemetryRequest.block_break:type_name -> frontleaves.matrix.v1.BlockBreakEvent
-	6,  // 4: frontleaves.matrix.v1.MatrixTelemetryRequest.block_place:type_name -> frontleaves.matrix.v1.BlockPlaceEvent
-	7,  // 5: frontleaves.matrix.v1.MatrixTelemetryRequest.entity_kill:type_name -> frontleaves.matrix.v1.EntityKillEvent
-	8,  // 6: frontleaves.matrix.v1.MatrixTelemetryRequest.entity_damage:type_name -> frontleaves.matrix.v1.EntityDamageEvent
-	9,  // 7: frontleaves.matrix.v1.MatrixTelemetryRequest.player_damage:type_name -> frontleaves.matrix.v1.PlayerDamageEvent
-	10, // 8: frontleaves.matrix.v1.MatrixTelemetryRequest.player_death:type_name -> frontleaves.matrix.v1.PlayerDeathEvent
-	11, // 9: frontleaves.matrix.v1.MatrixTelemetryRequest.item_drop:type_name -> frontleaves.matrix.v1.ItemDropEvent
-	12, // 10: frontleaves.matrix.v1.MatrixTelemetryRequest.item_pickup:type_name -> frontleaves.matrix.v1.ItemPickupEvent
-	13, // 11: frontleaves.matrix.v1.MatrixTelemetryRequest.inventory_action:type_name -> frontleaves.matrix.v1.InventoryActionEvent
-	14, // 12: frontleaves.matrix.v1.MatrixTelemetryRequest.player_chat:type_name -> frontleaves.matrix.v1.PlayerChatEvent
-	15, // 13: frontleaves.matrix.v1.MatrixTelemetryRequest.player_command:type_name -> frontleaves.matrix.v1.PlayerCommandEvent
-	16, // 14: frontleaves.matrix.v1.MatrixTelemetryRequest.player_toggle:type_name -> frontleaves.matrix.v1.PlayerToggleEvent
-	17, // 15: frontleaves.matrix.v1.MatrixTelemetryRequest.teleport:type_name -> frontleaves.matrix.v1.PlayerTeleportEvent
-	18, // 16: frontleaves.matrix.v1.MatrixTelemetryRequest.respawn:type_name -> frontleaves.matrix.v1.PlayerRespawnEvent
-	19, // 17: frontleaves.matrix.v1.MatrixTelemetryRequest.game_mode_change:type_name -> frontleaves.matrix.v1.GameModeChangeEvent
+	4,  // 2: frontleaves.matrix.v1.MatrixTelemetryRequest.telemetry_ticks:type_name -> frontleaves.matrix.v1.TelemetryTick
+	5,  // 3: frontleaves.matrix.v1.MatrixTelemetryRequest.block_breaks:type_name -> frontleaves.matrix.v1.BlockBreakEvent
+	6,  // 4: frontleaves.matrix.v1.MatrixTelemetryRequest.block_places:type_name -> frontleaves.matrix.v1.BlockPlaceEvent
+	7,  // 5: frontleaves.matrix.v1.MatrixTelemetryRequest.entity_kills:type_name -> frontleaves.matrix.v1.EntityKillEvent
+	8,  // 6: frontleaves.matrix.v1.MatrixTelemetryRequest.entity_damages:type_name -> frontleaves.matrix.v1.EntityDamageEvent
+	9,  // 7: frontleaves.matrix.v1.MatrixTelemetryRequest.player_damages:type_name -> frontleaves.matrix.v1.PlayerDamageEvent
+	10, // 8: frontleaves.matrix.v1.MatrixTelemetryRequest.player_deaths:type_name -> frontleaves.matrix.v1.PlayerDeathEvent
+	11, // 9: frontleaves.matrix.v1.MatrixTelemetryRequest.item_drops:type_name -> frontleaves.matrix.v1.ItemDropEvent
+	12, // 10: frontleaves.matrix.v1.MatrixTelemetryRequest.item_pickups:type_name -> frontleaves.matrix.v1.ItemPickupEvent
+	13, // 11: frontleaves.matrix.v1.MatrixTelemetryRequest.inventory_actions:type_name -> frontleaves.matrix.v1.InventoryActionEvent
+	14, // 12: frontleaves.matrix.v1.MatrixTelemetryRequest.player_chats:type_name -> frontleaves.matrix.v1.PlayerChatEvent
+	15, // 13: frontleaves.matrix.v1.MatrixTelemetryRequest.player_commands:type_name -> frontleaves.matrix.v1.PlayerCommandEvent
+	16, // 14: frontleaves.matrix.v1.MatrixTelemetryRequest.player_toggles:type_name -> frontleaves.matrix.v1.PlayerToggleEvent
+	17, // 15: frontleaves.matrix.v1.MatrixTelemetryRequest.teleports:type_name -> frontleaves.matrix.v1.PlayerTeleportEvent
+	18, // 16: frontleaves.matrix.v1.MatrixTelemetryRequest.respawns:type_name -> frontleaves.matrix.v1.PlayerRespawnEvent
+	19, // 17: frontleaves.matrix.v1.MatrixTelemetryRequest.game_mode_changes:type_name -> frontleaves.matrix.v1.GameModeChangeEvent
 	20, // 18: frontleaves.matrix.v1.MatrixTelemetryResponse.base:type_name -> xBase.BaseResponse
 	0,  // 19: frontleaves.matrix.v1.MatrixTelemetryService.TelemetryStream:input_type -> frontleaves.matrix.v1.MatrixTelemetryRequest
 	1,  // 20: frontleaves.matrix.v1.MatrixTelemetryService.TelemetryStream:output_type -> frontleaves.matrix.v1.MatrixTelemetryResponse
@@ -2747,26 +2603,6 @@ func init() { file_matrix_v1_matrix_telemetry_proto_init() }
 func file_matrix_v1_matrix_telemetry_proto_init() {
 	if File_matrix_v1_matrix_telemetry_proto != nil {
 		return
-	}
-	file_matrix_v1_matrix_telemetry_proto_msgTypes[0].OneofWrappers = []any{
-		(*MatrixTelemetryRequest_PlayerJoin)(nil),
-		(*MatrixTelemetryRequest_PlayerQuit)(nil),
-		(*MatrixTelemetryRequest_TelemetryTick)(nil),
-		(*MatrixTelemetryRequest_BlockBreak)(nil),
-		(*MatrixTelemetryRequest_BlockPlace)(nil),
-		(*MatrixTelemetryRequest_EntityKill)(nil),
-		(*MatrixTelemetryRequest_EntityDamage)(nil),
-		(*MatrixTelemetryRequest_PlayerDamage)(nil),
-		(*MatrixTelemetryRequest_PlayerDeath)(nil),
-		(*MatrixTelemetryRequest_ItemDrop)(nil),
-		(*MatrixTelemetryRequest_ItemPickup)(nil),
-		(*MatrixTelemetryRequest_InventoryAction)(nil),
-		(*MatrixTelemetryRequest_PlayerChat)(nil),
-		(*MatrixTelemetryRequest_PlayerCommand)(nil),
-		(*MatrixTelemetryRequest_PlayerToggle)(nil),
-		(*MatrixTelemetryRequest_Teleport)(nil),
-		(*MatrixTelemetryRequest_Respawn)(nil),
-		(*MatrixTelemetryRequest_GameModeChange)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

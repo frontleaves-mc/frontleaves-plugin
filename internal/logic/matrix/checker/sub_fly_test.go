@@ -175,8 +175,8 @@ func TestFlySub_TeleportReset(t *testing.T) {
 	// 发送传送事件
 	tpMsg := &matrixpb.MatrixTelemetryRequest{
 		ServerName: "test-server",
-		Payload: &matrixpb.MatrixTelemetryRequest_Teleport{
-			Teleport: &matrixpb.PlayerTeleportEvent{
+		Teleports: []*matrixpb.PlayerTeleportEvent{
+			{
 				PlayerUuid: "test-uuid",
 				PlayerName: "TestPlayer",
 				Timestamp:  2000,

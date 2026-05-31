@@ -60,9 +60,7 @@ func TestAutoClickerSub_NormalClicking(t *testing.T) {
 	for i := int64(0); i < 8; i++ {
 		evt := makeAutoClickerDamageEvent(baseTs + i*125) // 每 125ms 一次 = 8 CPS
 		msg := &matrixpb.MatrixTelemetryRequest{
-			Payload: &matrixpb.MatrixTelemetryRequest_EntityDamage{
-				EntityDamage: evt,
-			},
+			EntityDamages: []*matrixpb.EntityDamageEvent{evt},
 		}
 		err := s.Process(context.Background(), msg)
 		if err != nil {
@@ -85,9 +83,7 @@ func TestAutoClickerSub_HighCPS(t *testing.T) {
 	for i := int64(0); i < 20; i++ {
 		evt := makeAutoClickerDamageEvent(baseTs + i*50) // 每 50ms 一次 = 20 CPS
 		msg := &matrixpb.MatrixTelemetryRequest{
-			Payload: &matrixpb.MatrixTelemetryRequest_EntityDamage{
-				EntityDamage: evt,
-			},
+			EntityDamages: []*matrixpb.EntityDamageEvent{evt},
 		}
 		_ = s.Process(context.Background(), msg)
 	}
@@ -109,9 +105,7 @@ func TestAutoClickerSub_UniformDistribution(t *testing.T) {
 		// 严格均匀间隔 40ms → stddev = 0
 		evt := makeAutoClickerDamageEvent(baseTs + i*40)
 		msg := &matrixpb.MatrixTelemetryRequest{
-			Payload: &matrixpb.MatrixTelemetryRequest_EntityDamage{
-				EntityDamage: evt,
-			},
+			EntityDamages: []*matrixpb.EntityDamageEvent{evt},
 		}
 		_ = s.Process(context.Background(), msg)
 	}
@@ -144,9 +138,7 @@ func TestAutoClickerSub_NilEvent(t *testing.T) {
 	s := newTestAutoClickerSub(16.0, 1000, 15.0)
 
 	msg := &matrixpb.MatrixTelemetryRequest{
-		Payload: &matrixpb.MatrixTelemetryRequest_EntityDamage{
-			EntityDamage: nil,
-		},
+		EntityDamages: []*matrixpb.EntityDamageEvent{nil},
 	}
 	err := s.Process(context.Background(), msg)
 	if err != nil {

@@ -75,11 +75,8 @@ func (r *ReachSub) Process(ctx context.Context, msg *matrixpb.MatrixTelemetryReq
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	switch msg.Payload.(type) {
-	case *matrixpb.MatrixTelemetryRequest_EntityDamage:
-		r.checkReach(ctx, msg.GetEntityDamage())
-	default:
-		// 其他事件不处理，无持久状态
+	for _, evt := range msg.GetEntityDamages() {
+		r.checkReach(ctx, evt)
 	}
 
 	return nil

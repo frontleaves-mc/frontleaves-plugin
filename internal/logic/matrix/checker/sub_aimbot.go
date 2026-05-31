@@ -61,20 +61,13 @@ func (s *AimbotSub) Process(ctx context.Context, msg *matrixpb.MatrixTelemetryRe
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	switch msg.Payload.(type) {
-	case *matrixpb.MatrixTelemetryRequest_TelemetryTick:
-		tick := msg.GetTelemetryTick()
-		if tick != nil {
-			s.checkAimbot(ctx, float64(tick.GetYaw()), float64(tick.GetPitch()))
-		}
-	case *matrixpb.MatrixTelemetryRequest_EntityDamage:
-		evt := msg.GetEntityDamage()
-		if evt != nil {
-			s.checkAimbot(ctx, float64(evt.GetPlayerYaw()), float64(evt.GetPlayerPitch()))
-		}
-	case *matrixpb.MatrixTelemetryRequest_Teleport,
-		*matrixpb.MatrixTelemetryRequest_Respawn,
-		*matrixpb.MatrixTelemetryRequest_GameModeChange:
+	for _, tick := range msg.GetTelemetryTicks() {
+		s.checkAimbot(ctx, float64(tick.GetYaw()), float64(tick.GetPitch()))
+	}
+	for _, evt := range msg.GetEntityDamages() {
+		s.checkAimbot(ctx, float64(evt.GetPlayerYaw()), float64(evt.GetPlayerPitch()))
+	}
+	if len(msg.GetTeleports()) > 0 || len(msg.GetRespawns()) > 0 || len(msg.GetGameModeChanges()) > 0 {
 		s.reset()
 	}
 

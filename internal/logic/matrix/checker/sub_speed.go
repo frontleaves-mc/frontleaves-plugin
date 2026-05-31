@@ -58,12 +58,10 @@ func (s *SpeedSub) Process(ctx context.Context, msg *matrixpb.MatrixTelemetryReq
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	switch msg.Payload.(type) {
-	case *matrixpb.MatrixTelemetryRequest_TelemetryTick:
-		s.checkSpeed(ctx, msg.GetTelemetryTick())
-	case *matrixpb.MatrixTelemetryRequest_Teleport,
-		*matrixpb.MatrixTelemetryRequest_Respawn,
-		*matrixpb.MatrixTelemetryRequest_GameModeChange:
+	for _, tick := range msg.GetTelemetryTicks() {
+		s.checkSpeed(ctx, tick)
+	}
+	if len(msg.GetTeleports()) > 0 || len(msg.GetRespawns()) > 0 || len(msg.GetGameModeChanges()) > 0 {
 		// 传送/重生/游戏模式变更 → 重置位置追踪
 		s.hasLastPos = false
 		s.lastTimestamp = 0

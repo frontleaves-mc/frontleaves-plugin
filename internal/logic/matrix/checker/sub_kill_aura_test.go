@@ -65,9 +65,7 @@ func TestKillAuraSub_NormalCombat(t *testing.T) {
 	for i := int64(0); i < 10; i++ {
 		evt := makeKillAuraDamageEvent(42, "ZOMBIE", 0, 64, 2.0, 0, 64, 0, 0, 0, baseTs+i*100)
 		msg := &matrixpb.MatrixTelemetryRequest{
-			Payload: &matrixpb.MatrixTelemetryRequest_EntityDamage{
-				EntityDamage: evt,
-			},
+			EntityDamages: []*matrixpb.EntityDamageEvent{evt},
 		}
 		err := s.Process(context.Background(), msg)
 		if err != nil {
@@ -104,9 +102,7 @@ func TestKillAuraSub_RapidSwitching(t *testing.T) {
 	for i, e := range entities {
 		evt := makeKillAuraDamageEvent(e.id, "ZOMBIE", e.x, e.y, e.z, 0, 64, 0, 0, 0, baseTs+int64(i)*50)
 		msg := &matrixpb.MatrixTelemetryRequest{
-			Payload: &matrixpb.MatrixTelemetryRequest_EntityDamage{
-				EntityDamage: evt,
-			},
+			EntityDamages: []*matrixpb.EntityDamageEvent{evt},
 		}
 		_ = s.Process(context.Background(), msg)
 	}
@@ -114,9 +110,7 @@ func TestKillAuraSub_RapidSwitching(t *testing.T) {
 	for i := 0; i < 2; i++ {
 		evt := makeKillAuraDamageEvent(int32(i+1), "ZOMBIE", 2.0, 64.0, 0.0, 0, 64, 0, 0, 0, baseTs+500+int64(i)*50)
 		msg := &matrixpb.MatrixTelemetryRequest{
-			Payload: &matrixpb.MatrixTelemetryRequest_EntityDamage{
-				EntityDamage: evt,
-			},
+			EntityDamages: []*matrixpb.EntityDamageEvent{evt},
 		}
 		_ = s.Process(context.Background(), msg)
 	}
@@ -140,16 +134,12 @@ func TestKillAuraSub_EntityIdFallback(t *testing.T) {
 	// 交替攻击两个目标各 4 次，共 8 次（> 5 次）
 	for i := 0; i < 4; i++ {
 		msg1 := &matrixpb.MatrixTelemetryRequest{
-			Payload: &matrixpb.MatrixTelemetryRequest_EntityDamage{
-				EntityDamage: evt1,
-			},
+			EntityDamages: []*matrixpb.EntityDamageEvent{evt1},
 		}
 		_ = s.Process(context.Background(), msg1)
 
 		msg2 := &matrixpb.MatrixTelemetryRequest{
-			Payload: &matrixpb.MatrixTelemetryRequest_EntityDamage{
-				EntityDamage: evt2,
-			},
+			EntityDamages: []*matrixpb.EntityDamageEvent{evt2},
 		}
 		_ = s.Process(context.Background(), msg2)
 	}
@@ -178,9 +168,7 @@ func TestKillAuraSub_BehindTarget(t *testing.T) {
 	// 夹角 = 180° > 90° → 方向异常
 	evt := makeKillAuraDamageEvent(1, "ZOMBIE", 0, 64, 0, 0, 64, 5, 0, 0, time.Now().UnixMilli())
 	msg := &matrixpb.MatrixTelemetryRequest{
-		Payload: &matrixpb.MatrixTelemetryRequest_EntityDamage{
-			EntityDamage: evt,
-		},
+		EntityDamages: []*matrixpb.EntityDamageEvent{evt},
 	}
 	_ = s.Process(context.Background(), msg)
 
@@ -212,9 +200,7 @@ func TestKillAuraSub_NilEvent(t *testing.T) {
 	s := newTestKillAuraSub(3000, 3, 90.0)
 
 	msg := &matrixpb.MatrixTelemetryRequest{
-		Payload: &matrixpb.MatrixTelemetryRequest_EntityDamage{
-			EntityDamage: nil,
-		},
+		EntityDamages: []*matrixpb.EntityDamageEvent{nil},
 	}
 	err := s.Process(context.Background(), msg)
 	if err != nil {

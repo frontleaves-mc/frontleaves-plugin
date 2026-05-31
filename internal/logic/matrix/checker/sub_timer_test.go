@@ -32,8 +32,8 @@ func TestTimerSub_NormalSpeed(t *testing.T) {
 	// tick 1: 初始化会话（timestamp 设为当前时间 - 200ms）
 	_ = sub.Process(ctx, &matrixpb.MatrixTelemetryRequest{
 		ServerName: "test-server",
-		Payload: &matrixpb.MatrixTelemetryRequest_TelemetryTick{
-			TelemetryTick: &matrixpb.TelemetryTick{
+		TelemetryTicks: []*matrixpb.TelemetryTick{
+			{
 				PlayerUuid: "test-uuid",
 				PlayerName: "TestPlayer",
 				Timestamp:  now - 200,
@@ -44,8 +44,8 @@ func TestTimerSub_NormalSpeed(t *testing.T) {
 	// tick 2: 正常 tick（距离初始化约 200ms，两个 tick = 100ms，合理）
 	_ = sub.Process(ctx, &matrixpb.MatrixTelemetryRequest{
 		ServerName: "test-server",
-		Payload: &matrixpb.MatrixTelemetryRequest_TelemetryTick{
-			TelemetryTick: &matrixpb.TelemetryTick{
+		TelemetryTicks: []*matrixpb.TelemetryTick{
+			{
 				PlayerUuid: "test-uuid",
 				PlayerName: "TestPlayer",
 				Timestamp:  now - 100,
@@ -68,8 +68,8 @@ func TestTimerSub_Accelerated(t *testing.T) {
 	// tick 1: 初始化会话
 	_ = sub.Process(ctx, &matrixpb.MatrixTelemetryRequest{
 		ServerName: "test-server",
-		Payload: &matrixpb.MatrixTelemetryRequest_TelemetryTick{
-			TelemetryTick: &matrixpb.TelemetryTick{
+		TelemetryTicks: []*matrixpb.TelemetryTick{
+			{
 				PlayerUuid: "test-uuid",
 				PlayerName: "TestPlayer",
 				Timestamp:  now,
@@ -82,8 +82,8 @@ func TestTimerSub_Accelerated(t *testing.T) {
 	for i := 0; i < 9; i++ {
 		_ = sub.Process(ctx, &matrixpb.MatrixTelemetryRequest{
 			ServerName: "test-server",
-			Payload: &matrixpb.MatrixTelemetryRequest_TelemetryTick{
-				TelemetryTick: &matrixpb.TelemetryTick{
+			TelemetryTicks: []*matrixpb.TelemetryTick{
+				{
 					PlayerUuid: "test-uuid",
 					PlayerName: "TestPlayer",
 					Timestamp:  now,
@@ -106,8 +106,8 @@ func TestTimerSub_Reset(t *testing.T) {
 	// 先建立状态
 	_ = sub.Process(ctx, &matrixpb.MatrixTelemetryRequest{
 		ServerName: "test-server",
-		Payload: &matrixpb.MatrixTelemetryRequest_TelemetryTick{
-			TelemetryTick: &matrixpb.TelemetryTick{
+		TelemetryTicks: []*matrixpb.TelemetryTick{
+			{
 				PlayerUuid: "test-uuid",
 				PlayerName: "TestPlayer",
 				Timestamp:  now,
@@ -121,8 +121,8 @@ func TestTimerSub_Reset(t *testing.T) {
 	// 发送传送事件 → 重置
 	tpMsg := &matrixpb.MatrixTelemetryRequest{
 		ServerName: "test-server",
-		Payload: &matrixpb.MatrixTelemetryRequest_Teleport{
-			Teleport: &matrixpb.PlayerTeleportEvent{
+		Teleports: []*matrixpb.PlayerTeleportEvent{
+			{
 				PlayerUuid: "test-uuid",
 				PlayerName: "TestPlayer",
 				Timestamp:  now,
@@ -137,8 +137,8 @@ func TestTimerSub_Reset(t *testing.T) {
 	// 同样验证重生事件重置
 	_ = sub.Process(ctx, &matrixpb.MatrixTelemetryRequest{
 		ServerName: "test-server",
-		Payload: &matrixpb.MatrixTelemetryRequest_TelemetryTick{
-			TelemetryTick: &matrixpb.TelemetryTick{
+		TelemetryTicks: []*matrixpb.TelemetryTick{
+			{
 				PlayerUuid: "test-uuid",
 				PlayerName: "TestPlayer",
 				Timestamp:  now + 100,
@@ -149,8 +149,8 @@ func TestTimerSub_Reset(t *testing.T) {
 
 	_ = sub.Process(ctx, &matrixpb.MatrixTelemetryRequest{
 		ServerName: "test-server",
-		Payload: &matrixpb.MatrixTelemetryRequest_Respawn{
-			Respawn: &matrixpb.PlayerRespawnEvent{
+		Respawns: []*matrixpb.PlayerRespawnEvent{
+			{
 				PlayerUuid: "test-uuid",
 				PlayerName: "TestPlayer",
 				Timestamp:  now + 200,
@@ -162,8 +162,8 @@ func TestTimerSub_Reset(t *testing.T) {
 	// 验证游戏模式变更事件重置
 	_ = sub.Process(ctx, &matrixpb.MatrixTelemetryRequest{
 		ServerName: "test-server",
-		Payload: &matrixpb.MatrixTelemetryRequest_TelemetryTick{
-			TelemetryTick: &matrixpb.TelemetryTick{
+		TelemetryTicks: []*matrixpb.TelemetryTick{
+			{
 				PlayerUuid: "test-uuid",
 				PlayerName: "TestPlayer",
 				Timestamp:  now + 300,
@@ -174,8 +174,8 @@ func TestTimerSub_Reset(t *testing.T) {
 
 	_ = sub.Process(ctx, &matrixpb.MatrixTelemetryRequest{
 		ServerName: "test-server",
-		Payload: &matrixpb.MatrixTelemetryRequest_GameModeChange{
-			GameModeChange: &matrixpb.GameModeChangeEvent{
+		GameModeChanges: []*matrixpb.GameModeChangeEvent{
+			{
 				PlayerUuid: "test-uuid",
 				PlayerName: "TestPlayer",
 				Timestamp:  now + 400,
@@ -203,12 +203,9 @@ func TestTimerSub_NilTick(t *testing.T) {
 	sub := newTestTimerSub()
 	ctx := context.Background()
 
-	// 发送 nil TelemetryTick（通过 Payload 为 nil 的情况）
+	// 发送 nil TelemetryTick（通过空 repeated 列表的情况）
 	msg := &matrixpb.MatrixTelemetryRequest{
 		ServerName: "test-server",
-		Payload: &matrixpb.MatrixTelemetryRequest_TelemetryTick{
-			TelemetryTick: nil,
-		},
 	}
 
 	// 不应 panic

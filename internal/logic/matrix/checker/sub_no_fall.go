@@ -53,13 +53,10 @@ func (n *NoFallSub) Process(ctx context.Context, msg *matrixpb.MatrixTelemetryRe
 	n.mu.Lock()
 	defer n.mu.Unlock()
 
-	switch msg.Payload.(type) {
-	case *matrixpb.MatrixTelemetryRequest_TelemetryTick:
-		n.checkNoFall(ctx, msg.GetTelemetryTick())
-	case *matrixpb.MatrixTelemetryRequest_Teleport,
-		*matrixpb.MatrixTelemetryRequest_Respawn,
-		*matrixpb.MatrixTelemetryRequest_GameModeChange:
-		// 传送/重生/游戏模式变更 → 重置状态
+	for _, tick := range msg.GetTelemetryTicks() {
+		n.checkNoFall(ctx, tick)
+	}
+	if len(msg.GetTeleports()) > 0 || len(msg.GetRespawns()) > 0 || len(msg.GetGameModeChanges()) > 0 {
 		n.noFallCounter = 0
 		n.hasPrev = false
 	}

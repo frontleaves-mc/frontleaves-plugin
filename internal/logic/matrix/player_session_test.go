@@ -76,8 +76,8 @@ func newMinimalSession(t *testing.T) *PlayerSession {
 func makeTestMsg() *matrixpb.MatrixTelemetryRequest {
 	return &matrixpb.MatrixTelemetryRequest{
 		ServerName: "test-server",
-		Payload: &matrixpb.MatrixTelemetryRequest_TelemetryTick{
-			TelemetryTick: &matrixpb.TelemetryTick{
+		TelemetryTicks: []*matrixpb.TelemetryTick{
+			{
 				PlayerUuid: uuid.New().String(),
 				PlayerName: "TestPlayer",
 				PosX:       100.0,

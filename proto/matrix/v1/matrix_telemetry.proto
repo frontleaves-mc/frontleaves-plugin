@@ -17,33 +17,34 @@ service MatrixTelemetryService {
 // MatrixTelemetryRequest 遥测数据流请求
 message MatrixTelemetryRequest {
   string server_name = 1;
+  int64  tick_number = 2;
+  int64  timestamp   = 3;
 
-  oneof payload {
-    // 连接事件 (11-12)
-    PlayerJoinEvent     player_join     = 11;
-    PlayerQuitEvent     player_quit     = 12;
-    // 心跳快照 (13)
-    TelemetryTick       telemetry_tick  = 13;
-    // 方块事件 (14-15)
-    BlockBreakEvent     block_break     = 14;
-    BlockPlaceEvent     block_place     = 15;
-    // 实体/战斗事件 (16-19)
-    EntityKillEvent     entity_kill     = 16;
-    EntityDamageEvent   entity_damage   = 17;
-    PlayerDamageEvent   player_damage   = 18;
-    PlayerDeathEvent    player_death    = 19;
-    // 物品/背包事件 (20-22)
-    ItemDropEvent       item_drop       = 20;
-    ItemPickupEvent     item_pickup     = 21;
-    InventoryActionEvent inventory_action = 22;
-    // 玩家行为事件 (23-28)
-    PlayerChatEvent     player_chat     = 23;
-    PlayerCommandEvent  player_command  = 24;
-    PlayerToggleEvent   player_toggle   = 25;
-    PlayerTeleportEvent teleport        = 26;
-    PlayerRespawnEvent  respawn         = 27;
-    GameModeChangeEvent game_mode_change = 28;
-  }
+  // 连接事件 (11-12) — 单次事件，不使用 repeated
+  PlayerJoinEvent     player_join     = 11;
+  PlayerQuitEvent     player_quit     = 12;
+
+  // 心跳快照 (13)
+  repeated TelemetryTick       telemetry_ticks    = 13;
+  // 方块事件 (14-15)
+  repeated BlockBreakEvent     block_breaks       = 14;
+  repeated BlockPlaceEvent     block_places       = 15;
+  // 实体/战斗事件 (16-19)
+  repeated EntityKillEvent     entity_kills       = 16;
+  repeated EntityDamageEvent   entity_damages     = 17;
+  repeated PlayerDamageEvent   player_damages     = 18;
+  repeated PlayerDeathEvent    player_deaths      = 19;
+  // 物品/背包事件 (20-22)
+  repeated ItemDropEvent       item_drops         = 20;
+  repeated ItemPickupEvent     item_pickups       = 21;
+  repeated InventoryActionEvent inventory_actions = 22;
+  // 玩家行为事件 (23-28)
+  repeated PlayerChatEvent     player_chats       = 23;
+  repeated PlayerCommandEvent  player_commands    = 24;
+  repeated PlayerToggleEvent   player_toggles     = 25;
+  repeated PlayerTeleportEvent teleports          = 26;
+  repeated PlayerRespawnEvent  respawns           = 27;
+  repeated GameModeChangeEvent game_mode_changes  = 28;
 }
 
 // MatrixTelemetryResponse 遥测数据流响应

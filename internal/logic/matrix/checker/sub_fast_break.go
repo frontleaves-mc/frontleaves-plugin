@@ -78,9 +78,8 @@ func (f *FastBreakSub) Process(ctx context.Context, msg *matrixpb.MatrixTelemetr
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	switch msg.Payload.(type) {
-	case *matrixpb.MatrixTelemetryRequest_BlockBreak:
-		f.checkFastBreak(ctx, msg.GetBlockBreak())
+	for _, evt := range msg.GetBlockBreaks() {
+		f.checkFastBreak(ctx, evt)
 	}
 
 	return nil
