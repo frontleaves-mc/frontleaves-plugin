@@ -6,6 +6,13 @@ const (
 	EnvGrpcSecretKey     xEnv.EnvKey = "YGGLEAF_GRPC_SECRET_KEY"      // gRPC 服务间调用的共享密钥
 	EnvYggleafGrpcHost   xEnv.EnvKey = "YGGLEAF_GRPC_HOST"            // Yggleaf gRPC 服务地址
 	EnvYggleafGrpcPort   xEnv.EnvKey = "YGGLEAF_GRPC_PORT"            // Yggleaf gRPC 服务端口
+
+	// gRPC Keepalive
+	EnvGrpcKeepaliveTime    xEnv.EnvKey = "GRPC_KEEPALIVE_TIME"    // gRPC 服务端 keepalive PING 间隔，默认值为 30s，格式为 Go duration string
+	EnvGrpcKeepaliveTimeout xEnv.EnvKey = "GRPC_KEEPALIVE_TIMEOUT" // gRPC PING 响应超时时间，默认值为 10s，格式为 Go duration string
+	EnvGrpcKeepaliveMinTime xEnv.EnvKey = "GRPC_KEEPALIVE_MIN_TIME" // gRPC 允许的客户端最小 PING 间隔，默认值为 5s，格式为 Go duration string
+	EnvGrpcKeepaliveMaxIdle xEnv.EnvKey = "GRPC_KEEPALIVE_MAX_IDLE" // gRPC 连接最长空闲时间，默认值为 5m，格式为 Go duration string
+
 	EnvMatrixManageInterval xEnv.EnvKey = "MATRIX_MANAGE_INTERVAL"    // Matrix 管理任务执行间隔，默认值为 5s，格式为 Go duration string（如 "5s"、"2s"、"500ms"）
 
 	// Matrix Anti-Cheat
